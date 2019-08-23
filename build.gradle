@@ -1,0 +1,19 @@
+group 'kmaplanner'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "com.google.guava:guava:21.0"
+    compile "com.google.code.gson:gson:2.8.0"
+    compile "com.google.code.findbugs:jsr305:3.0.2"
+    compile 'org.optaplanner:optaplanner-core:7.25.0.Final'
+    compile 'org.apache.poi:poi:4.1.0'
+    compile 'org.apache.poi:poi-ooxml:4.1.0'
+}

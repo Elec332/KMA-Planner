@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<solver>
+    <scanAnnotatedClasses/>
+
+    <scoreDirectorFactory>
+        <easyScoreCalculatorClass>elec332.kmaplanner.planner.opta.RosterScoreCalculator</easyScoreCalculatorClass>
+    </scoreDirectorFactory>
+
+    <termination>
+        <unimprovedSecondsSpentLimit>10</unimprovedSecondsSpentLimit>
+    </termination>
+
+</solver>
