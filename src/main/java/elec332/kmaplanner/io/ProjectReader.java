@@ -8,8 +8,14 @@ import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.persons.PersonManager;
 import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.util.UpdatableTreeSet;
+import elec332.kmaplanner.util.io.DataInputStream;
+import elec332.kmaplanner.util.io.DataOutputStream;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Date;
 import java.util.Set;
 
 /**
@@ -17,7 +23,7 @@ import java.util.Set;
  */
 public class ProjectReader {
 
-    public ProjectReader(File file, ProjectData data) {
+    public ProjectReader(File file, ProjectSettings data) {
         this.projFile = Preconditions.checkNotNull(file);
         this.projectData = Preconditions.checkNotNull(data);
         this.persons = Sets.newHashSet();
@@ -29,37 +35,40 @@ public class ProjectReader {
     }
 
     private final File projFile;
-    private ProjectData projectData;
+    private ProjectSettings projectData;
     private Set<Person> persons;
     private Set<Group> groups;
     private Set<Event> events;
 
-    @SuppressWarnings("unchecked")
-    public ProjectReader read() throws IOException, ClassNotFoundException {
+    public ProjectReader read() throws IOException {
         if (!projFile.exists()) {
             throw new RuntimeException();
         }
         FileInputStream fis = new FileInputStream(projFile);
-        ObjectInputStream ois = new ObjectInputStream(fis);
-        projectData = (ProjectData) ois.readObject();
-        persons = (Set<Person>) ois.readObject();
-        groups = (Set<Group>) ois.readObject();
-        events = (Set<Event>) ois.readObject();
-        ois.close();
+        DataInputStream dis = new DataInputStream(fis);
+
+        projectData = dis.readObject(new ProjectSettings());
+        persons = Sets.newHashSet(dis.readObjects(() -> new Person("", "")));
+        groups = Sets.newHashSet(dis.readObjects(() -> new Group("")));
+        events = Sets.newHashSet(dis.readObjects(() -> new Event("", new Date(), new Date(), -1)));
+
+        dis.close();
         return this;
     }
 
     public void write(PersonManager personManager, GroupManager groupManager, UpdatableTreeSet<Event> events) throws IOException {
         FileOutputStream fos = new FileOutputStream(projFile);
-        ObjectOutputStream oos = new ObjectOutputStream(fos);
-        oos.writeObject(this.projectData);
-        oos.writeObject(this.persons = personManager.getPersons());
-        oos.writeObject(this.groups = groupManager.getGroups());
-        oos.writeObject(this.events = Sets.newHashSet(events));
-        oos.close();
+        DataOutputStream dos = new DataOutputStream(fos);
+
+        dos.writeObject(this.projectData);
+        dos.writeObjects(this.persons = personManager.getPersons());
+        dos.writeObjects(this.groups = groupManager.getGroups());
+        dos.writeObjects(this.events = Sets.newHashSet(events));
+
+        dos.close();
     }
 
-    public ProjectData getProjectData() {
+    public ProjectSettings getProjectData() {
         return Preconditions.checkNotNull(projectData);
     }
 

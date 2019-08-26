@@ -9,11 +9,11 @@ import java.awt.*;
 @SuppressWarnings("all")
 public class DialogHelper {
 
-    public static boolean showDialog(Component parent, Object data, String title){
+    public static boolean showDialog(Component parent, Object data, String title) {
         return showDialog(parent, data, title, JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION;
     }
 
-    public static int showDialog(Component parent, Object data, String title, int optionType){
+    public static int showDialog(Component parent, Object data, String title, int optionType) {
         return JOptionPane.showConfirmDialog(parent, data, title, optionType, JOptionPane.PLAIN_MESSAGE);
     }
 

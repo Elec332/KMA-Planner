@@ -22,13 +22,13 @@ import java.util.stream.Collectors;
  */
 public class PersonExcelReader {
 
-    public static Set<Person> readPersons(File file, String group, GroupManager groupManager, Options... options){
+    public static Set<Person> readPersons(File file, String group, GroupManager groupManager, Options... options) {
         return readPersons(ExcelReader.openExcelFile(file), group, groupManager, options);
     }
 
-    public static Set<Person> readPersons(Workbook workbook, String group, GroupManager groupManager, Options... optionz){
+    public static Set<Person> readPersons(Workbook workbook, String group, GroupManager groupManager, Options... optionz) {
         Set<Person> ret = Sets.newTreeSet();
-        if (workbook == null){
+        if (workbook == null) {
             return ret;
         }
         Set<Options> options = Arrays.stream(optionz)
@@ -40,16 +40,16 @@ public class PersonExcelReader {
             data.forEach(d -> {
                 Person p = d.getLeft();
                 d.getRight().forEach(n -> p.addToGroup(groupManager.getOrCreate(n)));
-                if (options.contains(Options.USE_SHEET_GROUP)){
+                if (options.contains(Options.USE_SHEET_GROUP)) {
                     String g = sheet.getSheetName();
-                    if (options.contains(Options.MERGE_FILE_SHEET_NAME) && !Strings.isNullOrEmpty(group)){
+                    if (options.contains(Options.MERGE_FILE_SHEET_NAME) && !Strings.isNullOrEmpty(group)) {
                         g = group + " " + g;
                     }
                     Group group1 = groupManager.getOrCreate(g);
                     group1.setMain(true);
                     p.addToGroup(group1);
                 }
-                if (options.contains(Options.USE_FILE_GROUP) && !Strings.isNullOrEmpty(group)){
+                if (options.contains(Options.USE_FILE_GROUP) && !Strings.isNullOrEmpty(group)) {
                     p.addToGroup(groupManager.getOrCreate(group));
                 }
                 ret.add(p);
@@ -58,7 +58,7 @@ public class PersonExcelReader {
         return ret;
     }
 
-    private static List<Pair<Person, List<String>>> readSheet(Sheet sheet){
+    private static List<Pair<Person, List<String>>> readSheet(Sheet sheet) {
         List<Pair<Person, List<String>>> ret = Lists.newArrayList();
         sheet.rowIterator().forEachRemaining(row -> {
             String fn = row.getCell(0).getStringCellValue();
@@ -66,7 +66,7 @@ public class PersonExcelReader {
             List<String> groups = Lists.newArrayList();
             for (int i = 2; i < row.getLastCellNum(); i++) {
                 String str = row.getCell(i).getStringCellValue();
-                if (!Strings.isNullOrEmpty(str)){
+                if (!Strings.isNullOrEmpty(str)) {
                     groups.add(str);
                 }
             }
@@ -78,7 +78,6 @@ public class PersonExcelReader {
     public enum Options {
 
         USE_SHEET_GROUP {
-
             @Override
             public String toString() {
                 return "Add sheet name as a group";
@@ -86,7 +85,6 @@ public class PersonExcelReader {
 
         },
         USE_FILE_GROUP {
-
             @Override
             public String toString() {
                 return "Add file name as a group";
@@ -94,7 +92,6 @@ public class PersonExcelReader {
 
         },
         MERGE_FILE_SHEET_NAME {
-
             @Override
             public String toString() {
                 return "Prepend file name to the sheet group name";

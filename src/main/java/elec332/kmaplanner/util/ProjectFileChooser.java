@@ -12,7 +12,7 @@ import java.io.File;
  */
 public class ProjectFileChooser {
 
-    public static File openFileChooser(Component parent){
+    public static File openFileChooser(Component parent) {
         JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fc.setCurrentDirectory(IOUtils.getExecFolder());

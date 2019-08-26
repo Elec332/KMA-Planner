@@ -2,13 +2,16 @@ package elec332.kmaplanner.group;
 
 import com.google.common.collect.Sets;
 import elec332.kmaplanner.filters.AbstractFilter;
+import elec332.kmaplanner.filters.FilterManager;
 import elec332.kmaplanner.filters.IFilterable;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.IEventFilter;
+import elec332.kmaplanner.util.io.IByteArrayDataInputStream;
+import elec332.kmaplanner.util.io.IByteArrayDataOutputStream;
+import elec332.kmaplanner.util.io.IDataSerializable;
 
 import javax.annotation.Nonnull;
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
@@ -16,9 +19,7 @@ import java.util.Set;
 /**
  * Created by Elec332 on 14-6-2019
  */
-public class Group implements Comparable<Group>, IEventFilter, Serializable, IFilterable {
-
-    public static final long serialVersionUID = -3746563900204761046L;
+public class Group implements Comparable<Group>, IEventFilter, IDataSerializable, IFilterable {
 
     public Group(String name) {
         this.name = name;
@@ -37,17 +38,17 @@ public class Group implements Comparable<Group>, IEventFilter, Serializable, IFi
 
     private transient Set<Person> persons, persons_;
 
-    void postRead(){
+    void postRead() {
         this.persons = Sets.newHashSet();
         this.persons_ = Collections.unmodifiableSet(persons);
     }
 
     @Override
-    public boolean canParticipateIn(final Event event){
+    public boolean canParticipateIn(final Event event) {
         return getFilters().stream().allMatch(f -> f.canParticipateIn(event));
     }
 
-    public boolean containsPerson(Person person){
+    public boolean containsPerson(Person person) {
         return persons.contains(person);
     }
 
@@ -59,7 +60,7 @@ public class Group implements Comparable<Group>, IEventFilter, Serializable, IFi
         return persons_;
     }
 
-    public boolean isMainGroup(){
+    public boolean isMainGroup() {
         return main;
     }
 
@@ -67,7 +68,7 @@ public class Group implements Comparable<Group>, IEventFilter, Serializable, IFi
         this.main = main;
     }
 
-    public Iterator<Person> getPersonIterator(){
+    public Iterator<Person> getPersonIterator() {
         return persons_.iterator();
     }
 
@@ -116,6 +117,20 @@ public class Group implements Comparable<Group>, IEventFilter, Serializable, IFi
     @Override
     public Set<AbstractFilter> getFilters() {
         return filters;
+    }
+
+    @Override
+    public void writeObject(IByteArrayDataOutputStream stream) {
+        stream.writeUTF(name);
+        stream.writeBoolean(main);
+        stream.writeObjects(FilterManager.INSTANCE, filters);
+    }
+
+    @Override
+    public void readObject(IByteArrayDataInputStream stream) {
+        name = stream.readUTF();
+        main = stream.readBoolean();
+        filters = Sets.newHashSet(stream.readObjects(FilterManager.INSTANCE));
     }
 
 }

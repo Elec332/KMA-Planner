@@ -3,17 +3,18 @@ package elec332.kmaplanner.filters;
 import com.google.common.base.Strings;
 import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.IEventFilter;
+import elec332.kmaplanner.util.io.IByteArrayDataInputStream;
+import elec332.kmaplanner.util.io.IByteArrayDataOutputStream;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.*;
-import java.io.Serializable;
 import java.util.function.Consumer;
 
 /**
  * Created by Elec332 on 15-8-2019
  */
-public abstract class AbstractFilter implements IEventFilter, Serializable {
+public abstract class AbstractFilter implements IEventFilter {
 
     public AbstractFilter() {
         this.name = null;
@@ -35,7 +36,7 @@ public abstract class AbstractFilter implements IEventFilter, Serializable {
     public abstract boolean canParticipateIn(Event event);
 
     @Nonnull
-    public JPanel createConfigPanel(Consumer<Runnable> applyCallback){
+    public JPanel createConfigPanel(Consumer<Runnable> applyCallback) {
         JPanel ret = new JPanel(new BorderLayout());
         JPanel top = new JPanel();
         top.add(new JLabel("Filter Name: "));
@@ -48,15 +49,23 @@ public abstract class AbstractFilter implements IEventFilter, Serializable {
         return ret;
     }
 
-    protected JPanel createCenterPanel(Consumer<Runnable> applyCallback){
+    protected JPanel createCenterPanel(Consumer<Runnable> applyCallback) {
         return new JPanel();
     }
 
     @Nonnull
     public abstract AbstractFilter copy();
 
-    public boolean isValid(){
+    public boolean isValid() {
         return !Strings.isNullOrEmpty(getName());
+    }
+
+    public void writeObject(IByteArrayDataOutputStream stream) {
+        stream.writeUTF(getName());
+    }
+
+    public void readObject(IByteArrayDataInputStream stream) {
+        setName(stream.readUTF());
     }
 
     @Override

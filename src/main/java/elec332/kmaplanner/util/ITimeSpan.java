@@ -13,11 +13,11 @@ public interface ITimeSpan {
 
     public Date end();
 
-    default public long getDuration(@Nonnull TimeUnit timeUnit){
+    default public long getDuration(@Nonnull TimeUnit timeUnit) {
         return timeUnit.convert(Math.abs(end().getTime() - start().getTime()), TimeUnit.MILLISECONDS);
     }
 
-    default public boolean isDuring(ITimeSpan other){
+    default public boolean isDuring(ITimeSpan other) {
         return other.start().before(end()) && !(other.end().before(start()) || other.end().equals(start()));
     }
 

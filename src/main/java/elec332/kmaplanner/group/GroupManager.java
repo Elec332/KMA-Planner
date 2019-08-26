@@ -35,13 +35,13 @@ public class GroupManager {
     private final Map<String, Group> reverseLookup;
 
     public void addGroup(Group group) {
-        if (!addGroupNice(group)){
+        if (!addGroupNice(group)) {
             throw new IllegalArgumentException(group.toString());
         }
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean addGroupNice(Group group){
+    public boolean addGroupNice(Group group) {
         if (reverseLookup.containsKey(group.getName()) || !groups.add(group)) {
             return false;
         }
@@ -49,8 +49,8 @@ public class GroupManager {
         return true;
     }
 
-    public void removeGroup(final Group group){
-        if (!reverseLookup.containsKey(group.getName()) || !groups.contains(group)){
+    public void removeGroup(final Group group) {
+        if (!reverseLookup.containsKey(group.getName()) || !groups.contains(group)) {
             throw new IllegalArgumentException();
         }
         reverseLookup.remove(group.getName());
@@ -63,12 +63,12 @@ public class GroupManager {
         groups_.forEach(Group::postRead);
     }
 
-    public void updateGroup(Group group, Consumer<Group> consumer){
-        if (!reverseLookup.containsKey(group.getName())){
+    public void updateGroup(Group group, Consumer<Group> consumer) {
+        if (!reverseLookup.containsKey(group.getName())) {
             throw new IllegalArgumentException();
         }
         reverseLookup.remove(group.getName());
-        if (groups.remove(group)){
+        if (groups.remove(group)) {
             consumer.accept(group);
             addGroup(group);
         }
@@ -83,9 +83,9 @@ public class GroupManager {
         return reverseLookup.get(name);
     }
 
-    public Group getOrCreate(String name){
+    public Group getOrCreate(String name) {
         Group group = getGroup(name);
-        if (group == null){
+        if (group == null) {
             addGroup(group = new Group(name));
         }
         return group;

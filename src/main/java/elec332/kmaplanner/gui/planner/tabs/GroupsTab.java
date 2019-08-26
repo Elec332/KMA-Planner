@@ -53,7 +53,7 @@ public class GroupsTab extends JPanel {
         edit.addActionListener(e -> editGroup(list.getSelectedValue(), false));
         remove.addActionListener(a -> {
             Group g = list.getSelectedValue();
-            if (g != null){
+            if (g != null) {
                 groupManager.removeGroup(g);
                 updateList();
             }
@@ -65,14 +65,14 @@ public class GroupsTab extends JPanel {
     private GroupManager groupManager;
     private final Runnable callback;
 
-    void updateList(){
+    void updateList() {
         listModel.clear();
         groupManager.getGroups().forEach(listModel::addElement);
         callback.run();
     }
 
-    private void editGroup(Group group, boolean newG){
-        if (group == null){
+    private void editGroup(Group group, boolean newG) {
+        if (group == null) {
             return;
         }
         JPanel dialog = new JPanel(new BorderLayout());
@@ -90,7 +90,7 @@ public class GroupsTab extends JPanel {
 
         dialog.add(new JFilterPanel(group), BorderLayout.CENTER);
 
-        if (DialogHelper.showDialog(GroupsTab.this, dialog, "Edit Group")){
+        if (DialogHelper.showDialog(GroupsTab.this, dialog, "Edit Group")) {
             if (!newG) {
                 group.setMain(checkBox.isSelected());
                 groupManager.updateGroup(group, group1 -> group1.setName(name.getText()));
@@ -98,7 +98,7 @@ public class GroupsTab extends JPanel {
                 Group group1 = new Group(name.getText());
                 group1.setMain(checkBox.isSelected());
                 group1.getFilters().addAll(group.getFilters());
-                if (Strings.isNullOrEmpty(group1.getName()) || !groupManager.addGroupNice(group1)){
+                if (Strings.isNullOrEmpty(group1.getName()) || !groupManager.addGroupNice(group1)) {
                     JOptionPane.showMessageDialog(GroupsTab.this, "Failed to add Group! (Perhaps an invalid/duplicate name?)", "Error adding Group", JOptionPane.ERROR_MESSAGE);
                     return;
                 }

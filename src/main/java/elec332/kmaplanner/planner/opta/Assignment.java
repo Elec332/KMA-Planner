@@ -12,10 +12,10 @@ import org.optaplanner.core.api.domain.variable.PlanningVariable;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class Assignment {
 
-    public Assignment(){
+    public Assignment() {
     }
 
-    public Assignment(Event event){
+    public Assignment(Event event) {
         this.event = event;
     }
 
@@ -23,7 +23,7 @@ public class Assignment {
     public Person person;
 
     @PlanningVariable(valueRangeProviderRefs = {"persons"})
-    public Person getPerson(){
+    public Person getPerson() {
         return person;
     }
 
@@ -33,7 +33,7 @@ public class Assignment {
 
     @Override
     public String toString() {
-        return " Event:  " + event + "    Person: "+ person;
+        return " Event:  " + event + "    Person: " + person;
     }
 
 }

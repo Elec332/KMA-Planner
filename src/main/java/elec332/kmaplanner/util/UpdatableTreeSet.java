@@ -7,8 +7,8 @@ import java.util.TreeSet;
  */
 public class UpdatableTreeSet<T> extends TreeSet<T> {
 
-    public void markObjectUpdated(T obj){
-        if (remove(obj)){
+    public void markObjectUpdated(T obj) {
+        if (remove(obj)) {
             add(obj);
         }
     }

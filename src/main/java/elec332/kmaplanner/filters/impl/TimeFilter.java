@@ -4,6 +4,8 @@ import elec332.kmaplanner.filters.AbstractFilter;
 import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.util.DateChooserPanel;
 import elec332.kmaplanner.util.ITimeSpan;
+import elec332.kmaplanner.util.io.IByteArrayDataInputStream;
+import elec332.kmaplanner.util.io.IByteArrayDataOutputStream;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -16,7 +18,7 @@ import java.util.function.Consumer;
  */
 public class TimeFilter extends AbstractFilter implements ITimeSpan {
 
-    public TimeFilter(){
+    public TimeFilter() {
         start = new Date();
         end = new Date();
         desc = "Cannot participate in the given timespan.";
@@ -77,6 +79,20 @@ public class TimeFilter extends AbstractFilter implements ITimeSpan {
     @Override
     public Date end() {
         return end;
+    }
+
+    @Override
+    public void writeObject(IByteArrayDataOutputStream stream) {
+        super.writeObject(stream);
+        stream.writeLong(start.getTime());
+        stream.writeLong(end.getTime());
+    }
+
+    @Override
+    public void readObject(IByteArrayDataInputStream stream) {
+        super.readObject(stream);
+        start = new Date(stream.readLong());
+        end = new Date(stream.readLong());
     }
 
 }

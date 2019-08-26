@@ -86,7 +86,7 @@ public class UsersTab extends JPanel {
         edit.addActionListener(e -> editUser(list.getSelectedValue(), false));
         remove.addActionListener(a -> {
             Person person = list.getSelectedValue();
-            if (person != null){
+            if (person != null) {
                 personManager.removePerson(person);
                 updateList();
             }
@@ -107,12 +107,12 @@ public class UsersTab extends JPanel {
 
     private boolean refreshingGroups;
 
-    public void setGroupTab(GroupsTab groupTab){
+    public void setGroupTab(GroupsTab groupTab) {
         this.groupCallback = groupTab::updateList;
     }
 
-    private void updateList(){
-        if (refreshingGroups){
+    private void updateList() {
+        if (refreshingGroups) {
             return;
         }
         listModel.clear();
@@ -122,7 +122,7 @@ public class UsersTab extends JPanel {
                 .forEach(listModel::addElement);
     }
 
-    public void updateGroups(){
+    public void updateGroups() {
         refreshingGroups = true;
         listModelG.removeAllElements();
         Set<Group> groups = Sets.newTreeSet(groupManager.getGroups());
@@ -132,7 +132,7 @@ public class UsersTab extends JPanel {
     }
 
     private void editUser(final Person person, boolean newP) {
-        if (person == null){
+        if (person == null) {
             return;
         }
         JPanel dialog = new JPanel(new BorderLayout());
@@ -190,7 +190,7 @@ public class UsersTab extends JPanel {
         middle.add(filterPanel);
 
         dialog.add(middle, BorderLayout.CENTER);
-        if (DialogHelper.showDialog(UsersTab.this, dialog, "Edit Person")){
+        if (DialogHelper.showDialog(UsersTab.this, dialog, "Edit Person")) {
             if (!newP) {
                 personManager.updatePerson(person, person1 -> {
                     groupManager.getGroups().forEach(person1::removeFromGroup);
@@ -199,7 +199,7 @@ public class UsersTab extends JPanel {
             } else {
                 Person person1 = new Person(fnf.getText(), lnf.getText());
                 person1.getFilters().addAll(person.getFilters());
-                if (Strings.isNullOrEmpty(person1.getFirstName()) || !personManager.addPersonNice(person1)){
+                if (Strings.isNullOrEmpty(person1.getFirstName()) || !personManager.addPersonNice(person1)) {
                     JOptionPane.showMessageDialog(UsersTab.this, "Failed to add Person! (Perhaps an invalid/duplicate name?)", "Error adding Person", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
@@ -210,7 +210,7 @@ public class UsersTab extends JPanel {
 
     }
 
-    private void importPersons(){
+    private void importPersons() {
         JPanel dialog = new JPanel(new BorderLayout());
         JPanel tp = new JPanel();
         tp.add(new JLabel("File location: "));
@@ -253,7 +253,7 @@ public class UsersTab extends JPanel {
         String[] lastName = {""};
 
         ufg.addActionListener(a -> {
-            if (ufg.isSelected()){
+            if (ufg.isSelected()) {
                 lastName[0] = name.getText();
                 name.setText("");
                 name.setEnabled(false);
@@ -263,14 +263,14 @@ public class UsersTab extends JPanel {
             }
         });
 
-        if (DialogHelper.showDialog(UsersTab.this, dialog, "Person Importer")){
+        if (DialogHelper.showDialog(UsersTab.this, dialog, "Person Importer")) {
             String file = fileB.getText();
-            if (file.trim().equals(NOT_SELECTED)){
+            if (file.trim().equals(NOT_SELECTED)) {
                 JOptionPane.showMessageDialog(UsersTab.this, "File not selected!", "Invalid file", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             String fn;
-            if (!ufg.isSelected()){
+            if (!ufg.isSelected()) {
                 fn = name.getText();
             } else {
                 fn = file.substring(file.lastIndexOf(File.separator) + 1);
@@ -283,8 +283,8 @@ public class UsersTab extends JPanel {
         }
     }
 
-    private static PersonExcelReader.Options getOption(JCheckBox checkBox, PersonExcelReader.Options option){
-        if (checkBox.isSelected()){
+    private static PersonExcelReader.Options getOption(JCheckBox checkBox, PersonExcelReader.Options option) {
+        if (checkBox.isSelected()) {
             return option;
         }
         return null;

@@ -22,39 +22,39 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
                 .mapToLong(e -> e.getDuration() * e.getRequiredPersons())
                 .sum();
         long avg = totTime / roster.getPersons().size();
-        for (Assignment assignment : roster.getAssignments()){
+        for (Assignment assignment : roster.getAssignments()) {
 
-            if (assignment.person == null || assignment.person == PersonManager.NULL_PERSON){
+            if (assignment.person == null || assignment.person == PersonManager.NULL_PERSON) {
                 hardScore -= 10;
                 continue;
             }
 
-            if (assignment.person.events.contains(assignment.event)){
+            if (assignment.person.events.contains(assignment.event)) {
                 hardScore -= 50;
             }
 
-            if (!assignment.person.canParticipateIn(assignment.event)){
+            if (!assignment.person.canParticipateIn(assignment.event)) {
                 hardScore--;
             }
 
-            if (!assignment.event.canPersonParticipate(assignment.person)){
+            if (!assignment.event.canPersonParticipate(assignment.person)) {
                 hardScore--;
             }
 
-            for (Event e : assignment.person.events){
-                if (assignment.event.isDuring(e)){
+            for (Event e : assignment.person.events) {
+                if (assignment.event.isDuring(e)) {
                     hardScore -= 11;
                 }
             }
             assignment.person.events.add(assignment.event);
         }
 
-        for (Person person : roster.getPersons()){
-            if (person == PersonManager.NULL_PERSON){
+        for (Person person : roster.getPersons()) {
+            if (person == PersonManager.NULL_PERSON) {
                 continue;
             }
             long dur = person.getDuration();
-            if (dur > avg + 60){
+            if (dur > avg + 60) {
                 softScore -= (dur - avg) / 10 - 3;
             }
         }

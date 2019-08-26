@@ -44,13 +44,14 @@ public class DateTextField extends JTextField {
     private boolean unDecorated = true;
 
     @SuppressWarnings("UnusedReturnValue")
-    public DateTextField setDecorated(){
+    public DateTextField setDecorated() {
         unDecorated = false;
         return this;
     }
 
     private void addListeners() {
         addMouseListener(new MouseAdapter() {
+
             public void mouseClicked(MouseEvent paramMouseEvent) {
                 if (datePanel == null) {
                     datePanel = new DatePanel();
@@ -65,7 +66,7 @@ public class DateTextField extends JTextField {
     private void showDateDialog(DatePanel dateChooser, Point position) {
         Window owner = SwingUtilities.getWindowAncestor(DateTextField.this);
         //if (dateDialog == null || dateDialog.getOwner() != owner) {
-            dateDialog = createDateDialog(owner, dateChooser);
+        dateDialog = createDateDialog(owner, dateChooser);
         //}
         dateDialog.setLocation(getAppropriateLocation(owner, position));
         dateDialog.setVisible(true);
@@ -122,6 +123,7 @@ public class DateTextField extends JTextField {
     }
 
     private class DatePanel extends JPanel implements ChangeListener {
+
         int startYear = 1980;
         int lastYear = 2050;
 
@@ -187,7 +189,7 @@ public class DateTextField extends JTextField {
         }
 
         private JPanel createWeekAndDayPanal() {
-            String[] colname = { "S", "M", "T", "W", "T", "F", "S" };
+            String[] colname = {"S", "M", "T", "W", "T", "F", "S"};
             JPanel panel = new JPanel();
             panel.setFont(new Font("Arial", Font.PLAIN, 10));
             panel.setLayout(new GridLayout(7, 7));
@@ -299,5 +301,7 @@ public class DateTextField extends JTextField {
             setDate(cal.getTime());
             reflushWeekAndDay();
         }
+
     }
+
 }

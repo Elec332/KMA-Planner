@@ -50,21 +50,21 @@ public class PlannerTab extends JPanel {
         edit.addActionListener(a -> editEvent(list.getSelectedValue(), false));
         remove.addActionListener(a -> {
             Event e = list.getSelectedValue();
-            if (e != null){
+            if (e != null) {
                 planner.getEvents().remove(e);
                 updateList();
             }
         });
         import_.addActionListener(a -> {
             File file = ProjectFileChooser.openFileChooser(PlannerTab.this);
-            if (file != null){
+            if (file != null) {
                 Set<Event> newEvents = null;
                 try {
                     newEvents = new ProjectReader(file).read().getEvents();
-                } catch (Exception e){
+                } catch (Exception e) {
                     JOptionPane.showMessageDialog(PlannerTab.this, "Failed to import events from file: " + file.getAbsolutePath(), "Import failed!", JOptionPane.ERROR_MESSAGE);
                 }
-                if (newEvents != null){
+                if (newEvents != null) {
                     planner.getEvents().addAll(newEvents);
                     updateList();
                 }
@@ -82,13 +82,13 @@ public class PlannerTab extends JPanel {
     private Planner planner;
     private DefaultListModel<Event> listModel;
 
-    private void updateList(){
+    private void updateList() {
         listModel.clear();
         planner.getEvents().forEach(listModel::addElement);
     }
 
-    private void editEvent(Event event, boolean newE){
-        if (event == null){
+    private void editEvent(Event event, boolean newE) {
+        if (event == null) {
             return;
         }
         JPanel panel = new JPanel(new BorderLayout());
@@ -104,7 +104,7 @@ public class PlannerTab extends JPanel {
         name.add(new JPanel());
         JCheckBox everyone = new JCheckBox("Everyone");
         everyone.addActionListener(a1 -> spinner.setEnabled(!everyone.isSelected()));
-        if (event.everyone){
+        if (event.everyone) {
             spinner.setEnabled(false);
             everyone.setSelected(true);
         }
@@ -126,8 +126,8 @@ public class PlannerTab extends JPanel {
 
         panel.add(center);
 
-        if (DialogHelper.showDialog(PlannerTab.this, panel, "Edit Event")){
-            if (!start.getDate().before(end.getDate()) && !start.getDate().equals(end.getDate())){
+        if (DialogHelper.showDialog(PlannerTab.this, panel, "Edit Event")) {
+            if (!start.getDate().before(end.getDate()) && !start.getDate().equals(end.getDate())) {
                 JOptionPane.showMessageDialog(PlannerTab.this, "End date must be after the starting date!", "Invalid date!", JOptionPane.ERROR_MESSAGE);
             } else if (!newE) {
                 event.name = nameField.getText();
@@ -139,7 +139,7 @@ public class PlannerTab extends JPanel {
             } else {
                 Event event1 = new Event(nameField.getText(), start.getDate(), end.getDate(), everyone.isSelected() ? 0 : (int) snm.getNumber());
                 event1.everyone = everyone.isSelected();
-                if (Strings.isNullOrEmpty(event1.name) || event1.getDuration() == 0){
+                if (Strings.isNullOrEmpty(event1.name) || event1.getDuration() == 0) {
                     JOptionPane.showMessageDialog(PlannerTab.this, "Failed to add Event! (Perhaps an duplicate name/invalid date?)", "Error adding Event", JOptionPane.ERROR_MESSAGE);
                     return;
                 }

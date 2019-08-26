@@ -21,7 +21,7 @@ public final class PersonManager {
         this.groupManager = groupManager;
     }
 
-    public static final Person NULL_PERSON = new Person("No", "Person"){
+    public static final Person NULL_PERSON = new Person("No", "Person") {
 
         @Override
         public boolean canParticipateIn(Event event) {
@@ -37,7 +37,7 @@ public final class PersonManager {
         persons_.forEach(p -> p.postRead(groupManager));
     }
 
-    public void updatePerson(Person person, Consumer<Person> consumer){
+    public void updatePerson(Person person, Consumer<Person> consumer) {
         if (persons.remove(person)) {
             consumer.accept(person);
             persons.add(person);
@@ -46,16 +46,20 @@ public final class PersonManager {
 
     public void addPerson(Person person) {
         if (!addPersonNice(person)) {
+            System.out.println("waa");
+            System.out.println(persons.size());
+            System.out.println(persons);
+            System.out.println(person);
             throw new IllegalArgumentException();
         }
     }
 
-    public boolean addPersonNice(Person person){
+    public boolean addPersonNice(Person person) {
         return persons.add(person);
     }
 
-    public void removePerson(Person person){
-        if (!persons.contains(person)){
+    public void removePerson(Person person) {
+        if (!persons.contains(person)) {
             throw new IllegalArgumentException();
         }
         persons.remove(person);

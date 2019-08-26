@@ -17,16 +17,16 @@ import java.util.function.Supplier;
 public class EditFilterDialog extends JPanel {
 
     @Nullable
-    public static AbstractFilter getFilter(Component parent){
+    public static AbstractFilter getFilter(Component parent) {
         return getFilter(null, parent);
     }
 
     @Nullable
-    public static AbstractFilter getFilter(AbstractFilter original, Component parent){
+    public static AbstractFilter getFilter(AbstractFilter original, Component parent) {
         EditFilterDialog dialog = new EditFilterDialog(original);
-        if (DialogHelper.showDialog(parent, dialog, "Edit Event")){
+        if (DialogHelper.showDialog(parent, dialog, "Edit Event")) {
             dialog.cB.forEach(Runnable::run);
-            if (!dialog.filter.isValid()){
+            if (!dialog.filter.isValid()) {
                 JOptionPane.showMessageDialog(parent, "Filter settings invalid, please check the settings.", "Invalid filter", JOptionPane.ERROR_MESSAGE);
                 return getFilter(dialog.filter, parent);
             }
@@ -35,7 +35,7 @@ public class EditFilterDialog extends JPanel {
         return null;
     }
 
-    private EditFilterDialog(AbstractFilter filter){
+    private EditFilterDialog(AbstractFilter filter) {
         super(new BorderLayout());
         this.initNull = filter == null;
 
@@ -58,8 +58,8 @@ public class EditFilterDialog extends JPanel {
             @SuppressWarnings("unchecked")
             Supplier<AbstractFilter> sel = (Supplier<AbstractFilter>) select.getSelectedItem();
             JPanel newPanel = null;
-            if (sel == null){
-                if (initNull){
+            if (sel == null) {
+                if (initNull) {
                     newPanel = new JPanel();
                 } else {
                     return;
@@ -67,7 +67,7 @@ public class EditFilterDialog extends JPanel {
             }
             if (newPanel == null) {
                 AbstractFilter newF = sel.get();
-                if (this.filter != null && newF.getClass() == this.filter.getClass()){
+                if (this.filter != null && newF.getClass() == this.filter.getClass()) {
                     return;
                 }
                 cB = new ArrayList<>();

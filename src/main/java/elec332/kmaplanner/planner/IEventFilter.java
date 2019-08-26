@@ -7,7 +7,7 @@ public interface IEventFilter {
 
     boolean canParticipateIn(Event event);
 
-    default public IEventFilter and(final IEventFilter filter){
+    default public IEventFilter and(final IEventFilter filter) {
         return e -> canParticipateIn(e) && filter.canParticipateIn(e);
     }
 

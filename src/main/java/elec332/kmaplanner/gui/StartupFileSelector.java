@@ -44,7 +44,7 @@ public class StartupFileSelector extends JPanelBase implements ActionListener {
             SwingUtils.closeWindow(this);
         } else {
             File file = ProjectFileChooser.openFileChooser(this);
-            if (file != null){
+            if (file != null) {
                 projFile = file;
                 SwingUtils.closeWindow(this);
             }

@@ -13,14 +13,14 @@ import java.util.Date;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class DateChooserPanel extends JPanel {
 
-    public DateChooserPanel(Date date){
+    public DateChooserPanel(Date date) {
         this(date, false, true);
     }
 
-    public DateChooserPanel(Date startDate, boolean dayAllowed, boolean timeAllowed){
+    public DateChooserPanel(Date startDate, boolean dayAllowed, boolean timeAllowed) {
         boolean b22 = !dayAllowed && timeAllowed;
         setLayout(new GridLayout(b22 ? 2 : 6, 1));
-        if (!b22){
+        if (!b22) {
             add(new JPanel());
         }
         dtf = new DateTextField(startDate);
@@ -51,7 +51,7 @@ public class DateChooserPanel extends JPanel {
     private SpinnerDateModel sm;
 
     @SuppressWarnings("deprecation")
-    public Date getDate(){
+    public Date getDate() {
         Date ret = dtf.getDate();
         Date time = sm.getDate();
         ret.setHours(time.getHours());
@@ -59,11 +59,11 @@ public class DateChooserPanel extends JPanel {
         return ret;
     }
 
-    public boolean isFullDay(){
+    public boolean isFullDay() {
         return cb.isSelected();
     }
 
-    public static Pair<Date, Boolean> run(Component c, Date date, String text, boolean dayAllowed, boolean timeAllowed){
+    public static Pair<Date, Boolean> run(Component c, Date date, String text, boolean dayAllowed, boolean timeAllowed) {
         JDialog dialog;
         JOptionPane pane = new JOptionPane(text, JOptionPane.QUESTION_MESSAGE, JOptionPane.DEFAULT_OPTION);
 
@@ -85,13 +85,13 @@ public class DateChooserPanel extends JPanel {
             dialog.setSize(dialog.getWidth(), height);
         }
         dialog.setVisible(true);
-        if (dayAllowed){
+        if (dayAllowed) {
             height = dialog.getHeight();
         }
         dialog.dispose();
         Date d;
         boolean sel;
-        if (ref[0]){
+        if (ref[0]) {
             d = panel.getDate();
             sel = panel.isFullDay();
         } else {

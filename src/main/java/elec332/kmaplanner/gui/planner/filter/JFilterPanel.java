@@ -2,6 +2,7 @@ package elec332.kmaplanner.gui.planner.filter;
 
 import elec332.kmaplanner.filters.AbstractFilter;
 import elec332.kmaplanner.filters.IFilterable;
+
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import java.awt.*;
@@ -28,6 +29,7 @@ public class JFilterPanel extends JPanel {
         list.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         list.setLayoutOrientation(JList.VERTICAL);
         list.setFixedCellWidth(25 * 10);
+        update();
         JScrollPane listScroller = new JScrollPane(list);
         add(listScroller, BorderLayout.CENTER);
         list.addMouseListener(new MouseAdapter() {
@@ -47,7 +49,7 @@ public class JFilterPanel extends JPanel {
         bottom.add(remove);
         add.addActionListener(a -> {
             AbstractFilter filter = EditFilterDialog.getFilter(this);
-            if (filter == null){
+            if (filter == null) {
                 return;
             }
             filterable.getFilters().add(filter);
@@ -55,13 +57,13 @@ public class JFilterPanel extends JPanel {
         });
         edit.addActionListener(a -> {
             AbstractFilter filter = getSelectedFilter();
-            if (filter == null){
+            if (filter == null) {
                 return;
             }
             filterable.getFilters().remove(filter);
             filter = filter.copy();
             AbstractFilter e = EditFilterDialog.getFilter(filter, this);
-            if (e == null){
+            if (e == null) {
                 e = filter;
             }
             filterable.getFilters().add(e);
@@ -69,7 +71,7 @@ public class JFilterPanel extends JPanel {
         });
         remove.addActionListener(a -> {
             AbstractFilter filter = getSelectedFilter();
-            if (filter == null){
+            if (filter == null) {
                 return;
             }
             filterable.getFilters().remove(filter);
@@ -77,15 +79,16 @@ public class JFilterPanel extends JPanel {
         });
         add(bottom, BorderLayout.SOUTH);
     }
+
     private final JList<AbstractFilter> list;
     private final DefaultListModel<AbstractFilter> listModel;
     private final IFilterable filterable;
 
-    public AbstractFilter getSelectedFilter(){
+    public AbstractFilter getSelectedFilter() {
         return list.getSelectedValue();
     }
 
-    public void update(){
+    public void update() {
         listModel.clear();
         filterable.getFilters().forEach(listModel::addElement);
     }

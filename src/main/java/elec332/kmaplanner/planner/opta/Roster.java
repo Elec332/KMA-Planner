@@ -26,7 +26,7 @@ import java.util.List;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class Roster {
 
-    public Roster(Planner planner){
+    public Roster(Planner planner) {
         this();
         this.planner = planner;
         persons.addAll(this.planner.getPersonManager().getPersons());
@@ -38,7 +38,7 @@ public class Roster {
         });
     }
 
-    public Roster(){
+    public Roster() {
         this.assignments = Lists.newArrayList();
         this.persons = Lists.newArrayList();
     }
@@ -60,7 +60,7 @@ public class Roster {
     }
 
     @PlanningEntityCollectionProperty
-    public List<Assignment> getAssignments(){
+    public List<Assignment> getAssignments() {
         return assignments;
     }
 
@@ -73,9 +73,9 @@ public class Roster {
         this.score = score;
     }
 
-    public void apply(){
+    public void apply() {
         getPlanner().getPersonManager().getPersons().forEach(p -> p.events.clear());
-        for (Assignment assignment : getAssignments()){
+        for (Assignment assignment : getAssignments()) {
             assignment.person.events.add(assignment.event);
         }
         planner.getEvents().stream()
@@ -84,7 +84,7 @@ public class Roster {
 
     }
 
-    public void print(){
+    public void print() {
         apply();
         debugPrint();
         try {
@@ -92,13 +92,13 @@ public class Roster {
             EventPrinter.printRoster(this, workbook);
             File f = new File(IOUtils.getExecFolder(), "export.xlsx");
             workbook.write(new FileOutputStream(f));
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(new JFrame(), "Failed to export planner.", "Export failed!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void debugPrint(){
+    private void debugPrint() {
         planner.getPersonManager().getPersons().forEach(p -> {
             System.out.println();
             System.out.println(p);

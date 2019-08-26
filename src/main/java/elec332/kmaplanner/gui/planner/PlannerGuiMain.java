@@ -2,6 +2,7 @@ package elec332.kmaplanner.gui.planner;
 
 import elec332.kmaplanner.gui.planner.tabs.GroupsTab;
 import elec332.kmaplanner.gui.planner.tabs.PlannerTab;
+import elec332.kmaplanner.gui.planner.tabs.SettingsTab;
 import elec332.kmaplanner.gui.planner.tabs.UsersTab;
 import elec332.kmaplanner.planner.Planner;
 import elec332.kmaplanner.util.JPanelBase;
@@ -25,6 +26,7 @@ public class PlannerGuiMain extends JPanelBase {
         GroupsTab groupsTab = new GroupsTab(planner.getGroupManager(), usersTab::updateGroups);
         tabbedPane.addTab("Groups", groupsTab);
         usersTab.setGroupTab(groupsTab);
+        tabbedPane.addTab("Settings", new SettingsTab(planner.getSettings()));
 
         add(tabbedPane);
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);

@@ -16,7 +16,9 @@ import java.util.stream.Collectors;
  */
 public class EventPrinter {
 
-    public static Workbook printRoster(Roster roster, Workbook workbook){
+    private static final int NAME_EVENT_OFFSET = 3;
+
+    public static Workbook printRoster(Roster roster, Workbook workbook) {
         roster.apply();
         Set<Group> groups = roster.getPersons().stream()
                 .map(Person::getGroups)
@@ -32,31 +34,39 @@ public class EventPrinter {
         return workbook;
     }
 
-    private static void writeGroup(Group group, Set<Event> eventz, Sheet sheet){
+    private static void writeGroup(Group group, Set<Event> eventz, Sheet sheet) {
         int i = 2;
         Event[] events = eventz.toArray(new Event[0]);
         Row row_ = sheet.getRow(0);
-        for (int j = 0; j < events.length; j++) {
-            Event event = events[j];
-            row_.getCell(j + 2, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue(event.name);
+        if (row_ == null) {
+            row_ = sheet.createRow(0);
         }
+        int j;
+        for (j = 0; j < events.length; j++) {
+            Event event = events[j];
+            row_.getCell(j + NAME_EVENT_OFFSET, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue(event.name);
+        }
+        row_.getCell(j + NAME_EVENT_OFFSET + 1, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue("Minutes (NE)");
         for (Iterator<Person> it = group.getPersonIterator(); it.hasNext(); ) {
             Person person = it.next();
             Row row = sheet.getRow(i);
+            if (row == null) {
+                row = sheet.createRow(i);
+            }
             writePerson(row, person, events);
             i++;
         }
     }
 
-    private static void writePerson(Row row, Person person, Event[] eventIndex){
+    private static void writePerson(Row row, Person person, Event[] eventIndex) {
         row.getCell(0, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue(person.getFirstName() + " " + person.getLastName());
         int i;
         for (i = 0; i < eventIndex.length; i++) {
-            if (person.events.contains(eventIndex[i])){
-                row.getCell(i + 2, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue("XXX");
+            if (person.events.contains(eventIndex[i])) {
+                row.getCell(i + NAME_EVENT_OFFSET, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue("XXX");
             }
         }
-        row.getCell(i + 4, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue("" + person.getDuration(false));
+        row.getCell(i + NAME_EVENT_OFFSET + 1, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue("" + person.getDuration(false));
     }
 
 }

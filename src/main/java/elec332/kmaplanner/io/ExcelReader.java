@@ -16,13 +16,13 @@ import java.io.IOException;
 public class ExcelReader {
 
     @Nullable
-    public static Workbook openExcelFile(File file){
-        if (!file.exists()){
+    public static Workbook openExcelFile(File file) {
+        if (!file.exists()) {
             JOptionPane.showMessageDialog(new JFrame(), "File does not exist!", "Failed to open Excel file", JOptionPane.ERROR_MESSAGE);
             return null;
         }
         String name = file.getAbsolutePath();
-        if (!name.endsWith(".xls") && !name.endsWith(".xlsx")){
+        if (!name.endsWith(".xls") && !name.endsWith(".xlsx")) {
             JOptionPane.showMessageDialog(new JFrame(), "Invalid file name!", "Failed to open Excel file", JOptionPane.ERROR_MESSAGE);
             return null;
         }
@@ -35,7 +35,7 @@ public class ExcelReader {
                 workbook = new XSSFWorkbook(fis);
             }
             fis.close();
-        } catch (IOException e){
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return workbook;
