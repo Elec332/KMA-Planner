@@ -3,6 +3,7 @@ package elec332.kmaplanner.persons;
 import com.google.common.collect.Sets;
 import elec332.kmaplanner.group.GroupManager;
 import elec332.kmaplanner.io.ProjectReader;
+import elec332.kmaplanner.planner.Event;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -20,6 +21,14 @@ public final class PersonManager {
         this.groupManager = groupManager;
     }
 
+    public static final Person NULL_PERSON = new Person("No", "Person"){
+
+        @Override
+        public boolean canParticipateIn(Event event) {
+            return true;
+        }
+
+    };
     private final GroupManager groupManager;
     private final Set<Person> persons, persons_;
 

@@ -4,13 +4,16 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.group.GroupManager;
+import elec332.kmaplanner.gui.planner.filter.JFilterPanel;
 import elec332.kmaplanner.io.PersonExcelReader;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.persons.PersonManager;
+import elec332.kmaplanner.util.DialogHelper;
 import elec332.kmaplanner.util.IOUtils;
 import elec332.kmaplanner.util.JCheckBoxList;
 
 import javax.swing.*;
+import javax.swing.border.EtchedBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -147,7 +150,11 @@ public class UsersTab extends JPanel {
         names.add(ln);
         dialog.add(names, BorderLayout.NORTH);
 
-        JPanel groups = new JPanel();
+        JPanel middle = new JPanel(new GridLayout(2, 1));
+
+        JPanel group = new JPanel();
+        group.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Groups: "));
+
         Vector<JCheckBox> gVec = groupManager.getGroups().stream().map(g -> {
             JCheckBox ret = new JCheckBox(g.toString());
             ret.setSelected(person.getGroups().contains(g));
@@ -169,10 +176,21 @@ public class UsersTab extends JPanel {
 
         });
 
-        groups.add(groupList);
-        dialog.add(groups, BorderLayout.CENTER);
-        int ret = JOptionPane.showConfirmDialog(UsersTab.this, dialog, "Edit Person", JOptionPane.OK_CANCEL_OPTION);
-        if (ret == JOptionPane.OK_OPTION){
+
+        JFilterPanel filterPanel = new JFilterPanel(person);
+        JScrollPane groupScroller = new JScrollPane(groupList);
+        JCheckBox prot = new JCheckBox("Sample Text");
+        prot.setPreferredSize(new Dimension(filterPanel.getPreferredSize().width, prot.getPreferredSize().height));
+        groupList.setPrototypeCellValue(prot);
+
+
+        group.add(groupScroller);
+
+        middle.add(group);
+        middle.add(filterPanel);
+
+        dialog.add(middle, BorderLayout.CENTER);
+        if (DialogHelper.showDialog(UsersTab.this, dialog, "Edit Person")){
             if (!newP) {
                 personManager.updatePerson(person, person1 -> {
                     groupManager.getGroups().forEach(person1::removeFromGroup);
@@ -180,6 +198,7 @@ public class UsersTab extends JPanel {
                 });
             } else {
                 Person person1 = new Person(fnf.getText(), lnf.getText());
+                person1.getFilters().addAll(person.getFilters());
                 if (Strings.isNullOrEmpty(person1.getFirstName()) || !personManager.addPersonNice(person1)){
                     JOptionPane.showMessageDialog(UsersTab.this, "Failed to add Person! (Perhaps an invalid/duplicate name?)", "Error adding Person", JOptionPane.ERROR_MESSAGE);
                     return;
@@ -244,9 +263,7 @@ public class UsersTab extends JPanel {
             }
         });
 
-
-        int ret = JOptionPane.showConfirmDialog(UsersTab.this, dialog, "Person Importer", JOptionPane.OK_CANCEL_OPTION);
-        if (ret == JOptionPane.OK_OPTION){
+        if (DialogHelper.showDialog(UsersTab.this, dialog, "Person Importer")){
             String file = fileB.getText();
             if (file.trim().equals(NOT_SELECTED)){
                 JOptionPane.showMessageDialog(UsersTab.this, "File not selected!", "Invalid file", JOptionPane.ERROR_MESSAGE);

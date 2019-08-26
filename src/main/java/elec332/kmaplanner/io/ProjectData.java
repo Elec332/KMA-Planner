@@ -7,6 +7,8 @@ import java.io.Serializable;
  */
 public final class ProjectData implements Serializable {
 
+    public static final long serialVersionUID = -7594863900204700915L;
+
     public long seed;
 
 }

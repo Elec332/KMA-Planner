@@ -2,6 +2,8 @@ package elec332.kmaplanner.persons;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
+import elec332.kmaplanner.filters.AbstractFilter;
+import elec332.kmaplanner.filters.IFilterable;
 import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.group.GroupManager;
 import elec332.kmaplanner.planner.Event;
@@ -15,21 +17,32 @@ import java.util.function.BiConsumer;
 /**
  * Created by Elec332 on 14-6-2019
  */
-public class Person implements Serializable, Comparable, IEventFilter {
+public class Person implements Serializable, Comparable, IEventFilter, IFilterable {
+
+    public static final long serialVersionUID = -3746563900204727899L;
 
     public Person(String fn, String ln) {
         this.firstName = Preconditions.checkNotNull(fn);
         this.lastName = Preconditions.checkNotNull(ln);
         this.groups = Sets.newHashSet();
         this.events = Sets.newTreeSet();
+        this.filters = Sets.newHashSet();
     }
 
     private String firstName, lastName;
     private Set<Group> groups;
+    private Set<AbstractFilter> filters;
     public transient Set<Event> events;
 
     public long getDuration(){
-        return events.stream().mapToLong(Event::getDuration).sum();
+        return getDuration(true);
+    }
+
+    public long getDuration(final boolean publicE){
+        return events.stream()
+                .filter(e -> e.everyone == publicE)
+                .mapToLong(Event::getDuration)
+                .sum();
     }
 
     public void setName(String firstName, String lastName){
@@ -68,8 +81,8 @@ public class Person implements Serializable, Comparable, IEventFilter {
     }
 
     @Override
-    public boolean canParticipateIn(Event event){
-        return getGroups().stream().allMatch(g -> g.canParticipateIn(event));
+    public boolean canParticipateIn(final Event event){
+        return getGroups().stream().allMatch(g -> g.canParticipateIn(event)) && getFilters().stream().allMatch(f -> f.canParticipateIn(event));
     }
 
     @Override
@@ -103,5 +116,10 @@ public class Person implements Serializable, Comparable, IEventFilter {
     }
 
     public static BiConsumer<Group, Person> groupInjector, groupRemover;
+
+    @Override
+    public Set<AbstractFilter> getFilters() {
+        return filters;
+    }
 
 }

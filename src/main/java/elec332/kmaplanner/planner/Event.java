@@ -2,6 +2,7 @@ package elec332.kmaplanner.planner;
 
 import com.google.common.base.Preconditions;
 import elec332.kmaplanner.persons.Person;
+import elec332.kmaplanner.util.ITimeSpan;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -10,7 +11,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by Elec332 on 13-8-2019
  */
-public class Event implements Serializable, Comparable<Event>, Cloneable {
+public class Event implements Serializable, Comparable<Event>, Cloneable, ITimeSpan {
+
+    public static final long serialVersionUID = -3746563830174761046L;
 
     public Event(String name, Date start, Date end, int requiredPersons){
         this.name = Preconditions.checkNotNull(name);
@@ -30,15 +33,11 @@ public class Event implements Serializable, Comparable<Event>, Cloneable {
     public boolean everyone;
 
     public long getDuration(){
-        return TimeUnit.MINUTES.convert(Math.abs(end.getTime() - start.getTime()), TimeUnit.MILLISECONDS);
+        return getDuration(TimeUnit.MINUTES);
     }
 
     public int getRequiredPersons() {
         return requiredPersons;
-    }
-
-    public boolean isDuring(Event event){
-        return !end.before(event.start);
     }
 
     public boolean canPersonParticipate(Person person){
@@ -71,6 +70,16 @@ public class Event implements Serializable, Comparable<Event>, Cloneable {
             //Impossible
         }
         throw new RuntimeException();
+    }
+
+    @Override
+    public Date start() {
+        return start;
+    }
+
+    @Override
+    public Date end() {
+        return end;
     }
 
 }

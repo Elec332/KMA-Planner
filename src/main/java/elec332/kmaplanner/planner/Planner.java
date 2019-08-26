@@ -42,11 +42,19 @@ public class Planner {
         return events;
     }
 
+    @SuppressWarnings("unused")
     public Date getFirstDate(){
         if (getEvents().isEmpty()){
             return new Date();
         }
         return (Date) getEvents().first().start.clone();
+    }
+
+    public Date getLastDate(){
+        if (getEvents().isEmpty()){
+            return new Date();
+        }
+        return (Date) getEvents().last().end.clone();
     }
 
     public void plan(){
@@ -61,7 +69,7 @@ public class Planner {
         }
         Roster roster = new Roster(this);
         SolverFactory<Roster> factory = SolverFactory.createFromXmlResource("config.xml");
-        factory.getSolverConfig().getTerminationConfig().setUnimprovedSecondsSpentLimit(10L);
+        factory.getSolverConfig().getTerminationConfig().setUnimprovedSecondsSpentLimit(20L);
         factory.getSolverConfig().setRandomSeed(seed);
         Solver<Roster> solver = factory.buildSolver();
         Roster solution = solver.solve(roster);

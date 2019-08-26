@@ -1,12 +1,10 @@
 package elec332.kmaplanner.gui;
 
-import com.google.common.base.Preconditions;
-import elec332.kmaplanner.util.IOUtils;
 import elec332.kmaplanner.util.JPanelBase;
+import elec332.kmaplanner.util.ProjectFileChooser;
 import elec332.kmaplanner.util.SwingUtils;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -45,16 +43,9 @@ public class StartupFileSelector extends JPanelBase implements ActionListener {
             projFile = null;
             SwingUtils.closeWindow(this);
         } else {
-            JFileChooser fc = new JFileChooser();
-            fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            fc.setCurrentDirectory(IOUtils.getExecFolder());
-            FileNameExtensionFilter xmlFilter = new FileNameExtensionFilter("KMAPlanner files (*.kp)", "kp");
-            fc.addChoosableFileFilter(xmlFilter);
-            fc.setFileFilter(xmlFilter);
-            fc.removeChoosableFileFilter(fc.getAcceptAllFileFilter());
-            int ret = fc.showOpenDialog(this);
-            if (ret == JFileChooser.APPROVE_OPTION) {
-                projFile = Preconditions.checkNotNull(fc.getSelectedFile());
+            File file = ProjectFileChooser.openFileChooser(this);
+            if (file != null){
+                projFile = file;
                 SwingUtils.closeWindow(this);
             }
         }

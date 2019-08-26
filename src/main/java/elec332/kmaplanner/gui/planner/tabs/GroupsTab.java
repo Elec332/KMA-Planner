@@ -3,6 +3,8 @@ package elec332.kmaplanner.gui.planner.tabs;
 import com.google.common.base.Strings;
 import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.group.GroupManager;
+import elec332.kmaplanner.gui.planner.filter.JFilterPanel;
+import elec332.kmaplanner.util.DialogHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -28,7 +30,7 @@ public class GroupsTab extends JPanel {
         list.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         list.setLayoutOrientation(JList.VERTICAL);
         list.setFixedCellWidth(30 * 10);
-        list.setFixedCellHeight(30);
+        list.setFixedCellHeight(20);
         JScrollPane listScroller = new JScrollPane(list);
         centerPanel.add(listScroller);
         add(centerPanel, BorderLayout.CENTER);
@@ -79,14 +81,23 @@ public class GroupsTab extends JPanel {
         top.add(new JLabel("Name: "));
         JTextField name = new JTextField(group.getName(), 20);
         top.add(name);
+
+        JCheckBox checkBox = new JCheckBox("Is main group? ");
+        checkBox.setSelected(group.isMainGroup());
+        top.add(checkBox);
+
         dialog.add(top, BorderLayout.NORTH);
 
-        int ret = JOptionPane.showConfirmDialog(GroupsTab.this, dialog, "Edit Group", JOptionPane.OK_CANCEL_OPTION);
-        if (ret == JOptionPane.OK_OPTION){
+        dialog.add(new JFilterPanel(group), BorderLayout.CENTER);
+
+        if (DialogHelper.showDialog(GroupsTab.this, dialog, "Edit Group")){
             if (!newG) {
+                group.setMain(checkBox.isSelected());
                 groupManager.updateGroup(group, group1 -> group1.setName(name.getText()));
             } else {
                 Group group1 = new Group(name.getText());
+                group1.setMain(checkBox.isSelected());
+                group1.getFilters().addAll(group.getFilters());
                 if (Strings.isNullOrEmpty(group1.getName()) || !groupManager.addGroupNice(group1)){
                     JOptionPane.showMessageDialog(GroupsTab.this, "Failed to add Group! (Perhaps an invalid/duplicate name?)", "Error adding Group", JOptionPane.ERROR_MESSAGE);
                     return;

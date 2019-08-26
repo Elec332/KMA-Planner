@@ -1,15 +1,19 @@
 package elec332.kmaplanner.gui.planner.tabs;
 
 import com.google.common.base.Strings;
+import elec332.kmaplanner.io.ProjectReader;
 import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.Planner;
 import elec332.kmaplanner.util.DateChooserPanel;
+import elec332.kmaplanner.util.DialogHelper;
+import elec332.kmaplanner.util.ProjectFileChooser;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Date;
+import java.io.File;
+import java.util.Set;
 
 /**
  * Created by Elec332 on 13-8-2019
@@ -30,6 +34,7 @@ public class PlannerTab extends JPanel {
         JButton edit = new JButton("Edit");
         JButton add = new JButton("Add");
         JButton remove = new JButton("Remove");
+        JButton import_ = new JButton("Import events");
         JButton plan = new JButton("Plan!");
         list.addMouseListener(new MouseAdapter() {
 
@@ -41,7 +46,7 @@ public class PlannerTab extends JPanel {
             }
 
         });
-        add.addActionListener(a -> editEvent(new Event("", planner.getFirstDate(), planner.getFirstDate(), 0), true));
+        add.addActionListener(a -> editEvent(new Event("", planner.getLastDate(), planner.getLastDate(), 0), true));
         edit.addActionListener(a -> editEvent(list.getSelectedValue(), false));
         remove.addActionListener(a -> {
             Event e = list.getSelectedValue();
@@ -50,10 +55,26 @@ public class PlannerTab extends JPanel {
                 updateList();
             }
         });
+        import_.addActionListener(a -> {
+            File file = ProjectFileChooser.openFileChooser(PlannerTab.this);
+            if (file != null){
+                Set<Event> newEvents = null;
+                try {
+                    newEvents = new ProjectReader(file).read().getEvents();
+                } catch (Exception e){
+                    JOptionPane.showMessageDialog(PlannerTab.this, "Failed to import events from file: " + file.getAbsolutePath(), "Import failed!", JOptionPane.ERROR_MESSAGE);
+                }
+                if (newEvents != null){
+                    planner.getEvents().addAll(newEvents);
+                    updateList();
+                }
+            }
+        });
         plan.addActionListener(a -> planner.plan());
         bottom.add(add);
         bottom.add(edit);
         bottom.add(remove);
+        bottom.add(import_);
         bottom.add(plan);
         add(bottom, BorderLayout.SOUTH);
     }
@@ -105,8 +126,7 @@ public class PlannerTab extends JPanel {
 
         panel.add(center);
 
-        int ret = JOptionPane.showConfirmDialog(PlannerTab.this, panel, "Edit Event", JOptionPane.OK_CANCEL_OPTION);
-        if (ret == JOptionPane.OK_OPTION){
+        if (DialogHelper.showDialog(PlannerTab.this, panel, "Edit Event")){
             if (!start.getDate().before(end.getDate()) && !start.getDate().equals(end.getDate())){
                 JOptionPane.showMessageDialog(PlannerTab.this, "End date must be after the starting date!", "Invalid date!", JOptionPane.ERROR_MESSAGE);
             } else if (!newE) {

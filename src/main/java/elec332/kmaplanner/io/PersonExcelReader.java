@@ -3,6 +3,7 @@ package elec332.kmaplanner.io;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.group.GroupManager;
 import elec332.kmaplanner.persons.Person;
 import org.apache.commons.lang3.tuple.Pair;
@@ -27,7 +28,6 @@ public class PersonExcelReader {
 
     public static Set<Person> readPersons(Workbook workbook, String group, GroupManager groupManager, Options... optionz){
         Set<Person> ret = Sets.newTreeSet();
-        System.out.println("Read: "+workbook);
         if (workbook == null){
             return ret;
         }
@@ -36,18 +36,18 @@ public class PersonExcelReader {
                 .collect(Collectors.toSet());
         for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
             Sheet sheet = workbook.getSheetAt(i);
-            System.out.println(sheet);
             List<Pair<Person, List<String>>> data = readSheet(sheet);
             data.forEach(d -> {
                 Person p = d.getLeft();
-                System.out.println(p);
                 d.getRight().forEach(n -> p.addToGroup(groupManager.getOrCreate(n)));
                 if (options.contains(Options.USE_SHEET_GROUP)){
                     String g = sheet.getSheetName();
                     if (options.contains(Options.MERGE_FILE_SHEET_NAME) && !Strings.isNullOrEmpty(group)){
                         g = group + " " + g;
                     }
-                    p.addToGroup(groupManager.getOrCreate(g));
+                    Group group1 = groupManager.getOrCreate(g);
+                    group1.setMain(true);
+                    p.addToGroup(group1);
                 }
                 if (options.contains(Options.USE_FILE_GROUP) && !Strings.isNullOrEmpty(group)){
                     p.addToGroup(groupManager.getOrCreate(group));
