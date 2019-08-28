@@ -52,6 +52,10 @@ public class Group implements Comparable<Group>, IEventFilter, IDataSerializable
         return persons.contains(person);
     }
 
+    public int getGroupSize(){
+        return persons_.size();
+    }
+
     public void setName(String name) {
         this.name = name;
     }

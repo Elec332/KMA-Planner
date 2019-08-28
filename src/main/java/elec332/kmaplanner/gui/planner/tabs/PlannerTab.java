@@ -1,18 +1,22 @@
 package elec332.kmaplanner.gui.planner.tabs;
 
 import com.google.common.base.Strings;
+import elec332.kmaplanner.Main;
 import elec332.kmaplanner.io.ProjectReader;
 import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.Planner;
+import elec332.kmaplanner.planner.opta.Roster;
 import elec332.kmaplanner.util.DateChooserPanel;
 import elec332.kmaplanner.util.DialogHelper;
-import elec332.kmaplanner.util.ProjectFileChooser;
+import elec332.kmaplanner.util.FileChooserHelper;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.Set;
 
 /**
@@ -36,6 +40,7 @@ public class PlannerTab extends JPanel {
         JButton remove = new JButton("Remove");
         JButton import_ = new JButton("Import events");
         JButton plan = new JButton("Plan!");
+        JButton continueB = new JButton("Continue planning!");
         list.addMouseListener(new MouseAdapter() {
 
             @Override
@@ -56,8 +61,10 @@ public class PlannerTab extends JPanel {
             }
         });
         import_.addActionListener(a -> {
-            File file = ProjectFileChooser.openFileChooser(PlannerTab.this);
+            File file = FileChooserHelper.openFileProjectChooser(PlannerTab.this);
             if (file != null) {
+                planner.saveProject();
+                file = Main.checkFile(file, true, ".kp");
                 Set<Event> newEvents = null;
                 try {
                     newEvents = new ProjectReader(file).read().getEvents();
@@ -70,12 +77,32 @@ public class PlannerTab extends JPanel {
                 }
             }
         });
-        plan.addActionListener(a -> planner.plan());
+        plan.addActionListener(a -> planner.plan(PlannerTab.this));
+        continueB.addActionListener(a -> {
+            planner.saveProject();
+            File file = FileChooserHelper.openFileChooser(PlannerTab.this, new FileNameExtensionFilter("KMAPlanner Assignments file (*.kpa)", "kpa"));
+            if (file != null){
+                file = Main.checkFile(file, true, ".kpa");
+                Roster roster;
+                try {
+                    FileInputStream fis = new FileInputStream(file);
+                    roster = Roster.readRoster(fis, planner);
+                    fis.close();
+                } catch (Exception e){
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(PlannerTab.this, "Failed to import assignments from file: " + file.getAbsolutePath(), "Import failed!", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                planner.plan(PlannerTab.this, () -> roster);
+            }
+        });
+
         bottom.add(add);
         bottom.add(edit);
         bottom.add(remove);
         bottom.add(import_);
         bottom.add(plan);
+        bottom.add(continueB);
         add(bottom, BorderLayout.SOUTH);
     }
 

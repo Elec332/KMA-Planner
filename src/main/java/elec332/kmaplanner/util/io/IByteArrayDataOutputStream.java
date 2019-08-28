@@ -5,6 +5,7 @@ import java.io.DataOutput;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -53,6 +54,8 @@ public interface IByteArrayDataOutputStream extends DataOutput {
 
     @Override
     void writeUTF(@Nonnull String s);
+
+    void writeUUID(UUID uuid);
 
     @Override
     @Deprecated

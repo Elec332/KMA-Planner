@@ -5,11 +5,11 @@ import java.io.File;
 /**
  * Created by Elec332 on 13-8-2019
  */
-public class IOUtils {
+public class IOHelper {
 
     public static File getExecFolder() {
         try {
-            return new File(IOUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile();
+            return new File(IOHelper.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

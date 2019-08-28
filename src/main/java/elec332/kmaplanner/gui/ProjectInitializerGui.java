@@ -3,12 +3,11 @@ package elec332.kmaplanner.gui;
 import com.google.common.base.Preconditions;
 import elec332.kmaplanner.io.ProjectSettings;
 import elec332.kmaplanner.util.JPanelBase;
-import elec332.kmaplanner.util.ProjectFileChooser;
-import elec332.kmaplanner.util.SwingUtils;
+import elec332.kmaplanner.util.FileChooserHelper;
+import elec332.kmaplanner.util.SwingHelper;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.util.Random;
 
 /**
  * Created by Elec332 on 14-6-2019
@@ -17,11 +16,10 @@ public class ProjectInitializerGui extends JPanelBase {
 
     public ProjectInitializerGui() {
         this.projectData = new ProjectSettings();
-        projectData.seed = new Random().nextLong(); //TODO
-        File file = ProjectFileChooser.openFileChooser(this);
+        File file = FileChooserHelper.openFileProjectChooser(this);
         if (file != null) {
             projFile = file;
-            SwingUtils.closeWindow(this);
+            SwingHelper.closeWindow(this);
         } else {
             System.exit(0); //todo
         }

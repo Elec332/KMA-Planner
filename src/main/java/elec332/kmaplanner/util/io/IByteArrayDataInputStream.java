@@ -3,6 +3,7 @@ package elec332.kmaplanner.util.io;
 import javax.annotation.Nonnull;
 import java.io.DataInput;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -60,6 +61,8 @@ public interface IByteArrayDataInputStream extends DataInput {
     @Nonnull
     @Override
     String readUTF();
+
+    UUID readUUID();
 
     int availableBytes();
 

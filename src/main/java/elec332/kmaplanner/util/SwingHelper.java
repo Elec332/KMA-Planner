@@ -5,7 +5,7 @@ import javax.swing.*;
 /**
  * Created by Elec332 on 13-8-2019
  */
-public class SwingUtils {
+public class SwingHelper {
 
     public static void closeWindow(JPanelBase component) {
         /*component.show(false);

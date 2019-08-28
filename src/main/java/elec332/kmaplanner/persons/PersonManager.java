@@ -7,8 +7,11 @@ import elec332.kmaplanner.planner.Event;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by Elec332 on 14-6-2019
@@ -46,14 +49,11 @@ public final class PersonManager {
 
     public void addPerson(Person person) {
         if (!addPersonNice(person)) {
-            System.out.println("waa");
-            System.out.println(persons.size());
-            System.out.println(persons);
-            System.out.println(person);
             throw new IllegalArgumentException();
         }
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean addPersonNice(Person person) {
         return persons.add(person);
     }
@@ -69,6 +69,10 @@ public final class PersonManager {
     @Nonnull
     public Set<Person> getPersons() {
         return this.persons_;
+    }
+
+    public Map<String, Person> makeNameMap(){
+        return getPersons().stream().collect(Collectors.toMap(Person::toString, Function.identity()));
     }
 
 }

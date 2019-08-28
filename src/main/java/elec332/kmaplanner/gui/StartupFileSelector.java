@@ -1,8 +1,8 @@
 package elec332.kmaplanner.gui;
 
 import elec332.kmaplanner.util.JPanelBase;
-import elec332.kmaplanner.util.ProjectFileChooser;
-import elec332.kmaplanner.util.SwingUtils;
+import elec332.kmaplanner.util.FileChooserHelper;
+import elec332.kmaplanner.util.SwingHelper;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -41,12 +41,12 @@ public class StartupFileSelector extends JPanelBase implements ActionListener {
         didSomething = true;
         if (e.getActionCommand().equals(NEW)) {
             projFile = null;
-            SwingUtils.closeWindow(this);
+            SwingHelper.closeWindow(this);
         } else {
-            File file = ProjectFileChooser.openFileChooser(this);
+            File file = FileChooserHelper.openFileProjectChooser(this);
             if (file != null) {
                 projFile = file;
-                SwingUtils.closeWindow(this);
+                SwingHelper.closeWindow(this);
             }
         }
     }

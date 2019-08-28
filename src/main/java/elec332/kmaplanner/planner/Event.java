@@ -8,6 +8,7 @@ import elec332.kmaplanner.util.io.IByteArrayDataOutputStream;
 import elec332.kmaplanner.util.io.IDataSerializable;
 
 import java.util.Date;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -25,12 +26,14 @@ public class Event implements IDataSerializable, Comparable<Event>, Cloneable, I
         this.start = start;
         this.end = end;
         this.requiredPersons = requiredPersons;
+        this.uuid = UUID.randomUUID();
     }
 
     public String name;
     public Date start, end;
     public int requiredPersons;
     public boolean everyone;
+    private UUID uuid;
 
     public long getDuration() {
         return getDuration(TimeUnit.MINUTES);
@@ -65,7 +68,9 @@ public class Event implements IDataSerializable, Comparable<Event>, Cloneable, I
     @Override
     public Event clone() {
         try {
-            return (Event) super.clone();
+            Event ret = (Event) super.clone();
+            ret.uuid = uuid; //maybe?
+            return ret;
         } catch (Exception e) {
             //Impossible
         }
@@ -82,6 +87,10 @@ public class Event implements IDataSerializable, Comparable<Event>, Cloneable, I
         return end;
     }
 
+    public UUID getUuid(){
+        return uuid;
+    }
+
     @Override
     public void writeObject(IByteArrayDataOutputStream stream) {
         stream.writeUTF(name);
@@ -89,6 +98,7 @@ public class Event implements IDataSerializable, Comparable<Event>, Cloneable, I
         stream.writeLong(end.getTime());
         stream.writeInt(requiredPersons);
         stream.writeBoolean(everyone);
+        stream.writeUUID(uuid);
     }
 
     @Override
@@ -98,6 +108,9 @@ public class Event implements IDataSerializable, Comparable<Event>, Cloneable, I
         end = new Date(stream.readLong());
         requiredPersons = stream.readInt();
         everyone = stream.readBoolean();
+        if (stream.availableBytes() > 0){
+            uuid = stream.readUUID();
+        }
     }
 
 }

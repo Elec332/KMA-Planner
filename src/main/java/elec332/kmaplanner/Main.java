@@ -10,12 +10,13 @@ import elec332.kmaplanner.io.ProjectSettings;
 import elec332.kmaplanner.persons.PersonManager;
 import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.Planner;
-import elec332.kmaplanner.util.SwingUtils;
+import elec332.kmaplanner.util.SwingHelper;
 import elec332.kmaplanner.util.UpdatableTreeSet;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.util.stream.Stream;
 
 /**
  * Created by Elec332 on 14-6-2019
@@ -55,7 +56,7 @@ public class Main {
     }
 
     private static void startProgram() {
-        StartupFileSelector startupFileSelector = SwingUtils.openPanelAsDialog(new StartupFileSelector(), "Start");
+        StartupFileSelector startupFileSelector = SwingHelper.openPanelAsDialog(new StartupFileSelector(), "Start");
         if (startupFileSelector.shouldExit()) {
             System.exit(0);
         }
@@ -68,11 +69,11 @@ public class Main {
         ProjectReader projectReader;
         try {
             if (projFile == null) {
-                ProjectInitializerGui init = SwingUtils.openPanelAsDialog(new ProjectInitializerGui(), "Choose project location");
-                projectReader = new ProjectReader(checkFile(init.getProjectFile(), false), init.getProjectData());
+                ProjectInitializerGui init = SwingHelper.openPanelAsDialog(new ProjectInitializerGui(), "Choose project location");
+                projectReader = new ProjectReader(checkFile(init.getProjectFile(), false, ".kp"), init.getProjectData());
                 projectReader.write(personManager, groupManager, events);
             } else {
-                projectReader = new ProjectReader(checkFile(projFile, true)).read();
+                projectReader = new ProjectReader(checkFile(projFile, true, ".kp")).read();
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -83,18 +84,22 @@ public class Main {
         personManager.load(projectReader);
         events.addAll(projectReader.getEvents());
 
-        Planner planner = new Planner(personManager, groupManager, events, projectData);
+        Runnable save = () -> {
+            try {
+                projectReader.write(personManager, groupManager, events);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+
+        Planner planner = new Planner(personManager, groupManager, events, projectData, save);
         planner.initialize();
-        SwingUtils.openPanelAsDialog(new PlannerGuiMain(planner), "KMAPlanner");
-        try {
-            projectReader.write(personManager, groupManager, events);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        SwingHelper.openPanelAsDialog(new PlannerGuiMain(planner), "KMAPlanner");
+        save.run();
         System.exit(0);
     }
 
-    private static File checkFile(File projFile, boolean load) {
+    public static File checkFile(File projFile, boolean load, String extension) {
         String fName = projFile.getAbsolutePath();
         int fsl = fName.lastIndexOf(File.separatorChar);
         String pureFileName = fName.substring(fsl + 1);
@@ -107,8 +112,8 @@ public class Main {
             JOptionPane.showMessageDialog(new JFrame(), "Cannot enter empty file name!", "Failed to open Project", JOptionPane.ERROR_MESSAGE);
             System.exit(0);
         }
-        if (!pureFileName.endsWith(".kp")) {
-            pureFileName += ".kp";
+        if (!pureFileName.endsWith(extension)) {
+            pureFileName += extension;
         }
         projFile = new File(preFile + File.separator + pureFileName);
         if ((projFile.exists() && !load) || (load && !projFile.exists())) {

@@ -42,7 +42,7 @@ public class PersonExcelReader {
                 d.getRight().forEach(n -> p.addToGroup(groupManager.getOrCreate(n)));
                 if (options.contains(Options.USE_SHEET_GROUP)) {
                     String g = sheet.getSheetName();
-                    if (options.contains(Options.MERGE_FILE_SHEET_NAME) && !Strings.isNullOrEmpty(group)) {
+                    if (options.contains(Options.MERGE_FILE_SHEET_NAME) && !Strings.isNullOrEmpty(group) || groupManager.getGroup(g) != null) {
                         g = group + " " + g;
                     }
                     Group group1 = groupManager.getOrCreate(g);
@@ -66,8 +66,8 @@ public class PersonExcelReader {
             List<String> groups = Lists.newArrayList();
             for (int i = 2; i < row.getLastCellNum(); i++) {
                 String str = row.getCell(i).getStringCellValue();
-                if (!Strings.isNullOrEmpty(str)) {
-                    groups.add(str);
+                if (!Strings.isNullOrEmpty(str) && !Strings.isNullOrEmpty(str.trim())) {
+                    groups.add(str.trim());
                 }
             }
             ret.add(Pair.of(new Person(fn, ln), groups));

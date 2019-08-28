@@ -9,6 +9,7 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -154,6 +155,12 @@ public class ByteArrayDataOutputStream implements IByteArrayDataOutputStream {
         } catch (IOException impossible) {
             throw new AssertionError(impossible);
         }
+    }
+
+    @Override
+    public void writeUUID(UUID uuid) {
+        writeLong(uuid.getMostSignificantBits());
+        writeLong(uuid.getLeastSignificantBits());
     }
 
     @Override

@@ -7,6 +7,7 @@ import javax.annotation.Nonnull;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -169,6 +170,13 @@ public class ByteArrayDataInputStream implements IByteArrayDataInputStream {
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    @Override
+    public UUID readUUID() {
+        long msb = readLong();
+        long lsb = readLong();
+        return new UUID(msb, lsb);
     }
 
     @Override

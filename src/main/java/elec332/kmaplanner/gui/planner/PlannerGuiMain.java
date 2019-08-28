@@ -26,7 +26,7 @@ public class PlannerGuiMain extends JPanelBase {
         GroupsTab groupsTab = new GroupsTab(planner.getGroupManager(), usersTab::updateGroups);
         tabbedPane.addTab("Groups", groupsTab);
         usersTab.setGroupTab(groupsTab);
-        tabbedPane.addTab("Settings", new SettingsTab(planner.getSettings()));
+        tabbedPane.addTab("Settings", new SettingsTab(planner.getSettings(), planner::saveProject));
 
         add(tabbedPane);
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);

@@ -2,6 +2,8 @@
 <solver>
     <scanAnnotatedClasses/>
 
+    <environmentMode>FAST_ASSERT</environmentMode>
+
     <scoreDirectorFactory>
         <easyScoreCalculatorClass>elec332.kmaplanner.planner.opta.RosterScoreCalculator</easyScoreCalculatorClass>
     </scoreDirectorFactory>

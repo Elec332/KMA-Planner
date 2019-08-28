@@ -29,6 +29,14 @@ public class GroupManager {
             return true;
         }
 
+        @Override
+        public int compareTo(@Nonnull Group o) {
+            if (o == EVERYONE){
+                return 0;
+            }
+            return -1;
+        }
+
     };
 
     private final Set<Group> groups, groups_;

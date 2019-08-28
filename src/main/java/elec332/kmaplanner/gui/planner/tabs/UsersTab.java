@@ -9,7 +9,7 @@ import elec332.kmaplanner.io.PersonExcelReader;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.persons.PersonManager;
 import elec332.kmaplanner.util.DialogHelper;
-import elec332.kmaplanner.util.IOUtils;
+import elec332.kmaplanner.util.IOHelper;
 import elec332.kmaplanner.util.JCheckBoxList;
 
 import javax.swing.*;
@@ -220,7 +220,7 @@ public class UsersTab extends JPanel {
         fileB.addActionListener(a -> {
             JFileChooser fc = new JFileChooser();
             fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            fc.setCurrentDirectory(IOUtils.getExecFolder());
+            fc.setCurrentDirectory(IOHelper.getExecFolder());
             FileNameExtensionFilter f = new FileNameExtensionFilter("Excel 2007 files (*.xlsx)", "xlsx");
             fc.addChoosableFileFilter(f);
             fc.setFileFilter(f);
@@ -236,9 +236,10 @@ public class UsersTab extends JPanel {
         });
         dialog.add(tp, BorderLayout.NORTH);
         JPanel middle = new JPanel(new GridLayout(3, 1));
-        JCheckBox usg = new JCheckBox(PersonExcelReader.Options.USE_SHEET_GROUP.toString());
-        JCheckBox ufg = new JCheckBox(PersonExcelReader.Options.USE_FILE_GROUP.toString());
-        JCheckBox mfsn = new JCheckBox(PersonExcelReader.Options.MERGE_FILE_SHEET_NAME.toString());
+        JCheckBox usg = new JCheckBox(PersonExcelReader.Options.USE_SHEET_GROUP.toString(), true);
+        JCheckBox ufg = new JCheckBox(PersonExcelReader.Options.USE_FILE_GROUP.toString(), true);
+
+        JCheckBox mfsn = new JCheckBox(PersonExcelReader.Options.MERGE_FILE_SHEET_NAME.toString(), true);
         middle.add(usg);
         middle.add(ufg);
         middle.add(mfsn);
@@ -249,7 +250,7 @@ public class UsersTab extends JPanel {
         JTextField name = new JTextField(15);
         btm.add(name);
         dialog.add(btm, BorderLayout.SOUTH);
-
+        name.setEnabled(!ufg.isSelected());
         String[] lastName = {""};
 
         ufg.addActionListener(a -> {

@@ -10,13 +10,16 @@ import java.io.File;
 /**
  * Created by Elec332 on 24-8-2019
  */
-public class ProjectFileChooser {
+public class FileChooserHelper {
 
-    public static File openFileChooser(Component parent) {
+    public static File openFileProjectChooser(Component parent){
+        return openFileChooser(parent, new FileNameExtensionFilter("KMAPlanner files (*.kp)", "kp"));
+    }
+
+    public static File openFileChooser(Component parent, FileNameExtensionFilter kpFilter) {
         JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        fc.setCurrentDirectory(IOUtils.getExecFolder());
-        FileNameExtensionFilter kpFilter = new FileNameExtensionFilter("KMAPlanner files (*.kp)", "kp");
+        fc.setCurrentDirectory(IOHelper.getExecFolder());
         fc.addChoosableFileFilter(kpFilter);
         fc.setFileFilter(kpFilter);
         fc.removeChoosableFileFilter(fc.getAcceptAllFileFilter());

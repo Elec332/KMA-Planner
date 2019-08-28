@@ -36,12 +36,12 @@ public class Person implements Comparable, IEventFilter, IFilterable, IDataSeria
     public transient Set<Event> events;
 
     public long getDuration() {
-        return getDuration(true);
+        return getDuration(false);
     }
 
     public long getDuration(final boolean publicE) {
         return events.stream()
-                .filter(e -> e.everyone == publicE)
+                .filter(e -> publicE || !e.everyone)
                 .mapToLong(Event::getDuration)
                 .sum();
     }
@@ -53,6 +53,9 @@ public class Person implements Comparable, IEventFilter, IFilterable, IDataSeria
 
     public Person addToGroup(Group group) {
         Preconditions.checkNotNull(group);
+        if (group.isMainGroup() && groups.stream().anyMatch(Group::isMainGroup)){
+            return this; //Nope
+        }
         if (groups.contains(group)) {
             return this;
         }
