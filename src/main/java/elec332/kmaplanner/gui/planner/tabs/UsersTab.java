@@ -9,7 +9,7 @@ import elec332.kmaplanner.io.PersonExcelReader;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.persons.PersonManager;
 import elec332.kmaplanner.util.DialogHelper;
-import elec332.kmaplanner.util.IOHelper;
+import elec332.kmaplanner.util.FileHelper;
 import elec332.kmaplanner.util.JCheckBoxList;
 
 import javax.swing.*;
@@ -220,7 +220,7 @@ public class UsersTab extends JPanel {
         fileB.addActionListener(a -> {
             JFileChooser fc = new JFileChooser();
             fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            fc.setCurrentDirectory(IOHelper.getExecFolder());
+            fc.setCurrentDirectory(FileHelper.getExecFolder());
             FileNameExtensionFilter f = new FileNameExtensionFilter("Excel 2007 files (*.xlsx)", "xlsx");
             fc.addChoosableFileFilter(f);
             fc.setFileFilter(f);

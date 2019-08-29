@@ -5,6 +5,7 @@ import elec332.kmaplanner.planner.Event;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
+import java.util.Date;
 import java.util.function.Consumer;
 
 /**
@@ -42,6 +43,11 @@ public class NeverFilter extends AbstractFilter {
     @Override
     public AbstractFilter copy() {
         return INSTANCE;
+    }
+
+    @Override
+    public long getSoftDuration(long duration, long avg, Date start, Date end) {
+        return avg;
     }
 
 }

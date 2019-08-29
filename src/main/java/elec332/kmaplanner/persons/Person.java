@@ -12,8 +12,10 @@ import elec332.kmaplanner.planner.IEventFilter;
 import elec332.kmaplanner.util.io.IByteArrayDataInputStream;
 import elec332.kmaplanner.util.io.IByteArrayDataOutputStream;
 import elec332.kmaplanner.util.io.IDataSerializable;
+import org.optaplanner.core.api.domain.lookup.PlanningId;
 
 import javax.annotation.Nonnull;
+import java.util.Date;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
@@ -28,19 +30,48 @@ public class Person implements Comparable, IEventFilter, IFilterable, IDataSeria
         this.groups = Sets.newHashSet();
         this.events = Sets.newTreeSet();
         this.filters = Sets.newHashSet();
+        this.plannerEvents = new ThreadLocal<>();
     }
 
     private String firstName, lastName;
     private Set<Group> groups;
     private Set<AbstractFilter> filters;
-    public transient Set<Event> events;
+    private transient ThreadLocal<Set<Event>> plannerEvents;
+    private transient Set<Event> events;
+
+    public long getSoftDuration(long avg, Date start, Date end) {
+        long duration = getDuration();
+        return duration + getGroups().stream()
+                .mapToLong(g -> g.getSoftDuration(duration, avg, start, end))
+                .sum() + getFilters().stream()
+                .mapToLong(f -> f.getSoftDuration(duration, avg, start, end))
+                .sum();
+    }
+
+    public synchronized Set<Event> getPlannerEvents() {
+        Set<Event> ret = plannerEvents.get();
+        if (ret == null) {
+            plannerEvents.set(ret = Sets.newHashSet());
+        }
+        return ret;
+    }
+
+    public void clearEvents() {
+        events.clear();
+        plannerEvents = new ThreadLocal<>();
+    }
+
+    //Not threadsafe version for printing stuff after the calculations are done
+    public Set<Event> getPrintableEvents() {
+        return events;
+    }
 
     public long getDuration() {
         return getDuration(false);
     }
 
     public long getDuration(final boolean publicE) {
-        return events.stream()
+        return getPlannerEvents().stream()
                 .filter(e -> publicE || !e.everyone)
                 .mapToLong(Event::getDuration)
                 .sum();
@@ -53,7 +84,7 @@ public class Person implements Comparable, IEventFilter, IFilterable, IDataSeria
 
     public Person addToGroup(Group group) {
         Preconditions.checkNotNull(group);
-        if (group.isMainGroup() && groups.stream().anyMatch(Group::isMainGroup)){
+        if (group.isMainGroup() && groups.stream().anyMatch(Group::isMainGroup)) {
             return this; //Nope
         }
         if (groups.contains(group)) {
@@ -106,6 +137,7 @@ public class Person implements Comparable, IEventFilter, IFilterable, IDataSeria
         return firstName.hashCode() + 31 * lastName.hashCode() + 31 * groups.hashCode() + 7 * events.hashCode();
     }*/
 
+    @PlanningId
     @Override
     public String toString() {
         return firstName + " " + lastName;

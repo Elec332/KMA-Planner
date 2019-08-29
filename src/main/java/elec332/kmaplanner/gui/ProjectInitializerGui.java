@@ -2,8 +2,8 @@ package elec332.kmaplanner.gui;
 
 import com.google.common.base.Preconditions;
 import elec332.kmaplanner.io.ProjectSettings;
-import elec332.kmaplanner.util.JPanelBase;
 import elec332.kmaplanner.util.FileChooserHelper;
+import elec332.kmaplanner.util.JPanelBase;
 import elec332.kmaplanner.util.SwingHelper;
 
 import javax.annotation.Nonnull;
@@ -21,7 +21,7 @@ public class ProjectInitializerGui extends JPanelBase {
             projFile = file;
             SwingHelper.closeWindow(this);
         } else {
-            System.exit(0); //todo
+            System.exit(0);
         }
     }
 

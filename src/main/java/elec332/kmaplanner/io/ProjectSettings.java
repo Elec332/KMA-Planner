@@ -31,11 +31,11 @@ public final class ProjectSettings implements IDataSerializable {
     public void readObject(IByteArrayDataInputStream stream) {
         this.seed = stream.readLong();
         sortingType = PersonSortingType.values()[stream.readByte()];
-        if (stream.availableBytes() > 0){
+        if (stream.availableBytes() > 0) {
             unimprovedSeconds = stream.readInt();
             timeDiffThreshold = stream.readInt();
         }
-        if (stream.availableBytes() > 0){
+        if (stream.availableBytes() > 0) {
             mainGroupFactor = stream.readInt();
         }
     }

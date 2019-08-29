@@ -1,5 +1,6 @@
 package elec332.kmaplanner.gui.planner.filter;
 
+import com.google.common.base.Strings;
 import elec332.kmaplanner.filters.AbstractFilter;
 import elec332.kmaplanner.filters.FilterManager;
 import elec332.kmaplanner.util.DialogHelper;
@@ -52,11 +53,24 @@ public class EditFilterDialog extends JPanel {
         middle.add(this.middle);
 
         JPanel top = new JPanel();
-        JComboBox<Supplier<AbstractFilter>> select = new JComboBox<>(filterModel);
+        JComboBox<Supplier<AbstractFilter>> select = new JComboBox<Supplier<AbstractFilter>>(filterModel) {
+
+            @Override
+            public String getToolTipText() {
+                Object sel = getSelectedItem();
+                if (sel == null) {
+                    return null;
+                }
+                return Strings.emptyToNull(FilterManager.INSTANCE.getDescription(sel.toString()));
+            }
+
+        };
+        ToolTipManager.sharedInstance().registerComponent(select);
         top.add(select);
         select.addActionListener(a -> {
             @SuppressWarnings("unchecked")
             Supplier<AbstractFilter> sel = (Supplier<AbstractFilter>) select.getSelectedItem();
+            select.setToolTipText("dummy");
             JPanel newPanel = null;
             if (sel == null) {
                 if (initNull) {

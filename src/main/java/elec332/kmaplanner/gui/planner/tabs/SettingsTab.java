@@ -66,20 +66,20 @@ public class SettingsTab extends JPanel {
             }
             try {
                 timeD = Integer.parseInt(timeDiffThr.getText());
-            } catch (Exception e){
+            } catch (Exception e) {
                 err += "Invalid time threshold ";
             }
             try {
                 unim = Integer.parseInt(unimp.getText());
-            } catch (Exception e){
+            } catch (Exception e) {
                 err += "Invalid unimproved time ";
             }
             try {
                 mgf = Integer.parseInt(mgs.getText());
-            } catch (Exception e){
+            } catch (Exception e) {
                 err += "Invalid group size ";
             }
-            if (!Strings.isNullOrEmpty(err)){
+            if (!Strings.isNullOrEmpty(err)) {
                 JOptionPane.showMessageDialog(this, err, "Invalid number", JOptionPane.ERROR_MESSAGE);
                 return;
             }

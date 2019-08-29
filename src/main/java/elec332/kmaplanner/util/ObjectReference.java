@@ -9,18 +9,22 @@ import java.util.function.UnaryOperator;
  */
 public class ObjectReference<T> implements Consumer<T>, Supplier<T> {
 
-    public ObjectReference(){
+    public ObjectReference() {
         this(null);
     }
 
-    public ObjectReference(T t){
+    public ObjectReference(T t) {
         this.object = t;
     }
 
     private T object;
 
-    public void use(UnaryOperator<T> func){
+    public void use(UnaryOperator<T> func) {
         object = func.apply(object);
+    }
+
+    public void set(T t) {
+        accept(t);
     }
 
     @Override

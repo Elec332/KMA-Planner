@@ -17,10 +17,10 @@ public class DefaultEventAssigner implements IInitialEventAssigner<Integer> {
     @Override
     public Integer assignPersonsTo(List<Assignment> assignments, Event event, List<Person> persons, Integer data, ProjectSettings settings) {
         int i = data;
-        for (Assignment assignment : assignments){
+        for (Assignment assignment : assignments) {
             assignment.person = persons.get(i);
             i++;
-            if (i >= persons.size()){
+            if (i >= persons.size()) {
                 i = 0;
             }
         }

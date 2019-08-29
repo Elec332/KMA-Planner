@@ -1,7 +1,7 @@
 package elec332.kmaplanner.util;
 
-import elec332.kmaplanner.planner.opta.helpers.assignment.DefaultEventAssigner;
 import elec332.kmaplanner.planner.opta.helpers.IInitialEventAssigner;
+import elec332.kmaplanner.planner.opta.helpers.assignment.DefaultEventAssigner;
 import elec332.kmaplanner.planner.opta.helpers.assignment.GroupEventAssigner;
 import elec332.kmaplanner.planner.opta.helpers.assignment.RandomEventAssigner;
 
@@ -11,7 +11,6 @@ import elec332.kmaplanner.planner.opta.helpers.assignment.RandomEventAssigner;
 public enum PersonSortingType {
 
     NAME {
-
         @Override
         public IInitialEventAssigner<?> createEventAssigner() {
             return new DefaultEventAssigner();
@@ -19,7 +18,6 @@ public enum PersonSortingType {
 
     },
     GROUP {
-
         @Override
         public IInitialEventAssigner<?> createEventAssigner() {
             return new GroupEventAssigner<>(new DefaultEventAssigner());
@@ -27,7 +25,6 @@ public enum PersonSortingType {
 
     },
     RANDOM {
-
         @Override
         public IInitialEventAssigner<?> createEventAssigner() {
             return new RandomEventAssigner();

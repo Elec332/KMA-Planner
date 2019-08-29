@@ -82,6 +82,22 @@ public class TimeFilter extends AbstractFilter implements ITimeSpan {
     }
 
     @Override
+    public long getSoftDuration(long duration, long avg, Date start, Date end) {
+        long ed = end.getTime() - start.getTime();
+        long fd = end().getTime() - start().getTime();
+        ed /= 10;
+        fd /= 10;
+        float div = (fd * 1f) / ed;
+        if (div < 0.33f) {
+            return 0;
+        }
+        if (div < 0.66f) {
+            return (long) (avg * (div * 0.66f));
+        }
+        return (long) (div * avg);
+    }
+
+    @Override
     public void writeObject(IByteArrayDataOutputStream stream) {
         super.writeObject(stream);
         stream.writeLong(start.getTime());

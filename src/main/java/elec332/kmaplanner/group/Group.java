@@ -7,19 +7,21 @@ import elec332.kmaplanner.filters.IFilterable;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.IEventFilter;
+import elec332.kmaplanner.planner.ISoftDuration;
 import elec332.kmaplanner.util.io.IByteArrayDataInputStream;
 import elec332.kmaplanner.util.io.IByteArrayDataOutputStream;
 import elec332.kmaplanner.util.io.IDataSerializable;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
 
 /**
  * Created by Elec332 on 14-6-2019
  */
-public class Group implements Comparable<Group>, IEventFilter, IDataSerializable, IFilterable {
+public class Group implements Comparable<Group>, IEventFilter, IDataSerializable, IFilterable, ISoftDuration {
 
     public Group(String name) {
         this.name = name;
@@ -48,11 +50,18 @@ public class Group implements Comparable<Group>, IEventFilter, IDataSerializable
         return getFilters().stream().allMatch(f -> f.canParticipateIn(event));
     }
 
+    @Override
+    public long getSoftDuration(long duration, long avg, Date start, Date end) {
+        return getFilters().stream()
+                .mapToLong(f -> f.getSoftDuration(duration, avg, start, end))
+                .sum();
+    }
+
     public boolean containsPerson(Person person) {
         return persons.contains(person);
     }
 
-    public int getGroupSize(){
+    public int getGroupSize() {
         return persons_.size();
     }
 

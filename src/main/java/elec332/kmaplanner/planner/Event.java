@@ -6,6 +6,7 @@ import elec332.kmaplanner.util.ITimeSpan;
 import elec332.kmaplanner.util.io.IByteArrayDataInputStream;
 import elec332.kmaplanner.util.io.IByteArrayDataOutputStream;
 import elec332.kmaplanner.util.io.IDataSerializable;
+import org.optaplanner.core.api.domain.lookup.PlanningId;
 
 import java.util.Date;
 import java.util.UUID;
@@ -33,6 +34,7 @@ public class Event implements IDataSerializable, Comparable<Event>, Cloneable, I
     public Date start, end;
     public int requiredPersons;
     public boolean everyone;
+    @PlanningId
     private UUID uuid;
 
     public long getDuration() {
@@ -87,7 +89,7 @@ public class Event implements IDataSerializable, Comparable<Event>, Cloneable, I
         return end;
     }
 
-    public UUID getUuid(){
+    public UUID getUuid() {
         return uuid;
     }
 
@@ -108,7 +110,7 @@ public class Event implements IDataSerializable, Comparable<Event>, Cloneable, I
         end = new Date(stream.readLong());
         requiredPersons = stream.readInt();
         everyone = stream.readBoolean();
-        if (stream.availableBytes() > 0){
+        if (stream.availableBytes() > 0) {
             uuid = stream.readUUID();
         }
     }

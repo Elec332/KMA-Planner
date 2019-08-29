@@ -61,8 +61,8 @@ public class PersonExcelReader {
     private static List<Pair<Person, List<String>>> readSheet(Sheet sheet) {
         List<Pair<Person, List<String>>> ret = Lists.newArrayList();
         sheet.rowIterator().forEachRemaining(row -> {
-            String fn = row.getCell(0).getStringCellValue();
-            String ln = row.getCell(1).getStringCellValue();
+            String fn = row.getCell(0).getStringCellValue().trim();
+            String ln = row.getCell(1).getStringCellValue().trim();
             List<String> groups = Lists.newArrayList();
             for (int i = 2; i < row.getLastCellNum(); i++) {
                 String str = row.getCell(i).getStringCellValue();

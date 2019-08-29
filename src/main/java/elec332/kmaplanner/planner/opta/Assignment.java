@@ -5,7 +5,10 @@ import elec332.kmaplanner.persons.PersonManager;
 import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.opta.helpers.AssignmentDifficultyComparator;
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
+import org.optaplanner.core.api.domain.lookup.PlanningId;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
+
+import java.util.UUID;
 
 /**
  * Created by Elec332 on 15-8-2019
@@ -14,16 +17,21 @@ import org.optaplanner.core.api.domain.variable.PlanningVariable;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class Assignment {
 
-    public Assignment() {
+    private Assignment() {
     }
 
     public Assignment(Event event) {
         this.event = event;
         this.person = PersonManager.NULL_PERSON;
+        this.identifier = UUID.randomUUID();
     }
 
     public Event event;
     public Person person;
+
+    @PlanningId
+    @SuppressWarnings("FieldCanBeLocal")
+    private UUID identifier;
 
     @PlanningVariable(valueRangeProviderRefs = {"persons"})
     public Person getPerson() {

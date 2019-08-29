@@ -12,14 +12,14 @@ import java.util.Set;
 
 /**
  * Created by Elec332 on 28-8-2019
- *
+ * <p>
  * Dunno why you would use this...
  */
 public class RandomEventAssigner implements IInitialEventAssigner<Random> {
 
     @Override
     public Random assignPersonsTo(List<Assignment> assignments, Event event, List<Person> persons, Random data, ProjectSettings settings) {
-        for (Assignment assignment : assignments){
+        for (Assignment assignment : assignments) {
             assignment.person = persons.get(data.nextInt(persons.size()));
         }
         return data;

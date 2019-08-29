@@ -71,7 +71,7 @@ public final class PersonManager {
         return this.persons_;
     }
 
-    public Map<String, Person> makeNameMap(){
+    public Map<String, Person> makeNameMap() {
         return getPersons().stream().collect(Collectors.toMap(Person::toString, Function.identity()));
     }
 

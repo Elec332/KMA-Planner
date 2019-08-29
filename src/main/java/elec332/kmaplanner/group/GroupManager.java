@@ -31,7 +31,7 @@ public class GroupManager {
 
         @Override
         public int compareTo(@Nonnull Group o) {
-            if (o == EVERYONE){
+            if (o == EVERYONE) {
                 return 0;
             }
             return -1;

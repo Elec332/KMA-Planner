@@ -8,11 +8,11 @@ import com.google.common.collect.Sets;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.persons.PersonManager;
 import elec332.kmaplanner.planner.Event;
-import elec332.kmaplanner.planner.print.DaySheetPrinter;
-import elec332.kmaplanner.planner.print.ExportPrinter;
 import elec332.kmaplanner.planner.Planner;
 import elec332.kmaplanner.planner.opta.helpers.IInitialEventAssigner;
-import elec332.kmaplanner.util.IOHelper;
+import elec332.kmaplanner.planner.print.DaySheetPrinter;
+import elec332.kmaplanner.planner.print.ExportPrinter;
+import elec332.kmaplanner.util.FileHelper;
 import elec332.kmaplanner.util.ObjectReference;
 import elec332.kmaplanner.util.io.DataInputStream;
 import elec332.kmaplanner.util.io.DataOutputStream;
@@ -65,10 +65,9 @@ public class Roster {
         events.forEach(event -> {
             int required = event.requiredPersons;
             Collection<Assignment> al1 = map.get(event);
-            if (required >= al1.size()){
+            if (required >= al1.size()) {
                 roster.assignments.addAll(al1);
-                if (required > al1.size()){
-                    System.out.println("Adding extra");
+                if (required > al1.size()) {
                     List<Assignment> eventAssignments = Lists.newArrayList();
                     for (int i = 0; i < required - al1.size(); i++) {
                         eventAssignments.add(new Assignment(event));
@@ -77,7 +76,6 @@ public class Roster {
                     roster.assignments.addAll(eventAssignments);
                 }
             } else {
-                System.out.println("Removing some...");
                 Iterator<Assignment> it = al1.iterator();
                 for (int i = 0; i < required; i++) {
                     roster.assignments.add(it.next());
@@ -104,7 +102,7 @@ public class Roster {
 
     }
 
-    private Roster(Planner planner){
+    private Roster(Planner planner) {
         this();
         this.planner = planner;
         persons.addAll(this.planner.getPersonManager().getPersons());
@@ -147,14 +145,17 @@ public class Roster {
     }
 
     public void apply() {
-        getPlanner().getPersonManager().getPersons().forEach(p -> p.events.clear());
+        getPlanner().getPersonManager().getPersons().forEach(Person::clearEvents);
         for (Assignment assignment : getAssignments()) {
-            assignment.person.events.add(assignment.event);
+            Person p = assignment.person;
+            Event e = assignment.event;
+            if (p.canParticipateIn(e)) {
+                p.getPrintableEvents().add(e);
+            }
         }
         planner.getEvents().stream()
                 .filter(e -> e.everyone)
-                .forEach(e -> planner.getPersonManager().getPersons().forEach(p -> p.events.add(e)));
-
+                .forEach(e -> planner.getPersonManager().getPersons().forEach(p -> p.getPrintableEvents().add(e)));
     }
 
     public void print() {
@@ -163,14 +164,14 @@ public class Roster {
         try {
             Workbook workbook = new XSSFWorkbook();
             ExportPrinter.printRoster(this, workbook);
-            File f = new File(IOHelper.getExecFolder(), "export.xlsx");
+            File f = new File(FileHelper.getExecFolder(), "export.xlsx");
             FileOutputStream fos = new FileOutputStream(f);
             workbook.write(fos);
             fos.close();
 
             workbook = new XSSFWorkbook();
             DaySheetPrinter.printRoster(this, workbook);
-            f = new File(IOHelper.getExecFolder(), "days.xlsx");
+            f = new File(FileHelper.getExecFolder(), "days.xlsx");
             fos = new FileOutputStream(f);
             workbook.write(fos);
             fos.close();
@@ -184,7 +185,7 @@ public class Roster {
         planner.getPersonManager().getPersons().forEach(p -> {
             System.out.println();
             System.out.println(p);
-            p.events.forEach(System.out::println);
+            p.getPrintableEvents().forEach(System.out::println);
             System.out.println();
         });
         System.out.println();
@@ -207,7 +208,7 @@ public class Roster {
 
     private static class AssignmentIOR implements Function<IByteArrayDataInputStream, Assignment> {
 
-        private AssignmentIOR(Planner planner){
+        private AssignmentIOR(Planner planner) {
             names = planner.getPersonManager().makeNameMap();
             events = planner.getEvents().stream().collect(Collectors.toMap(Event::getUuid, Function.identity()));
         }

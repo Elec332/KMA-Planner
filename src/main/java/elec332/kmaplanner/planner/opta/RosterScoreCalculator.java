@@ -7,14 +7,12 @@ import elec332.kmaplanner.io.ProjectSettings;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.persons.PersonManager;
 import elec332.kmaplanner.planner.Event;
-import elec332.kmaplanner.planner.Planner;
-import org.optaplanner.core.api.domain.solution.PlanningScore;
 import org.optaplanner.core.api.score.Score;
 import org.optaplanner.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
-import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
 import org.optaplanner.core.impl.score.director.easy.EasyScoreCalculator;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -29,8 +27,11 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
         int hardScore = 0;
         int mediumScore = 0;
         int softScore = 0;
-        roster.getPersons().forEach(p -> p.events.clear());
+        roster.getPersons().forEach(p -> p.getPlannerEvents().clear());
+        Date start = roster.getPlanner().getFirstDate();
+        Date end = roster.getPlanner().getLastDate();
         long avg = calculateAverage(roster);
+        avg *= 1.1f;
         for (Assignment assignment : roster.getAssignments()) {
 
             if (assignment.person == null || assignment.person == PersonManager.NULL_PERSON) {
@@ -38,7 +39,7 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
                 continue;
             }
 
-            if (assignment.person.events.contains(assignment.event)) {
+            if (assignment.person.getPlannerEvents().contains(assignment.event)) {
                 hardScore -= 50;
             }
 
@@ -50,12 +51,12 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
                 hardScore--;
             }
 
-            for (Event e : assignment.person.events) {
+            for (Event e : assignment.person.getPlannerEvents()) {
                 if (assignment.event.isDuring(e)) {
                     hardScore -= 11;
                 }
             }
-            assignment.person.events.add(assignment.event);
+            assignment.person.getPlannerEvents().add(assignment.event);
         }
 
         ProjectSettings settings = roster.getPlanner().getSettings();
@@ -64,15 +65,18 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
             if (person == PersonManager.NULL_PERSON) {
                 continue;
             }
-            long dur = person.getDuration();
+            long dur = person.getSoftDuration(avg, start, end);
             if (dur > (avg + settings.timeDiffThreshold)) {
                 softScore -= ((dur - avg) / 5);
             }
-            if (dur < (avg - settings.timeDiffThreshold)){
-                softScore -= ((avg - dur) / 5);
+            if (dur > (avg + settings.timeDiffThreshold * 2.5f)) {
+                softScore -= ((dur - avg) / 5) * 2;
             }
-            if (dur < avg / 2){ //This one is doing waaaay to little...
-                softScore -= (avg - dur) * 2;
+            if (dur < (avg - settings.timeDiffThreshold)) {
+                softScore -= (int) (((avg - dur) / 5f) * 1.5f);
+            }
+            if (dur < avg / 2) { //This one is doing waaaay to little...
+                softScore -= (avg - dur) * 5;
             }
         }
 
@@ -100,7 +104,7 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
         return HardMediumSoftScore.of(hardScore, mediumScore, softScore);
     }
 
-    public static long calculateAverage(Roster roster){
+    public static long calculateAverage(Roster roster) {
         long totTime = roster.getPlanner().getEvents().stream()
                 .filter(e -> !e.everyone)
                 .mapToLong(e -> e.getDuration() * e.getRequiredPersons())

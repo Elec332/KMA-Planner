@@ -14,12 +14,12 @@ import java.util.Set;
 
 /**
  * Created by Elec332 on 28-8-2019
- *
+ * <p>
  * Warning, very shite...
  */
 public class GroupEventAssigner<T> implements IInitialEventAssigner<T> {
 
-    public GroupEventAssigner(IInitialEventAssigner<T> def){
+    public GroupEventAssigner(IInitialEventAssigner<T> def) {
         defaultAssigner = def;
     }
 
@@ -27,13 +27,13 @@ public class GroupEventAssigner<T> implements IInitialEventAssigner<T> {
 
     @Override
     public T assignPersonsTo(List<Assignment> assignments, Event event, List<Person> persons, T data, ProjectSettings settings) {
-        if (event.requiredPersons > settings.mainGroupFactor * 10){
+        if (event.requiredPersons > settings.mainGroupFactor * 10) {
             return defaultAssigner.assignPersonsTo(assignments, event, persons, data, settings);
         } else {
             int groups = Math.max((int) Math.floor(event.requiredPersons / (settings.mainGroupFactor * 2.5f)), 1);
             int toDo = event.requiredPersons;
             Random rand = new Random((settings.seed / toDo) * groups);
-            if (event.requiredPersons != assignments.size()){
+            if (event.requiredPersons != assignments.size()) {
                 throw new IllegalArgumentException();
             }
             Iterator<Assignment> it = assignments.iterator();
@@ -46,9 +46,9 @@ public class GroupEventAssigner<T> implements IInitialEventAssigner<T> {
                         .orElseThrow(NullPointerException::new);
                 for (int j = 0; j < (last ? toDo : persPerGroup); j++) {
                     Person person = null;
-                    while (person == null){
+                    while (person == null) {
                         person = persons.get(rand.nextInt(persons.size()));
-                        if (!group.containsPerson(person)){
+                        if (!group.containsPerson(person)) {
                             person = null;
                         }
                     }
@@ -58,7 +58,7 @@ public class GroupEventAssigner<T> implements IInitialEventAssigner<T> {
                     }
                 }
             }
-            if (it.hasNext()){
+            if (it.hasNext()) {
                 throw new RuntimeException(event.requiredPersons + " " + groups + " " + persPerGroup + " " + toDo);
             }
             return data;

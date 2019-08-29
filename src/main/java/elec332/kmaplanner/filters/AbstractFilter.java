@@ -3,18 +3,20 @@ package elec332.kmaplanner.filters;
 import com.google.common.base.Strings;
 import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.IEventFilter;
+import elec332.kmaplanner.planner.ISoftDuration;
 import elec332.kmaplanner.util.io.IByteArrayDataInputStream;
 import elec332.kmaplanner.util.io.IByteArrayDataOutputStream;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.*;
+import java.util.Date;
 import java.util.function.Consumer;
 
 /**
  * Created by Elec332 on 15-8-2019
  */
-public abstract class AbstractFilter implements IEventFilter {
+public abstract class AbstractFilter implements IEventFilter, ISoftDuration {
 
     public AbstractFilter() {
         this.name = null;
@@ -66,6 +68,11 @@ public abstract class AbstractFilter implements IEventFilter {
 
     public void readObject(IByteArrayDataInputStream stream) {
         setName(stream.readUTF());
+    }
+
+    @Override
+    public long getSoftDuration(long duration, long avg, Date start, Date end) {
+        return 0;
     }
 
     @Override

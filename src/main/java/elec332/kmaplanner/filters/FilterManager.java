@@ -2,6 +2,7 @@ package elec332.kmaplanner.filters;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import elec332.kmaplanner.filters.impl.LessTimeFilter;
 import elec332.kmaplanner.filters.impl.NeverFilter;
 import elec332.kmaplanner.filters.impl.TimeFilter;
 import elec332.kmaplanner.util.io.IByteArrayDataInputStream;
@@ -23,10 +24,12 @@ public enum FilterManager implements Function<IByteArrayDataInputStream, Abstrac
     FilterManager() {
         registry = new HashMap<>();
         reverseLookup = new HashMap<>();
+        descriptionGetter = new HashMap<>();
     }
 
     private final HashMap<String, Supplier<AbstractFilter>> registry;
     private final HashMap<Class, String> reverseLookup;
+    private final HashMap<String, String> descriptionGetter;
 
     public boolean registerFilter(Supplier<AbstractFilter> filterFunction, final String shortName) {
         if (Strings.isNullOrEmpty(shortName)) {
@@ -35,7 +38,8 @@ public enum FilterManager implements Function<IByteArrayDataInputStream, Abstrac
         if (registry.containsKey(shortName)) {
             return false;
         }
-        Class type = filterFunction.get().getClass();
+        AbstractFilter filter = filterFunction.get();
+        Class type = filter.getClass();
         if (reverseLookup.containsKey(type)) {
             return false;
         }
@@ -55,6 +59,7 @@ public enum FilterManager implements Function<IByteArrayDataInputStream, Abstrac
 
         });
         reverseLookup.put(type, shortName);
+        descriptionGetter.put(shortName, filter.getDescription());
         return true;
     }
 
@@ -62,9 +67,14 @@ public enum FilterManager implements Function<IByteArrayDataInputStream, Abstrac
         return registry.values();
     }
 
+    public String getDescription(String name) {
+        return descriptionGetter.get(name);
+    }
+
     static {
         INSTANCE.registerFilter(() -> NeverFilter.INSTANCE, "Never participate");
         INSTANCE.registerFilter(TimeFilter::new, "Unavailable during");
+        INSTANCE.registerFilter(LessTimeFilter::new, "Efficiency");
     }
 
     @Override
