@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Created by Elec332 on 14-6-2019
@@ -85,6 +86,10 @@ public class GroupManager {
     @Nonnull
     public Set<Group> getGroups() {
         return this.groups_;
+    }
+
+    public Set<Group> getMainGroups() {
+        return getGroups().stream().filter(Group::isMainGroup).collect(Collectors.toSet());
     }
 
     public Group getGroup(String name) {

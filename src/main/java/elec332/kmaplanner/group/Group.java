@@ -1,5 +1,6 @@
 package elec332.kmaplanner.group;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import elec332.kmaplanner.filters.AbstractFilter;
 import elec332.kmaplanner.filters.FilterManager;
@@ -13,10 +14,7 @@ import elec332.kmaplanner.util.io.IByteArrayDataOutputStream;
 import elec332.kmaplanner.util.io.IDataSerializable;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by Elec332 on 14-6-2019
@@ -83,6 +81,11 @@ public class Group implements Comparable<Group>, IEventFilter, IDataSerializable
 
     public Iterator<Person> getPersonIterator() {
         return persons_.iterator();
+    }
+
+    public Person getRandomPerson(Random random) {
+        List<Person> people = Lists.newArrayList(persons);
+        return people.get(random.nextInt(people.size()));
     }
 
     @Override

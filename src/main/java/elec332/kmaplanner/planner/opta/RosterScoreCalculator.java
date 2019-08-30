@@ -27,10 +27,10 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
         int hardScore = 0;
         int mediumScore = 0;
         int softScore = 0;
-        roster.getPersons().forEach(p -> p.getPlannerEvents().clear());
+        roster.getPersons().forEach(p -> p.getPlannerData().clearEvents());
         Date start = roster.getPlanner().getFirstDate();
         Date end = roster.getPlanner().getLastDate();
-        long avg = roster.getAveragePersonTime();
+        long avg = roster.getAveragePersonTimeSoft();
         avg *= 1.1f;
         for (Assignment assignment : roster.getAssignments()) {
 
@@ -39,7 +39,7 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
                 continue;
             }
 
-            if (assignment.person.getPlannerEvents().contains(assignment.event)) {
+            if (assignment.person.getPlannerData().getEvents().contains(assignment.event)) {
                 hardScore -= 50;
             }
 
@@ -51,12 +51,12 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
                 hardScore--;
             }
 
-            for (Event e : assignment.person.getPlannerEvents()) {
+            for (Event e : assignment.person.getPlannerData().getEvents()) {
                 if (assignment.event.isDuring(e)) {
                     hardScore -= 11;
                 }
             }
-            assignment.person.getPlannerEvents().add(assignment.event);
+            assignment.person.getPlannerData().addEvent(assignment.event);
         }
 
         ProjectSettings settings = roster.getPlanner().getSettings();
@@ -65,7 +65,7 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
             if (person == PersonManager.NULL_PERSON) {
                 continue;
             }
-            long dur = person.getSoftDuration(avg, start, end);
+            long dur = person.getPlannerData().getSoftDuration(avg, start, end);
             if (dur > (avg + settings.timeDiffThreshold)) {
                 softScore -= ((dur - avg) / 5);
             }

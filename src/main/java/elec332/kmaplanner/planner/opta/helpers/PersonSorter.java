@@ -11,7 +11,7 @@ public class PersonSorter implements Comparator<Person> {
 
     @Override
     public int compare(Person o1, Person o2) {
-        return (int) (o1.getDuration() - o2.getDuration());
+        return (int) (o1.getPlannerData().getDuration() - o2.getPlannerData().getDuration());
     }
 
 }

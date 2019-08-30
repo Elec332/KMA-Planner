@@ -1,8 +1,8 @@
 package elec332.kmaplanner.gui;
 
-import elec332.kmaplanner.util.FileChooserHelper;
-import elec332.kmaplanner.util.JPanelBase;
-import elec332.kmaplanner.util.SwingHelper;
+import elec332.kmaplanner.util.swing.FileChooserHelper;
+import elec332.kmaplanner.util.swing.JPanelBase;
+import elec332.kmaplanner.util.swing.SwingHelper;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

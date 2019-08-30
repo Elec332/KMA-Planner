@@ -4,7 +4,7 @@ import com.google.common.base.Strings;
 import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.group.GroupManager;
 import elec332.kmaplanner.gui.planner.filter.JFilterPanel;
-import elec332.kmaplanner.util.DialogHelper;
+import elec332.kmaplanner.util.swing.DialogHelper;
 
 import javax.swing.*;
 import java.awt.*;

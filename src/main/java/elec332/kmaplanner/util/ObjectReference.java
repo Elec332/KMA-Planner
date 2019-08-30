@@ -27,6 +27,11 @@ public class ObjectReference<T> implements Consumer<T>, Supplier<T> {
         accept(t);
     }
 
+    public <Q extends T> Q put(Q q) {
+        accept(q);
+        return q;
+    }
+
     @Override
     public void accept(T t) {
         object = t;

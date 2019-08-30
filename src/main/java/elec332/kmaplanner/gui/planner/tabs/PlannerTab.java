@@ -5,8 +5,13 @@ import elec332.kmaplanner.Main;
 import elec332.kmaplanner.io.ProjectReader;
 import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.Planner;
+import elec332.kmaplanner.planner.RosterPrinter;
 import elec332.kmaplanner.planner.opta.Roster;
-import elec332.kmaplanner.util.*;
+import elec332.kmaplanner.util.DateHelper;
+import elec332.kmaplanner.util.swing.DateChooserPanel;
+import elec332.kmaplanner.util.swing.DialogHelper;
+import elec332.kmaplanner.util.swing.FileChooserHelper;
+import elec332.kmaplanner.util.swing.IDefaultListCellRenderer;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -80,7 +85,7 @@ public class PlannerTab extends JPanel {
         });
         plan.addActionListener(a -> planner.plan(PlannerTab.this));
         continueB.addActionListener(a -> openRoster().ifPresent(roster -> planner.plan(PlannerTab.this, () -> roster)));
-        print.addActionListener(a -> openRoster().ifPresent(planner::printRoster));
+        print.addActionListener(a -> openRoster().ifPresent(RosterPrinter::printRoster));
 
         JPanel bottom = new JPanel(new GridLayout(2, 1));
         JPanel b1 = new JPanel();

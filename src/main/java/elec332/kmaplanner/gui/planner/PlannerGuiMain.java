@@ -5,7 +5,6 @@ import elec332.kmaplanner.gui.planner.tabs.PlannerTab;
 import elec332.kmaplanner.gui.planner.tabs.SettingsTab;
 import elec332.kmaplanner.gui.planner.tabs.UsersTab;
 import elec332.kmaplanner.planner.Planner;
-import elec332.kmaplanner.util.JPanelBase;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,7 +12,7 @@ import java.awt.*;
 /**
  * Created by Elec332 on 14-6-2019
  */
-public class PlannerGuiMain extends JPanelBase {
+public class PlannerGuiMain extends JPanel {
 
     public PlannerGuiMain(Planner planner) {
         super(new GridLayout(1, 1));

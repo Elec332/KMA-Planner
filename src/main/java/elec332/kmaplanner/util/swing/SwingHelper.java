@@ -1,4 +1,4 @@
-package elec332.kmaplanner.util;
+package elec332.kmaplanner.util.swing;
 
 import javax.swing.*;
 
@@ -22,11 +22,12 @@ public class SwingHelper {
         component.d.dispose();
     }
 
-    public static <P extends JPanelBase> P openPanelAsDialog(final P panel, final String title) {
+    public static <P extends JPanelBase> P openPanelAsDialog(final P panel, final String title, JFrame owner) {
         if (panel.noOpen) {
             return panel;
         }
-        JDialog frame = new JDialog(new JFrame(), title, true);
+        JDialog frame = new JDialog(owner, title, true);
+        //JFrame frame = owner;
         panel.d = frame;
         frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         panel.setOpaque(true);

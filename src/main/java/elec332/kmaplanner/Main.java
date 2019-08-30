@@ -10,11 +10,13 @@ import elec332.kmaplanner.io.ProjectSettings;
 import elec332.kmaplanner.persons.PersonManager;
 import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.Planner;
-import elec332.kmaplanner.util.SwingHelper;
 import elec332.kmaplanner.util.UpdatableTreeSet;
+import elec332.kmaplanner.util.swing.SwingHelper;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 
 /**
@@ -55,7 +57,11 @@ public class Main {
     }
 
     private static void startProgram() {
-        StartupFileSelector startupFileSelector = SwingHelper.openPanelAsDialog(new StartupFileSelector(), "Start");
+        JFrame frame = new JFrame();
+        frame.setTitle("KMAPlanner");
+        frame.setVisible(true);
+
+        StartupFileSelector startupFileSelector = SwingHelper.openPanelAsDialog(new StartupFileSelector(), "Start", frame);
         if (startupFileSelector.shouldExit()) {
             System.exit(0);
         }
@@ -68,7 +74,7 @@ public class Main {
         ProjectReader projectReader;
         try {
             if (projFile == null) {
-                ProjectInitializerGui init = SwingHelper.openPanelAsDialog(new ProjectInitializerGui(), "Choose project location");
+                ProjectInitializerGui init = SwingHelper.openPanelAsDialog(new ProjectInitializerGui(), "Choose project location", frame);
                 projectReader = new ProjectReader(checkFile(init.getProjectFile(), false, ".kp"), init.getProjectData());
                 projectReader.write(personManager, groupManager, events);
             } else {
@@ -93,9 +99,22 @@ public class Main {
 
         Planner planner = new Planner(personManager, groupManager, events, projectData, save);
         planner.initialize();
-        SwingHelper.openPanelAsDialog(new PlannerGuiMain(planner), "KMAPlanner");
-        save.run();
-        System.exit(0);
+
+        frame.setVisible(false);
+        JPanel plannerGui = new PlannerGuiMain(planner);
+        plannerGui.setOpaque(true);
+        frame.setContentPane(plannerGui);
+        frame.pack();
+        frame.setVisible(true);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.addWindowListener(new WindowAdapter() {
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                save.run();
+            }
+
+        });
     }
 
     public static File checkFile(File projFile, boolean load, String extension) {

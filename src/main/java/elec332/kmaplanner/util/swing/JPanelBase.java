@@ -1,4 +1,4 @@
-package elec332.kmaplanner.util;
+package elec332.kmaplanner.util.swing;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,7 +19,7 @@ public class JPanelBase extends JPanel {
         super();
     }
 
-    Dialog d;
+    Window d;
     boolean noOpen;
 
 }

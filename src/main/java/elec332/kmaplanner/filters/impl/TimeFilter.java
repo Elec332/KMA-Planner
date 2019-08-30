@@ -2,10 +2,10 @@ package elec332.kmaplanner.filters.impl;
 
 import elec332.kmaplanner.filters.AbstractFilter;
 import elec332.kmaplanner.planner.Event;
-import elec332.kmaplanner.util.DateChooserPanel;
 import elec332.kmaplanner.util.ITimeSpan;
 import elec332.kmaplanner.util.io.IByteArrayDataInputStream;
 import elec332.kmaplanner.util.io.IByteArrayDataOutputStream;
+import elec332.kmaplanner.util.swing.DateChooserPanel;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;

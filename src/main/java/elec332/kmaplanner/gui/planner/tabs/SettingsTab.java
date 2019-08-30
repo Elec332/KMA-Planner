@@ -2,7 +2,7 @@ package elec332.kmaplanner.gui.planner.tabs;
 
 import com.google.common.base.Strings;
 import elec332.kmaplanner.io.ProjectSettings;
-import elec332.kmaplanner.util.PersonSortingType;
+import elec332.kmaplanner.planner.opta.assignment.PersonSortingType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -24,6 +24,7 @@ public class SettingsTab extends JPanel {
         JPanel so = new JPanel();
         so.add(new JLabel("Sorting type: "));
         JComboBox<PersonSortingType> sorting = new JComboBox<>(PersonSortingType.values());
+        sorting.setSelectedItem(settings.sortingType);
         so.add(sorting);
 
         JPanel td = new JPanel();

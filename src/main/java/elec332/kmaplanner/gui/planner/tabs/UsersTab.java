@@ -8,9 +8,9 @@ import elec332.kmaplanner.gui.planner.filter.JFilterPanel;
 import elec332.kmaplanner.io.PersonExcelReader;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.persons.PersonManager;
-import elec332.kmaplanner.util.DialogHelper;
 import elec332.kmaplanner.util.FileHelper;
 import elec332.kmaplanner.util.JCheckBoxList;
+import elec332.kmaplanner.util.swing.DialogHelper;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;

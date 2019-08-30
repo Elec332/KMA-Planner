@@ -1,5 +1,6 @@
 package elec332.kmaplanner.planner.opta;
 
+import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.persons.PersonManager;
 import elec332.kmaplanner.planner.Event;
@@ -9,6 +10,7 @@ import org.optaplanner.core.api.domain.lookup.PlanningId;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
 
 import java.util.UUID;
+import java.util.function.Predicate;
 
 /**
  * Created by Elec332 on 15-8-2019
@@ -24,10 +26,12 @@ public class Assignment {
         this.event = event;
         this.person = PersonManager.NULL_PERSON;
         this.identifier = UUID.randomUUID();
+        this.groupFilter = g -> true;
     }
 
     public Event event;
     public Person person;
+    public Predicate<Group> groupFilter;
 
     @PlanningId
     @SuppressWarnings("FieldCanBeLocal")

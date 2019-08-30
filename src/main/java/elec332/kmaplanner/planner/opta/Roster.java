@@ -53,7 +53,7 @@ public class Roster {
 
         @SuppressWarnings("unchecked")
         IInitialEventAssigner<T> assigner = (IInitialEventAssigner<T>) planner.getSettings().sortingType.createEventAssigner();
-        ObjectReference<T> data = new ObjectReference<>(assigner.createInitialData(Lists.newArrayList(persons), Sets.newHashSet(planner.getEvents()), planner.getSettings()));
+        ObjectReference<T> data = new ObjectReference<>(assigner.createInitialData(Lists.newArrayList(persons), Sets.newHashSet(planner.getEvents()), planner));
 
         Set<Event> events = planner.getEvents().stream()
                 .filter(e -> !e.everyone)
@@ -72,7 +72,7 @@ public class Roster {
                     for (int i = 0; i < required - al1.size(); i++) {
                         eventAssignments.add(new Assignment(event));
                     }
-                    data.use(d -> assigner.assignPersonsTo(Collections.unmodifiableList(eventAssignments), event, persons_, d, planner.getSettings()));
+                    data.use(d -> assigner.assignPersonsTo(Collections.unmodifiableList(eventAssignments), event, persons_, d, planner));
                     roster.assignments.addAll(eventAssignments);
                 }
             } else {
@@ -82,24 +82,24 @@ public class Roster {
                 }
             }
         });
-
+        planner.getPersonManager().getPersons().forEach(Person::clearEvents);
         return roster;
     }
 
     public <T> Roster(final Planner planner, IInitialEventAssigner<T> assigner) {
         this(planner);
         Collection<Person> persons = planner.getPersonManager().getPersons();
-        ObjectReference<T> data = new ObjectReference<>(assigner.createInitialData(Lists.newArrayList(persons), Sets.newHashSet(planner.getEvents()), planner.getSettings()));
+        ObjectReference<T> data = new ObjectReference<>(assigner.createInitialData(Lists.newArrayList(persons), Sets.newHashSet(planner.getEvents()), planner));
         final List<Person> persons_ = Collections.unmodifiableList(Lists.newArrayList(persons));
         planner.getEvents().stream().filter(e -> !e.everyone).forEach(event -> {
             List<Assignment> eventAssignments = Lists.newArrayList();
             for (int i = 0; i < event.requiredPersons; i++) {
                 eventAssignments.add(new Assignment(event));
             }
-            data.use(d -> assigner.assignPersonsTo(Collections.unmodifiableList(eventAssignments), event, persons_, d, planner.getSettings()));
+            data.use(d -> assigner.assignPersonsTo(Collections.unmodifiableList(eventAssignments), event, persons_, d, planner));
             assignments.addAll(eventAssignments);
         });
-
+        getPlanner().getPersonManager().getPersons().forEach(Person::clearEvents);
     }
 
     private Roster(Planner planner) {
@@ -115,7 +115,7 @@ public class Roster {
     }
 
     private Planner planner;
-    private transient Long avg = null;
+    private transient Long avg = null, softAvg = null;
     private transient Date start = null, end = null;
 
     private List<Person> persons;
@@ -146,7 +146,7 @@ public class Roster {
         this.score = score;
     }
 
-    public long getAveragePersonTime() {
+    public long getAveragePersonTimeReal() {
         if (avg == null) {
             long totTime = getPlanner().getEvents().stream()
                     .filter(e -> !e.everyone)
@@ -155,6 +155,17 @@ public class Roster {
             avg = totTime / getPersons().size();
         }
         return avg;
+    }
+
+    public long getAveragePersonTimeSoft() {
+        if (softAvg == null) {
+            long avg = getAveragePersonTimeReal();
+            long totSoft = getPersons().stream()
+                    .mapToLong(p -> p.getPlannerData().getSoftDuration(avg, getStartDate(), getEndDate()))
+                    .sum();
+            softAvg = totSoft / getPersons().size();
+        }
+        return softAvg;
     }
 
     public Date getStartDate() {
@@ -178,15 +189,13 @@ public class Roster {
             Event e = assignment.event;
             if (p.canParticipateIn(e)) {
                 p.getPrintableEvents().add(e);
-                p.getPlannerEvents().add(e);
             }
         }
         planner.getEvents().stream()
                 .filter(e -> e.everyone)
-                .forEach(e -> planner.getPersonManager().getPersons().forEach(p -> {
-                    p.getPrintableEvents().add(e);
-                    p.getPlannerEvents().add(e);
-                }));
+                .forEach(e -> planner.getPersonManager().getPersons().forEach(p -> p.getPrintableEvents().add(e)));
+
+        planner.getPersonManager().getPersons().forEach(p -> p.getPlannerData().importEvents());
     }
 
     public void print() {
@@ -224,7 +233,8 @@ public class Roster {
         System.out.println();
         getAssignments().forEach(System.out::println);
         System.out.println();
-        System.out.println("Average: " + getAveragePersonTime());
+        System.out.println("Average: " + getAveragePersonTimeReal());
+        System.out.println("Average Soft: " + getAveragePersonTimeSoft());
         System.out.println("Score: " + getScore());
     }
 

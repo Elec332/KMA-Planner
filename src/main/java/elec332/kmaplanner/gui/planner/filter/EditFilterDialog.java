@@ -3,7 +3,7 @@ package elec332.kmaplanner.gui.planner.filter;
 import com.google.common.base.Strings;
 import elec332.kmaplanner.filters.AbstractFilter;
 import elec332.kmaplanner.filters.FilterManager;
-import elec332.kmaplanner.util.DialogHelper;
+import elec332.kmaplanner.util.swing.DialogHelper;
 
 import javax.annotation.Nullable;
 import javax.swing.*;

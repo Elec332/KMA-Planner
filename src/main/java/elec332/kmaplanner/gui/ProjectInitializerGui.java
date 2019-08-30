@@ -2,9 +2,9 @@ package elec332.kmaplanner.gui;
 
 import com.google.common.base.Preconditions;
 import elec332.kmaplanner.io.ProjectSettings;
-import elec332.kmaplanner.util.FileChooserHelper;
-import elec332.kmaplanner.util.JPanelBase;
-import elec332.kmaplanner.util.SwingHelper;
+import elec332.kmaplanner.util.swing.FileChooserHelper;
+import elec332.kmaplanner.util.swing.JPanelBase;
+import elec332.kmaplanner.util.swing.SwingHelper;
 
 import javax.annotation.Nonnull;
 import java.io.File;

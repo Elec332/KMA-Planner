@@ -1,6 +1,7 @@
-package elec332.kmaplanner.util;
+package elec332.kmaplanner.util.swing;
 
 import com.google.common.base.Preconditions;
+import elec332.kmaplanner.util.FileHelper;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;

@@ -1,6 +1,6 @@
 package elec332.kmaplanner.io;
 
-import elec332.kmaplanner.util.PersonSortingType;
+import elec332.kmaplanner.planner.opta.assignment.PersonSortingType;
 import elec332.kmaplanner.util.io.IByteArrayDataInputStream;
 import elec332.kmaplanner.util.io.IByteArrayDataOutputStream;
 import elec332.kmaplanner.util.io.IDataSerializable;

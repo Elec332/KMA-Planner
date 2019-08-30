@@ -1,5 +1,7 @@
 package elec332.kmaplanner.util;
 
+import elec332.kmaplanner.util.swing.IDefaultListCellRenderer;
+
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;

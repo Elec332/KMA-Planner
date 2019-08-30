@@ -6,49 +6,31 @@ import elec332.kmaplanner.group.GroupManager;
 import elec332.kmaplanner.io.ProjectSettings;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.persons.PersonManager;
-import elec332.kmaplanner.planner.ical.ICalPrinter;
 import elec332.kmaplanner.planner.opta.Roster;
 import elec332.kmaplanner.planner.opta.RosterScoreCalculator;
-import elec332.kmaplanner.planner.opta.helpers.AssignmentSorter;
-import elec332.kmaplanner.planner.opta.helpers.DifferentPersonChangeFilter;
-import elec332.kmaplanner.planner.opta.helpers.DifferentPersonEventSwapFilter;
-import elec332.kmaplanner.planner.opta.helpers.PersonSorter;
-import elec332.kmaplanner.planner.print.PersonPrinter;
+import elec332.kmaplanner.planner.opta.solver.SolverConfigurator;
+import elec332.kmaplanner.planner.opta.util.IAbstractPhaseLifecycleListener;
 import elec332.kmaplanner.util.FileHelper;
 import elec332.kmaplanner.util.ObjectReference;
 import elec332.kmaplanner.util.UpdatableTreeSet;
-import elec332.kmaplanner.util.ZipHelper;
-import net.fortuna.ical4j.data.CalendarOutputter;
-import net.fortuna.ical4j.model.Calendar;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
 import org.optaplanner.core.api.solver.event.BestSolutionChangedEvent;
 import org.optaplanner.core.api.solver.event.SolverEventListener;
 import org.optaplanner.core.config.domain.ScanAnnotatedClassesConfig;
-import org.optaplanner.core.config.heuristic.selector.common.SelectionCacheType;
-import org.optaplanner.core.config.heuristic.selector.common.SelectionOrder;
-import org.optaplanner.core.config.heuristic.selector.entity.EntitySelectorConfig;
-import org.optaplanner.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
-import org.optaplanner.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
-import org.optaplanner.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
-import org.optaplanner.core.config.heuristic.selector.value.ValueSelectorConfig;
-import org.optaplanner.core.config.localsearch.LocalSearchPhaseConfig;
 import org.optaplanner.core.config.score.director.ScoreDirectorFactoryConfig;
 import org.optaplanner.core.config.solver.EnvironmentMode;
 import org.optaplanner.core.config.solver.SolverConfig;
-import org.optaplanner.core.config.solver.termination.TerminationConfig;
+import org.optaplanner.core.impl.phase.scope.AbstractPhaseScope;
+import org.optaplanner.core.impl.phase.scope.AbstractStepScope;
+import org.optaplanner.core.impl.solver.AbstractSolver;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Date;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
@@ -123,8 +105,8 @@ public class Planner {
     }
 
     private void configureSolver(SolverFactory<?> factory) {
-        factory.getSolverConfig().setTerminationConfig(new TerminationConfig());
-        factory.getSolverConfig().getTerminationConfig().setUnimprovedSecondsSpentLimit((long) settings.unimprovedSeconds);
+        //factory.getSolverConfig().setTerminationConfig(new TerminationConfig());
+        //factory.getSolverConfig().getTerminationConfig().setUnimprovedSecondsSpentLimit((long) settings.unimprovedSeconds);
 
         factory.getSolverConfig().setRandomSeed(settings.seed);
         factory.getSolverConfig().setMoveThreadCount(SolverConfig.MOVE_THREAD_COUNT_AUTO);
@@ -136,45 +118,22 @@ public class Planner {
         factory.getSolverConfig().setScoreDirectorFactoryConfig(new ScoreDirectorFactoryConfig());
         factory.getSolverConfig().getScoreDirectorFactoryConfig().setEasyScoreCalculatorClass(RosterScoreCalculator.class);
 
-        //A lot of *sigh*'s below, you've been warned
+        //A lot of *sigh*'s in here, you've been warned
+        SolverConfigurator.configureSolver(factory);
 
-        //ConstructionHeuristicPhaseConfig chpc = new ConstructionHeuristicPhaseConfig();
-        LocalSearchPhaseConfig lcpc = new LocalSearchPhaseConfig();
-        factory.getSolverConfig().withPhases(lcpc/*, chpc*/);
-
-        UnionMoveSelectorConfig unionMoveSelectorConfig = new UnionMoveSelectorConfig();
-        SwapMoveSelectorConfig swapMoveSelectorConfig = new SwapMoveSelectorConfig();
-        ChangeMoveSelectorConfig changeMoveSelectorConfig = new ChangeMoveSelectorConfig();
-        unionMoveSelectorConfig.setMoveSelectorConfigList(Lists.newArrayList(changeMoveSelectorConfig, swapMoveSelectorConfig));
-        lcpc.setMoveSelectorConfig(unionMoveSelectorConfig);
-
-        //finally
-        swapMoveSelectorConfig.setFilterClassList(Lists.newArrayList(DifferentPersonEventSwapFilter.class));
-        changeMoveSelectorConfig.setFilterClassList(Lists.newArrayList(DifferentPersonChangeFilter.class));
-
-        ValueSelectorConfig valueSelectorConfig = new ValueSelectorConfig();
-        changeMoveSelectorConfig.setValueSelectorConfig(valueSelectorConfig);
-        valueSelectorConfig.setCacheType(SelectionCacheType.STEP);
-        valueSelectorConfig.setSelectionOrder(SelectionOrder.SORTED);
-        valueSelectorConfig.setSorterComparatorClass(PersonSorter.class);
-
-        EntitySelectorConfig entitySelectorConfig = new EntitySelectorConfig();
-        changeMoveSelectorConfig.setEntitySelectorConfig(entitySelectorConfig);
-        entitySelectorConfig.setCacheType(SelectionCacheType.STEP);
-        entitySelectorConfig.setSelectionOrder(SelectionOrder.SORTED);
-        entitySelectorConfig.setSorterComparatorClass(AssignmentSorter.class);
     }
 
     private void plan_(Component component, Roster roster) {
         SolverFactory<Roster> factory = SolverFactory.createEmpty();
         configureSolver(factory);
 
-        Solver<Roster> solver = factory.buildSolver();
+        AbstractSolver<Roster> solver = (AbstractSolver<Roster>) factory.buildSolver();
         solver.addEventListener(event -> System.out.println(event.getNewBestScore()));
 
         ObjectReference<Roster> ref = new ObjectReference<>();
         PlannerUI ui = new PlannerUI();
         solver.addEventListener(ui);
+        solver.addPhaseLifecycleListener(ui);
         new Thread(() -> {
             ref.accept(solver.solve(roster));
             Optional.ofNullable(SwingUtilities.getWindowAncestor(ui))
@@ -198,48 +157,10 @@ public class Planner {
             writeRoster(solver.getBestSolution());
             return;
         }
-        printRoster(ref.get());
-    }
 
-    public void printRoster(Roster roster) {
-        writeRoster(roster);
-        roster.print();
-        File tempFolder = new File(FileHelper.getExecFolder(), UUID.randomUUID().toString());
-        if (!tempFolder.mkdirs()) {
-            throw new RuntimeException(new IOException()); //No, this doesn't exist, look away please....
-        }
-        for (Person p : roster.getPersons()) {
-            try {
-                File personFile = new File(tempFolder, p.getLastName() + " - " + p.getFirstName() + ".xlsx");
-                Workbook workbook = new XSSFWorkbook();
-                PersonPrinter.printRoster(p, workbook);
-                FileOutputStream fos = new FileOutputStream(personFile);
-                workbook.write(fos);
-                fos.close();
-
-                if (p.getPrintableEvents().isEmpty()) {
-                    continue;
-                }
-
-                File calFile = new File(tempFolder, p.getLastName() + " - " + p.getFirstName() + ".ics");
-                CalendarOutputter co = new CalendarOutputter();
-                fos = new FileOutputStream(calFile);
-                Calendar cal = new Calendar();
-                ICalPrinter.fillCalender(cal, p);
-                co.output(cal, fos);
-                fos.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        try {
-            File dest = new File(FileHelper.getExecFolder(), "user_progs.zip");
-            Files.deleteIfExists(dest.toPath());
-            ZipHelper.zip(tempFolder, dest);
-            FileHelper.deleteDir(tempFolder);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        Roster rosterP = ref.get();
+        writeRoster(rosterP);
+        RosterPrinter.printRoster(rosterP);
     }
 
     private void writeRoster(Roster roster) {
@@ -254,18 +175,44 @@ public class Planner {
         }
     }
 
-    private static class PlannerUI extends JPanel implements SolverEventListener<Roster> {
+    private static class PlannerUI extends JPanel implements SolverEventListener<Roster>, IAbstractPhaseLifecycleListener<Roster> {
 
         private PlannerUI() {
-            add(new JLabel("Score: "));
-            add(scoreLabel = new JLabel("?????????????????????????????")); //Shhh
+            super(new GridLayout(3, 1));
+            JPanel ph = new JPanel();
+            ph.add(new JLabel("Phase: "));
+            ph.add(phaseLabel = new JLabel(phase + "  "));
+            ph.add(new JLabel("   "));
+            ph.add(new JLabel("Step: "));
+            ph.add(stepLabel = new JLabel(step + "  "));
+
+            JPanel sc = new JPanel();
+            sc.add(new JLabel("Score: "));
+            sc.add(scoreLabel = new JLabel("?????????????????????????????")); //Shhh
+
+            add(ph);
+            add(new JPanel());
+            add(sc);
         }
 
-        private JLabel scoreLabel;
+        private int phase = 1, step;
+        private JLabel scoreLabel, phaseLabel, stepLabel;
 
         @Override
         public void bestSolutionChanged(BestSolutionChangedEvent<Roster> event) {
             scoreLabel.setText(event.getNewBestScore().toString());
+        }
+
+        @Override
+        public void stepEnded(AbstractStepScope<Roster> stepScope) {
+            step++;
+            stepLabel.setText("" + step);
+        }
+
+        @Override
+        public void phaseEnded(AbstractPhaseScope<Roster> phaseScope) {
+            phase++;
+            phaseLabel.setText("" + phase);
         }
 
     }
