@@ -1,10 +1,9 @@
-package elec332.kmaplanner.planner.opta.helpers.assignment;
+package elec332.kmaplanner.planner.opta.assignment;
 
 import elec332.kmaplanner.io.ProjectSettings;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.opta.Assignment;
-import elec332.kmaplanner.planner.opta.helpers.IInitialEventAssigner;
 
 import java.util.List;
 import java.util.Random;

@@ -1,9 +1,9 @@
 package elec332.kmaplanner.util;
 
-import elec332.kmaplanner.planner.opta.helpers.IInitialEventAssigner;
-import elec332.kmaplanner.planner.opta.helpers.assignment.DefaultEventAssigner;
-import elec332.kmaplanner.planner.opta.helpers.assignment.GroupEventAssigner;
-import elec332.kmaplanner.planner.opta.helpers.assignment.RandomEventAssigner;
+import elec332.kmaplanner.planner.opta.assignment.DefaultEventAssigner;
+import elec332.kmaplanner.planner.opta.assignment.GroupEventAssigner;
+import elec332.kmaplanner.planner.opta.assignment.IInitialEventAssigner;
+import elec332.kmaplanner.planner.opta.assignment.RandomEventAssigner;
 
 /**
  * Created by Elec332 on 26-8-2019

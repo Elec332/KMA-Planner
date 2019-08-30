@@ -30,7 +30,7 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
         roster.getPersons().forEach(p -> p.getPlannerEvents().clear());
         Date start = roster.getPlanner().getFirstDate();
         Date end = roster.getPlanner().getLastDate();
-        long avg = calculateAverage(roster);
+        long avg = roster.getAveragePersonTime();
         avg *= 1.1f;
         for (Assignment assignment : roster.getAssignments()) {
 
@@ -102,14 +102,6 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
         }
 
         return HardMediumSoftScore.of(hardScore, mediumScore, softScore);
-    }
-
-    public static long calculateAverage(Roster roster) {
-        long totTime = roster.getPlanner().getEvents().stream()
-                .filter(e -> !e.everyone)
-                .mapToLong(e -> e.getDuration() * e.getRequiredPersons())
-                .sum();
-        return totTime / roster.getPersons().size();
     }
 
 }

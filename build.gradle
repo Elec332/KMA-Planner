@@ -1,13 +1,38 @@
 group 'kmaplanner'
-version '1.0-SNAPSHOT'
+version '1.1.0'
+
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath 'edu.sc.seis.gradle:launch4j:2.4.6'
+        classpath "com.github.jengelman.gradle.plugins:shadow:4.0.4"
+    }
+}
 
 apply plugin: 'java'
+apply plugin: 'edu.sc.seis.launch4j'
+apply plugin: "com.github.johnrengelman.shadow"
 
 sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
 }
+
+launch4j {
+    mainClassName = 'elec332.kmaplanner.Main'
+    windowTitle = "KMA Planner"
+    //icon = "${projectDir}/icons/myApp.ico"
+    copyConfigurable = project.tasks.shadowJar.outputs.files
+    jar = "lib/${project.tasks.shadowJar.archiveName}"
+}
+
+tasks.launch4j.dependsOn("shadowJar")
 
 dependencies {
     compile "com.google.guava:guava:21.0"

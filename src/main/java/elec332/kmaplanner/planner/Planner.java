@@ -1,12 +1,18 @@
 package elec332.kmaplanner.planner;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import elec332.kmaplanner.group.GroupManager;
 import elec332.kmaplanner.io.ProjectSettings;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.persons.PersonManager;
 import elec332.kmaplanner.planner.ical.ICalPrinter;
 import elec332.kmaplanner.planner.opta.Roster;
+import elec332.kmaplanner.planner.opta.RosterScoreCalculator;
+import elec332.kmaplanner.planner.opta.helpers.AssignmentSorter;
+import elec332.kmaplanner.planner.opta.helpers.DifferentPersonChangeFilter;
+import elec332.kmaplanner.planner.opta.helpers.DifferentPersonEventSwapFilter;
+import elec332.kmaplanner.planner.opta.helpers.PersonSorter;
 import elec332.kmaplanner.planner.print.PersonPrinter;
 import elec332.kmaplanner.util.FileHelper;
 import elec332.kmaplanner.util.ObjectReference;
@@ -20,7 +26,19 @@ import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
 import org.optaplanner.core.api.solver.event.BestSolutionChangedEvent;
 import org.optaplanner.core.api.solver.event.SolverEventListener;
+import org.optaplanner.core.config.domain.ScanAnnotatedClassesConfig;
+import org.optaplanner.core.config.heuristic.selector.common.SelectionCacheType;
+import org.optaplanner.core.config.heuristic.selector.common.SelectionOrder;
+import org.optaplanner.core.config.heuristic.selector.entity.EntitySelectorConfig;
+import org.optaplanner.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
+import org.optaplanner.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
+import org.optaplanner.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
+import org.optaplanner.core.config.heuristic.selector.value.ValueSelectorConfig;
+import org.optaplanner.core.config.localsearch.LocalSearchPhaseConfig;
+import org.optaplanner.core.config.score.director.ScoreDirectorFactoryConfig;
+import org.optaplanner.core.config.solver.EnvironmentMode;
 import org.optaplanner.core.config.solver.SolverConfig;
+import org.optaplanner.core.config.solver.termination.TerminationConfig;
 
 import javax.swing.*;
 import java.awt.*;
@@ -104,13 +122,54 @@ public class Planner {
         plan_(component, roster.get());
     }
 
-    private void plan_(Component component, Roster roster) {
-        SolverFactory<Roster> factory = SolverFactory.createFromXmlResource("config.xml");
+    private void configureSolver(SolverFactory<?> factory) {
+        factory.getSolverConfig().setTerminationConfig(new TerminationConfig());
         factory.getSolverConfig().getTerminationConfig().setUnimprovedSecondsSpentLimit((long) settings.unimprovedSeconds);
+
         factory.getSolverConfig().setRandomSeed(settings.seed);
         factory.getSolverConfig().setMoveThreadCount(SolverConfig.MOVE_THREAD_COUNT_AUTO);
-        Solver<Roster> solver = factory.buildSolver();
+        factory.getSolverConfig().setEnvironmentMode(EnvironmentMode.FAST_ASSERT);
 
+        factory.getSolverConfig().setScanAnnotatedClassesConfig(new ScanAnnotatedClassesConfig());
+        factory.getSolverConfig().getScanAnnotatedClassesConfig().setPackageIncludeList(Lists.newArrayList("elec332"));  //Fix for Launch4j classloader
+
+        factory.getSolverConfig().setScoreDirectorFactoryConfig(new ScoreDirectorFactoryConfig());
+        factory.getSolverConfig().getScoreDirectorFactoryConfig().setEasyScoreCalculatorClass(RosterScoreCalculator.class);
+
+        //A lot of *sigh*'s below, you've been warned
+
+        //ConstructionHeuristicPhaseConfig chpc = new ConstructionHeuristicPhaseConfig();
+        LocalSearchPhaseConfig lcpc = new LocalSearchPhaseConfig();
+        factory.getSolverConfig().withPhases(lcpc/*, chpc*/);
+
+        UnionMoveSelectorConfig unionMoveSelectorConfig = new UnionMoveSelectorConfig();
+        SwapMoveSelectorConfig swapMoveSelectorConfig = new SwapMoveSelectorConfig();
+        ChangeMoveSelectorConfig changeMoveSelectorConfig = new ChangeMoveSelectorConfig();
+        unionMoveSelectorConfig.setMoveSelectorConfigList(Lists.newArrayList(changeMoveSelectorConfig, swapMoveSelectorConfig));
+        lcpc.setMoveSelectorConfig(unionMoveSelectorConfig);
+
+        //finally
+        swapMoveSelectorConfig.setFilterClassList(Lists.newArrayList(DifferentPersonEventSwapFilter.class));
+        changeMoveSelectorConfig.setFilterClassList(Lists.newArrayList(DifferentPersonChangeFilter.class));
+
+        ValueSelectorConfig valueSelectorConfig = new ValueSelectorConfig();
+        changeMoveSelectorConfig.setValueSelectorConfig(valueSelectorConfig);
+        valueSelectorConfig.setCacheType(SelectionCacheType.STEP);
+        valueSelectorConfig.setSelectionOrder(SelectionOrder.SORTED);
+        valueSelectorConfig.setSorterComparatorClass(PersonSorter.class);
+
+        EntitySelectorConfig entitySelectorConfig = new EntitySelectorConfig();
+        changeMoveSelectorConfig.setEntitySelectorConfig(entitySelectorConfig);
+        entitySelectorConfig.setCacheType(SelectionCacheType.STEP);
+        entitySelectorConfig.setSelectionOrder(SelectionOrder.SORTED);
+        entitySelectorConfig.setSorterComparatorClass(AssignmentSorter.class);
+    }
+
+    private void plan_(Component component, Roster roster) {
+        SolverFactory<Roster> factory = SolverFactory.createEmpty();
+        configureSolver(factory);
+
+        Solver<Roster> solver = factory.buildSolver();
         solver.addEventListener(event -> System.out.println(event.getNewBestScore()));
 
         ObjectReference<Roster> ref = new ObjectReference<>();

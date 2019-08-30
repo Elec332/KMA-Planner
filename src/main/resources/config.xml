@@ -1,15 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <solver>
-    <scanAnnotatedClasses/>
 
-    <environmentMode>FAST_ASSERT</environmentMode>
+    <swapMoveSelector>
 
-    <scoreDirectorFactory>
-        <easyScoreCalculatorClass>elec332.kmaplanner.planner.opta.RosterScoreCalculator</easyScoreCalculatorClass>
-    </scoreDirectorFactory>
+        <filterClass>elec332.kmaplanner.planner.opta.helpers.DifferentPersonEventSwapFilter</filterClass>
 
-    <termination>
-        <unimprovedSecondsSpentLimit>10</unimprovedSecondsSpentLimit>
-    </termination>
+    </swapMoveSelector>
 
 </solver>

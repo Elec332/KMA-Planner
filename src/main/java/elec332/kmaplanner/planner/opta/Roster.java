@@ -9,7 +9,7 @@ import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.persons.PersonManager;
 import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.Planner;
-import elec332.kmaplanner.planner.opta.helpers.IInitialEventAssigner;
+import elec332.kmaplanner.planner.opta.assignment.IInitialEventAssigner;
 import elec332.kmaplanner.planner.print.DaySheetPrinter;
 import elec332.kmaplanner.planner.print.ExportPrinter;
 import elec332.kmaplanner.util.FileHelper;
@@ -115,6 +115,8 @@ public class Roster {
     }
 
     private Planner planner;
+    private transient Long avg = null;
+    private transient Date start = null, end = null;
 
     private List<Person> persons;
     private List<Assignment> assignments;
@@ -144,6 +146,31 @@ public class Roster {
         this.score = score;
     }
 
+    public long getAveragePersonTime() {
+        if (avg == null) {
+            long totTime = getPlanner().getEvents().stream()
+                    .filter(e -> !e.everyone)
+                    .mapToLong(e -> e.getDuration() * e.getRequiredPersons())
+                    .sum();
+            avg = totTime / getPersons().size();
+        }
+        return avg;
+    }
+
+    public Date getStartDate() {
+        if (start == null) {
+            start = planner.getFirstDate();
+        }
+        return start;
+    }
+
+    public Date getEndDate() {
+        if (end == null) {
+            end = planner.getLastDate();
+        }
+        return end;
+    }
+
     public void apply() {
         getPlanner().getPersonManager().getPersons().forEach(Person::clearEvents);
         for (Assignment assignment : getAssignments()) {
@@ -151,11 +178,15 @@ public class Roster {
             Event e = assignment.event;
             if (p.canParticipateIn(e)) {
                 p.getPrintableEvents().add(e);
+                p.getPlannerEvents().add(e);
             }
         }
         planner.getEvents().stream()
                 .filter(e -> e.everyone)
-                .forEach(e -> planner.getPersonManager().getPersons().forEach(p -> p.getPrintableEvents().add(e)));
+                .forEach(e -> planner.getPersonManager().getPersons().forEach(p -> {
+                    p.getPrintableEvents().add(e);
+                    p.getPlannerEvents().add(e);
+                }));
     }
 
     public void print() {
@@ -193,7 +224,7 @@ public class Roster {
         System.out.println();
         getAssignments().forEach(System.out::println);
         System.out.println();
-        System.out.println("Average: " + RosterScoreCalculator.calculateAverage(this));
+        System.out.println("Average: " + getAveragePersonTime());
         System.out.println("Score: " + getScore());
     }
 
