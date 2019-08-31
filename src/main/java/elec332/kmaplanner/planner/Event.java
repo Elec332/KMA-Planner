@@ -63,6 +63,16 @@ public class Event implements IDataSerializable, Comparable<Event>, Cloneable, I
     }
 
     @Override
+    public boolean equals(Object obj) {
+        return obj == this || (obj instanceof Event && ((Event) obj).start.equals(start) && ((Event) obj).end.equals(end) && ((Event) obj).name.equals(name));
+    }
+
+    @Override
+    public int hashCode() {
+        return start.hashCode() + end.hashCode() * 31 + name.hashCode() * 31;
+    }
+
+    @Override
     public String toString() {
         return name + "  " + start + " -> " + end + "   Pers: " + (everyone ? "Everyone" : requiredPersons);
     }

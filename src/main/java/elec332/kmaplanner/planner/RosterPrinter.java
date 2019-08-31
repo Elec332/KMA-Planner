@@ -11,6 +11,8 @@ import net.fortuna.ical4j.model.Calendar;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,7 +24,25 @@ import java.util.UUID;
  */
 public class RosterPrinter {
 
-    public static void printRoster(Roster roster) {
+    public static void printRoster(Roster roster, Window parent) {
+        JDialog frame = new JDialog(parent, "Printer", Dialog.DEFAULT_MODALITY_TYPE);
+        frame.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        JPanel panel = new JPanel();
+        panel.add(new JPanel());
+        panel.add(new JLabel("Printing timetables..."));
+        panel.add(new JPanel());
+        panel.setOpaque(true);
+        frame.setContentPane(panel);
+        frame.setLocationRelativeTo(parent);
+        frame.pack();
+        new Thread(() -> {
+            printRoster(roster);
+            frame.dispose();
+        }).start();
+        frame.setVisible(true);
+    }
+
+    private static void printRoster(Roster roster) {
         roster.print();
         roster.apply();
         File tempFolder = new File(FileHelper.getExecFolder(), UUID.randomUUID().toString());

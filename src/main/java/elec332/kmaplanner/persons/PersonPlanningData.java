@@ -3,6 +3,7 @@ package elec332.kmaplanner.persons;
 import com.google.common.collect.Sets;
 import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.planner.Event;
+import elec332.kmaplanner.planner.opta.Roster;
 
 import java.util.Collections;
 import java.util.Date;
@@ -17,11 +18,12 @@ public class PersonPlanningData {
         this.person = person;
         this.events = Sets.newHashSet();
         this.events_ = Collections.unmodifiableSet(events);
+        this.checkEvents = Sets.newHashSet();
     }
 
     private final Person person;
 
-    private Set<Event> events, events_;
+    private Set<Event> events, events_, checkEvents;
     private Group mainGroup;
     private Long duration, durationPublic, durationSoft;
 
@@ -32,8 +34,13 @@ public class PersonPlanningData {
         return mainGroup;
     }
 
+    public Set<Event> getCheckEvents() {
+        return checkEvents;
+    }
+
     public void clearEvents() {
         events.clear();
+        checkEvents.clear();
         eventsChanged();
     }
 
@@ -55,6 +62,10 @@ public class PersonPlanningData {
 
     public Set<Event> getEvents() {
         return events_;
+    }
+
+    public long getSoftDuration(Roster roster) {
+        return getSoftDuration(roster.getAveragePersonTimeReal(), roster.getStartDate(), roster.getEndDate());
     }
 
     public long getSoftDuration(long avg, Date start, Date end) {

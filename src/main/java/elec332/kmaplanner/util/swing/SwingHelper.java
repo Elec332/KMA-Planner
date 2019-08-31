@@ -1,6 +1,7 @@
 package elec332.kmaplanner.util.swing;
 
 import javax.swing.*;
+import java.awt.*;
 
 /**
  * Created by Elec332 on 13-8-2019
@@ -8,33 +9,34 @@ import javax.swing.*;
 public class SwingHelper {
 
     public static void closeWindow(JPanelBase component) {
-        /*component.show(false);
-        component.setVisible(false);
-        Window win = SwingUtilities.getWindowAncestor(component);
-        while (win != null){
-            win.dispose();
-            win = SwingUtilities.getWindowAncestor(component);
-        }*/
-        if (component.d == null) {
-            component.noOpen = true;
+        if (component.dialog == null) {
+            component.close = true;
             return;
         }
-        component.d.dispose();
+        component.dialog.dispose();
     }
 
-    public static <P extends JPanelBase> P openPanelAsDialog(final P panel, final String title, JFrame owner) {
-        if (panel.noOpen) {
+    public static <P extends JPanelBase> P openPanelAsDialog(final P panel, final String title, JFrame window) {
+        if (panel.close) {
             return panel;
         }
-        JDialog frame = new JDialog(owner, title, true);
-        //JFrame frame = owner;
-        panel.d = frame;
-        frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        JDialog frame = new JDialog(window, title, true);
         panel.setOpaque(true);
+        panel.dialog = frame;
         frame.setContentPane(panel);
+        frame.setLocationRelativeTo(window);
         frame.pack();
         frame.setVisible(true);
         return panel;
+    }
+
+    public static void setEnabledAll(Component component, boolean enabled) {
+        component.setEnabled(enabled);
+        if (component instanceof Container) {
+            for (Component c : ((Container) component).getComponents()) {
+                setEnabledAll(c, enabled);
+            }
+        }
     }
 
 }

@@ -21,5 +21,4 @@ class AbstractPrinter {
         return row.getCell(cell, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
     }
 
-
 }

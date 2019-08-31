@@ -198,6 +198,15 @@ public class Roster {
         planner.getPersonManager().getPersons().forEach(p -> p.getPlannerData().importEvents());
     }
 
+    public void plannerApply() {
+        getPlanner().getPersonManager().getPersons().forEach(p -> p.getPlannerData().clearEvents());
+        for (Assignment assignment : getAssignments()) {
+            Person p = assignment.person;
+            Event e = assignment.event;
+            p.getPlannerData().addEvent(e);
+        }
+    }
+
     public void print() {
         apply();
         debugPrint();

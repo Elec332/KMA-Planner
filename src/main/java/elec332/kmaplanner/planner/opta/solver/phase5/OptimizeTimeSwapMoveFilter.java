@@ -1,9 +1,9 @@
-package elec332.kmaplanner.planner.opta.solver.phase3;
+package elec332.kmaplanner.planner.opta.solver.phase5;
 
 import elec332.kmaplanner.io.ProjectSettings;
 import elec332.kmaplanner.planner.opta.Assignment;
 import elec332.kmaplanner.planner.opta.Roster;
-import elec332.kmaplanner.planner.opta.solver.AbstractSwapMoveFilter;
+import elec332.kmaplanner.planner.opta.solver.filter.AbstractSwapMoveFilter;
 
 /**
  * Created by Elec332 on 30-8-2019
@@ -18,8 +18,8 @@ public class OptimizeTimeSwapMoveFilter extends AbstractSwapMoveFilter {
             return false;
         }
         long avg = (long) (roster.getAveragePersonTimeSoft() * 1.1f);
-        long a1Dur = a1.person.getPlannerData().getSoftDuration(avg, roster.getStartDate(), roster.getEndDate());
-        long a2Dur = a2.person.getPlannerData().getSoftDuration(avg, roster.getStartDate(), roster.getEndDate());
+        long a1Dur = a1.person.getPlannerData().getSoftDuration(roster);
+        long a2Dur = a2.person.getPlannerData().getSoftDuration(roster);
         if (Math.abs(a1Dur - a2Dur) < 10) {
             return false;
         }

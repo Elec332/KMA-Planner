@@ -33,8 +33,8 @@ public class SettingsTab extends JPanel {
         td.add(timeDiffThr);
 
         JPanel uis = new JPanel();
-        uis.add(new JLabel("Time (In seconds) the engine will attempt to improve the previous score before giving up: "));
-        JTextField unimp = new JTextField("" + settings.unimprovedSeconds, 4);
+        uis.add(new JLabel("The amount of steps the engine will attempt to improve the previous score before giving up: "));
+        JTextField unimp = new JTextField("" + settings.unimprovedSteps, 4);
         uis.add(unimp);
 
         JPanel gf = new JPanel();
@@ -87,7 +87,7 @@ public class SettingsTab extends JPanel {
             if (newSeed != null && timeD != null && unim != null && mgf != null) {
                 settings.seed = newSeed;
                 settings.timeDiffThreshold = timeD;
-                settings.unimprovedSeconds = unim;
+                settings.unimprovedSteps = unim;
                 settings.mainGroupFactor = mgf;
             } else {
                 throw new IllegalStateException();

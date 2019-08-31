@@ -126,6 +126,11 @@ public class Person implements Comparable, IEventFilter, IFilterable, IDataSeria
         return obj instanceof Person && firstName.equals(((Person) obj).firstName) && lastName.equals(((Person) obj).lastName);
     }
 
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+
     void postRead(GroupManager groupManager) {
         this.events = Sets.newTreeSet();
         Set<Group> groupz = Sets.newHashSet(groups);

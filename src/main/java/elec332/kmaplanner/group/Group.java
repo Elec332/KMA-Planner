@@ -9,6 +9,8 @@ import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.IEventFilter;
 import elec332.kmaplanner.planner.ISoftDuration;
+import elec332.kmaplanner.planner.opta.Roster;
+import elec332.kmaplanner.util.PersonGroupHelper;
 import elec332.kmaplanner.util.io.IByteArrayDataInputStream;
 import elec332.kmaplanner.util.io.IByteArrayDataOutputStream;
 import elec332.kmaplanner.util.io.IDataSerializable;
@@ -86,6 +88,10 @@ public class Group implements Comparable<Group>, IEventFilter, IDataSerializable
     public Person getRandomPerson(Random random) {
         List<Person> people = Lists.newArrayList(persons);
         return people.get(random.nextInt(people.size()));
+    }
+
+    public long getAverageSoftTime(Roster roster) {
+        return PersonGroupHelper.getAverageSoftTime(persons_, roster);
     }
 
     @Override

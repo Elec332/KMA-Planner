@@ -8,7 +8,7 @@ import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.opta.Roster;
 import elec332.kmaplanner.util.DateHelper;
-import elec332.kmaplanner.util.PersonGroupSorter;
+import elec332.kmaplanner.util.PersonGroupHelper;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -70,7 +70,7 @@ public class DaySheetPrinter extends AbstractPrinter {
         Set<Person> pst = roster.getAssignments().stream()
                 .filter(a -> a.event == event)
                 .map(a -> a.person).collect(Collectors.toSet());
-        Map<Group, Set<Person>> pse = PersonGroupSorter.sortByGroup(pst, roster.getPlanner().getGroupManager());
+        Map<Group, Set<Person>> pse = PersonGroupHelper.sortByGroup(pst, roster.getPlanner().getGroupManager());
         int r = 2;
         int u = 1;
         for (Group g : pse.keySet()) {

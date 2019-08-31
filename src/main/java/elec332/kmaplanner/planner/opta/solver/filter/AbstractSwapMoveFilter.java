@@ -1,4 +1,4 @@
-package elec332.kmaplanner.planner.opta.solver;
+package elec332.kmaplanner.planner.opta.solver.filter;
 
 import elec332.kmaplanner.planner.opta.Assignment;
 import elec332.kmaplanner.planner.opta.Roster;

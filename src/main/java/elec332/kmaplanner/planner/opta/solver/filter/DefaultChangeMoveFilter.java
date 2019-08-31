@@ -1,4 +1,4 @@
-package elec332.kmaplanner.planner.opta.solver;
+package elec332.kmaplanner.planner.opta.solver.filter;
 
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.planner.opta.Assignment;
@@ -11,6 +11,10 @@ public class DefaultChangeMoveFilter extends AbstractChangeMoveFilter {
 
     @Override
     protected boolean accept(Roster roster, Assignment a, Person p) {
+        return isValidSwap(a, p);
+    }
+
+    public static boolean isValidSwap(Assignment a, Person p) {
         if (p.getPlannerData().getEvents().contains(a.event)) {
             return false;
         }

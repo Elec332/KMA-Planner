@@ -1,4 +1,4 @@
-package elec332.kmaplanner.planner.opta.helpers;
+package elec332.kmaplanner.planner.opta.util;
 
 import elec332.kmaplanner.planner.opta.Assignment;
 

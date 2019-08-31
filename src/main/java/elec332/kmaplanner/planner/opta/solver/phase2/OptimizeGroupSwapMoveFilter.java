@@ -2,7 +2,7 @@ package elec332.kmaplanner.planner.opta.solver.phase2;
 
 import elec332.kmaplanner.planner.opta.Assignment;
 import elec332.kmaplanner.planner.opta.Roster;
-import elec332.kmaplanner.planner.opta.solver.AbstractSwapMoveFilter;
+import elec332.kmaplanner.planner.opta.solver.filter.AbstractSwapMoveFilter;
 
 /**
  * Created by Elec332 on 30-8-2019

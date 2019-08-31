@@ -35,7 +35,9 @@ public class PlannerTab extends JPanel {
         JPanel middle = new JPanel();
         JList<Event> list = new JList<>(listModel = new DefaultListModel<>());
         list.setCellRenderer(new EventCellRenderer());
-        updateList();
+        if (planner != null) {
+            updateList();
+        }
         JScrollPane eventScroller = new JScrollPane(list);
         middle.add(eventScroller);
         add(middle);
@@ -85,7 +87,7 @@ public class PlannerTab extends JPanel {
         });
         plan.addActionListener(a -> planner.plan(PlannerTab.this));
         continueB.addActionListener(a -> openRoster().ifPresent(roster -> planner.plan(PlannerTab.this, () -> roster)));
-        print.addActionListener(a -> openRoster().ifPresent(RosterPrinter::printRoster));
+        print.addActionListener(a -> openRoster().ifPresent(roster -> RosterPrinter.printRoster(roster, SwingUtilities.getWindowAncestor(PlannerTab.this))));
 
         JPanel bottom = new JPanel(new GridLayout(2, 1));
         JPanel b1 = new JPanel();

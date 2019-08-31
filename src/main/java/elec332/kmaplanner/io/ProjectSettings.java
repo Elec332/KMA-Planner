@@ -14,7 +14,7 @@ public final class ProjectSettings implements IDataSerializable {
 
     public long seed = new Random().nextLong();
     public PersonSortingType sortingType = PersonSortingType.RANDOM;
-    public int unimprovedSeconds = 30;
+    public int unimprovedSteps = 30;
     public int timeDiffThreshold = 45;
     public int mainGroupFactor = 5;
 
@@ -22,7 +22,7 @@ public final class ProjectSettings implements IDataSerializable {
     public void writeObject(IByteArrayDataOutputStream stream) {
         stream.writeLong(seed);
         stream.writeByte(sortingType.ordinal());
-        stream.writeInt(unimprovedSeconds);
+        stream.writeInt(unimprovedSteps);
         stream.writeInt(timeDiffThreshold);
         stream.writeInt(mainGroupFactor);
     }
@@ -32,7 +32,7 @@ public final class ProjectSettings implements IDataSerializable {
         this.seed = stream.readLong();
         sortingType = PersonSortingType.values()[stream.readByte()];
         if (stream.availableBytes() > 0) {
-            unimprovedSeconds = stream.readInt();
+            unimprovedSteps = stream.readInt();
             timeDiffThreshold = stream.readInt();
         }
         if (stream.availableBytes() > 0) {

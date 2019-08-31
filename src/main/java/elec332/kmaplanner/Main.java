@@ -59,6 +59,11 @@ public class Main {
     private static void startProgram() {
         JFrame frame = new JFrame();
         frame.setTitle("KMAPlanner");
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+        JPanel plannerGui = new PlannerGuiMain(null);
+        frame.setContentPane(plannerGui);
+        frame.pack();
         frame.setVisible(true);
 
         StartupFileSelector startupFileSelector = SwingHelper.openPanelAsDialog(new StartupFileSelector(), "Start", frame);
@@ -101,12 +106,10 @@ public class Main {
         planner.initialize();
 
         frame.setVisible(false);
-        JPanel plannerGui = new PlannerGuiMain(planner);
-        plannerGui.setOpaque(true);
+        plannerGui = new PlannerGuiMain(planner);
         frame.setContentPane(plannerGui);
         frame.pack();
         frame.setVisible(true);
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
 
             @Override

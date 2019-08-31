@@ -19,7 +19,7 @@ public class JPanelBase extends JPanel {
         super();
     }
 
-    Window d;
-    boolean noOpen;
+    JDialog dialog;
+    boolean close;
 
 }

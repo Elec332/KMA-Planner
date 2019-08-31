@@ -28,10 +28,12 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
         int mediumScore = 0;
         int softScore = 0;
         roster.getPersons().forEach(p -> p.getPlannerData().clearEvents());
+        roster.getAssignments().stream()
+                .filter(assignment -> assignment.getPerson() != PersonManager.NULL_PERSON)
+                .forEach(assignment -> assignment.person.getPlannerData().addEvent(assignment.event));
         Date start = roster.getPlanner().getFirstDate();
         Date end = roster.getPlanner().getLastDate();
         long avg = roster.getAveragePersonTimeSoft();
-        avg *= 1.1f;
         for (Assignment assignment : roster.getAssignments()) {
 
             if (assignment.person == null || assignment.person == PersonManager.NULL_PERSON) {
@@ -39,7 +41,7 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
                 continue;
             }
 
-            if (assignment.person.getPlannerData().getEvents().contains(assignment.event)) {
+            if (assignment.person.getPlannerData().getCheckEvents().contains(assignment.event)) {
                 hardScore -= 50;
             }
 
@@ -51,12 +53,17 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
                 hardScore--;
             }
 
-            for (Event e : assignment.person.getPlannerData().getEvents()) {
+            //Force group filter if set by an EventAssigner
+            if (!assignment.groupFilter.test(assignment.getPerson().getPlannerData().getMainGroup())) {
+                hardScore--;
+            }
+
+            for (Event e : assignment.person.getPlannerData().getCheckEvents()) {
                 if (assignment.event.isDuring(e)) {
                     hardScore -= 11;
                 }
             }
-            assignment.person.getPlannerData().addEvent(assignment.event);
+            assignment.person.getPlannerData().getCheckEvents().add(assignment.event);
         }
 
         ProjectSettings settings = roster.getPlanner().getSettings();
@@ -80,6 +87,17 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
             }
         }
 
+        for (Group group : roster.getPlanner().getGroupManager().getMainGroups()) {
+            if (!group.getPersonIterator().hasNext()) {
+                continue;
+            }
+            long gAvg = group.getAverageSoftTime(roster);
+            if (gAvg > avg + settings.timeDiffThreshold / 2 || gAvg < avg - settings.timeDiffThreshold / 3) {
+                long diff = Math.abs(gAvg - avg);
+                mediumScore -= (int) diff / 3;
+            }
+        }
+
 
         if (settings.mainGroupFactor > 1) {
             Multimap<Event, Person> map = HashMultimap.create();
@@ -92,9 +110,15 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
             for (Map.Entry<Event, Collection<Person>> pc : map.asMap().entrySet()) {
                 int groupF = Math.min(settings.mainGroupFactor, pc.getKey().requiredPersons);
                 mediumScore -= mainGroups.stream()
-                        .mapToInt(g -> (int) pc.getValue().stream()
-                                .filter(g::containsPerson)
-                                .count())
+                        .mapToInt(g -> {
+                            int ret = (int) pc.getValue().stream()
+                                    .filter(g::containsPerson)
+                                    .count();
+                            if (ret >= Math.ceil(g.getGroupSize() / 2f)) {
+                                ret = 0;
+                            }
+                            return ret;
+                        })
                         .filter(i -> i > 0)
                         .filter(i -> i < groupF)
                         .reduce(0, (a, b) -> a + (groupF - b) * 10);

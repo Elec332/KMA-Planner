@@ -1,0 +1,39 @@
+package elec332.kmaplanner.planner.opta.solver.phase2;
+
+import com.google.common.collect.Lists;
+import elec332.kmaplanner.planner.opta.Assignment;
+import elec332.kmaplanner.planner.opta.Roster;
+import elec332.kmaplanner.planner.opta.solver.filter.DefaultSwapMoveFilter;
+import elec332.kmaplanner.planner.opta.solver.move.AbstractRosterMove;
+import elec332.kmaplanner.planner.opta.solver.move.RosterSwapMove;
+import org.optaplanner.core.impl.heuristic.move.Move;
+import org.optaplanner.core.impl.heuristic.selector.move.factory.MoveListFactory;
+
+import java.util.List;
+import java.util.Random;
+
+/**
+ * Created by Elec332 on 31-8-2019
+ */
+public class Phase2AChangeMoveListFactory implements MoveListFactory<Roster> {
+
+    @Override
+    public List<? extends Move<Roster>> createMoveList(Roster roster) {
+        roster.plannerApply();
+        List<AbstractRosterMove> moves = Lists.newArrayList();
+        for (Assignment a1 : roster.getAssignments()) {
+            for (Assignment a2 : roster.getAssignments()) {
+                if (!DefaultSwapMoveFilter.isValidSwap(a1, a2) || !(new Random().nextDouble() < 0.2)) {
+                    continue;
+                }
+                if (a1.person.getPlannerData().getMainGroup() == a2.person.getPlannerData().getMainGroup()) {
+                    continue;
+                }
+                moves.add(new RosterSwapMove(a1, a2));
+            }
+        }
+
+        return moves;
+    }
+
+}

@@ -9,6 +9,12 @@ import elec332.kmaplanner.persons.PersonManager;
 import elec332.kmaplanner.planner.opta.Roster;
 import elec332.kmaplanner.planner.opta.RosterScoreCalculator;
 import elec332.kmaplanner.planner.opta.solver.SolverConfigurator;
+import elec332.kmaplanner.planner.opta.solver.phase1.Phase1Configuration;
+import elec332.kmaplanner.planner.opta.solver.phase2.Phase2Configuration;
+import elec332.kmaplanner.planner.opta.solver.phase3.Phase3Configuration;
+import elec332.kmaplanner.planner.opta.solver.phase4.Phase4Configuration;
+import elec332.kmaplanner.planner.opta.solver.phase5.Phase5Configuration;
+import elec332.kmaplanner.planner.opta.solver.phase6.Phase6Configuration;
 import elec332.kmaplanner.planner.opta.util.IAbstractPhaseLifecycleListener;
 import elec332.kmaplanner.util.FileHelper;
 import elec332.kmaplanner.util.ObjectReference;
@@ -29,6 +35,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -119,7 +126,13 @@ public class Planner {
         factory.getSolverConfig().getScoreDirectorFactoryConfig().setEasyScoreCalculatorClass(RosterScoreCalculator.class);
 
         //A lot of *sigh*'s in here, you've been warned
-        SolverConfigurator.configureSolver(factory);
+        SolverConfigurator.configureSolver(factory, getSettings(),
+                new Phase1Configuration(),
+                new Phase2Configuration(),
+                new Phase3Configuration(),
+                new Phase4Configuration(),
+                new Phase5Configuration(),
+                new Phase6Configuration());
 
     }
 
@@ -128,7 +141,16 @@ public class Planner {
         configureSolver(factory);
 
         AbstractSolver<Roster> solver = (AbstractSolver<Roster>) factory.buildSolver();
-        solver.addEventListener(event -> System.out.println(event.getNewBestScore()));
+        solver.addEventListener(event -> {
+            System.out.println(event.getNewBestSolution().getAveragePersonTimeSoft());
+            System.out.println(event.getNewBestSolution().getAveragePersonTimeReal());
+            event.getNewBestSolution().getPlanner().getGroupManager().getMainGroups().stream()
+                    .filter(g -> g.getPersonIterator().hasNext())
+                    .sorted(Comparator.comparingLong(g -> g.getAverageSoftTime(roster)))
+                    .forEach(g -> System.out.print(g + " " + g.getAverageSoftTime(roster) + " | "));
+            System.out.println();
+            System.out.println(event.getNewBestScore());
+        });
 
         ObjectReference<Roster> ref = new ObjectReference<>();
         PlannerUI ui = new PlannerUI();
@@ -154,13 +176,14 @@ public class Planner {
 
         if (ref.get() == null) {
             solver.terminateEarly();
+            //ThreadFactory.solverGroup.stop();
             writeRoster(solver.getBestSolution());
             return;
         }
 
         Roster rosterP = ref.get();
         writeRoster(rosterP);
-        RosterPrinter.printRoster(rosterP);
+        RosterPrinter.printRoster(rosterP, SwingUtilities.getWindowAncestor(component));
     }
 
     private void writeRoster(Roster roster) {
@@ -213,6 +236,8 @@ public class Planner {
         public void phaseEnded(AbstractPhaseScope<Roster> phaseScope) {
             phase++;
             phaseLabel.setText("" + phase);
+            step = 0;
+            stepLabel.setText("" + step);
         }
 
     }

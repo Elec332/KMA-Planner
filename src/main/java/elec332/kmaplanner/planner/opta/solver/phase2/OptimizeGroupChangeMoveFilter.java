@@ -3,7 +3,7 @@ package elec332.kmaplanner.planner.opta.solver.phase2;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.planner.opta.Assignment;
 import elec332.kmaplanner.planner.opta.Roster;
-import elec332.kmaplanner.planner.opta.solver.AbstractChangeMoveFilter;
+import elec332.kmaplanner.planner.opta.solver.filter.AbstractChangeMoveFilter;
 
 /**
  * Created by Elec332 on 30-8-2019
