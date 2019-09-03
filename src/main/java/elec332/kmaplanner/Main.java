@@ -1,22 +1,13 @@
 package elec332.kmaplanner;
 
-import com.google.common.base.Strings;
-import elec332.kmaplanner.group.GroupManager;
-import elec332.kmaplanner.gui.ProjectInitializerGui;
-import elec332.kmaplanner.gui.StartupFileSelector;
-import elec332.kmaplanner.gui.planner.PlannerGuiMain;
-import elec332.kmaplanner.io.ProjectReader;
-import elec332.kmaplanner.io.ProjectSettings;
-import elec332.kmaplanner.persons.PersonManager;
-import elec332.kmaplanner.planner.Event;
-import elec332.kmaplanner.planner.Planner;
-import elec332.kmaplanner.util.UpdatableTreeSet;
-import elec332.kmaplanner.util.swing.SwingHelper;
+import elec332.kmaplanner.gui.MainGui;
+import elec332.kmaplanner.gui.UISettings;
+import elec332.kmaplanner.util.ClassProperties;
+import elec332.kmaplanner.util.FileHelper;
+import elec332.kmaplanner.util.swing.DialogHelper;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 
 /**
@@ -25,12 +16,16 @@ import java.io.File;
 public class Main {
 
     public static void main(String... args) {
+        // Needed cuz MAC is shite...
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
         try {
             SwingUtilities.invokeLater(Main::startHandler);
         } catch (Exception e) {
             error(e);
         }
     }
+
+    public static final File UI_SETTINGS_FILE = new File(FileHelper.getExecFolder(), "uisettings.properties");
 
     private static void error(Throwable e) {
         e.printStackTrace();
@@ -47,7 +42,7 @@ public class Main {
         JTextArea jta = new JTextArea(trace.toString());
         JScrollPane jsp = new JScrollPane(jta);
         jsp.setPreferredSize(new Dimension(600, 400));
-        JOptionPane.showMessageDialog(new JFrame(), jsp, "Error", JOptionPane.ERROR_MESSAGE);
+        DialogHelper.showErrorMessageDialog(jsp, "Error");
         System.exit(0);
     }
 
@@ -57,92 +52,9 @@ public class Main {
     }
 
     private static void startProgram() {
-        JFrame frame = new JFrame();
-        frame.setTitle("KMAPlanner");
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-        JPanel plannerGui = new PlannerGuiMain(null);
-        frame.setContentPane(plannerGui);
-        frame.pack();
-        frame.setVisible(true);
-
-        StartupFileSelector startupFileSelector = SwingHelper.openPanelAsDialog(new StartupFileSelector(), "Start", frame);
-        if (startupFileSelector.shouldExit()) {
-            System.exit(0);
-        }
-        File projFile = startupFileSelector.getProjectFile();
-
-        GroupManager groupManager = new GroupManager();
-        PersonManager personManager = new PersonManager(groupManager);
-        UpdatableTreeSet<Event> events = new UpdatableTreeSet<>();
-
-        ProjectReader projectReader;
-        try {
-            if (projFile == null) {
-                ProjectInitializerGui init = SwingHelper.openPanelAsDialog(new ProjectInitializerGui(), "Choose project location", frame);
-                projectReader = new ProjectReader(checkFile(init.getProjectFile(), false, ".kp"), init.getProjectData());
-                projectReader.write(personManager, groupManager, events);
-            } else {
-                projectReader = new ProjectReader(checkFile(projFile, true, ".kp")).read();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        ProjectSettings projectData = projectReader.getProjectData();
-        groupManager.load(projectReader);
-        personManager.load(projectReader);
-        events.addAll(projectReader.getEvents());
-
-        Runnable save = () -> {
-            try {
-                projectReader.write(personManager, groupManager, events);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        };
-
-        Planner planner = new Planner(personManager, groupManager, events, projectData, save);
-        planner.initialize();
-
-        frame.setVisible(false);
-        plannerGui = new PlannerGuiMain(planner);
-        frame.setContentPane(plannerGui);
-        frame.pack();
-        frame.setVisible(true);
-        frame.addWindowListener(new WindowAdapter() {
-
-            @Override
-            public void windowClosing(WindowEvent e) {
-                save.run();
-            }
-
-        });
-    }
-
-    public static File checkFile(File projFile, boolean load, String extension) {
-        String fName = projFile.getAbsolutePath();
-        int fsl = fName.lastIndexOf(File.separatorChar);
-        String pureFileName = fName.substring(fsl + 1);
-        String preFile = fName.substring(0, fsl);
-        int dot = pureFileName.indexOf('.');
-        if (dot >= 0) {
-            pureFileName = pureFileName.substring(0, dot);
-        }
-        if (Strings.isNullOrEmpty(pureFileName)) {
-            JOptionPane.showMessageDialog(new JFrame(), "Cannot enter empty file name!", "Failed to open Project", JOptionPane.ERROR_MESSAGE);
-            System.exit(0);
-        }
-        if (!pureFileName.endsWith(extension)) {
-            pureFileName += extension;
-        }
-        projFile = new File(preFile + File.separator + pureFileName);
-        if ((projFile.exists() && !load) || (load && !projFile.exists())) {
-            String s2 = load ? "doesn't exist..." : " already exists...";
-            JOptionPane.showMessageDialog(new JFrame(), "File " + projFile + s2, "Failed to open Project", JOptionPane.ERROR_MESSAGE);
-            System.exit(0);
-        }
-        return projFile;
+        //JFrame.setDefaultLookAndFeelDecorated(true);
+        UISettings settings = ClassProperties.readProperties(UISettings.class, UI_SETTINGS_FILE);
+        new MainGui(settings);
     }
 
 }

@@ -16,7 +16,7 @@ import java.awt.event.MouseEvent;
  */
 public class GroupsTab extends JPanel {
 
-    public GroupsTab(final GroupManager groupManager, Runnable callback) {
+    public GroupsTab(final GroupManager groupManager, Runnable callback, Runnable dirtyMarker) {
         super(new BorderLayout());
         this.groupManager = groupManager;
         this.callback = callback;
@@ -49,8 +49,8 @@ public class GroupsTab extends JPanel {
         bottomPanel.add(add);
         bottomPanel.add(edit);
         bottomPanel.add(remove);
-        add.addActionListener(a -> editGroup(new Group(""), true));
-        edit.addActionListener(e -> editGroup(list.getSelectedValue(), false));
+        add.addActionListener(a -> editGroup(new Group(""), true, dirtyMarker));
+        edit.addActionListener(e -> editGroup(list.getSelectedValue(), false, dirtyMarker));
         remove.addActionListener(a -> {
             Group g = list.getSelectedValue();
             if (g != null) {
@@ -71,7 +71,7 @@ public class GroupsTab extends JPanel {
         callback.run();
     }
 
-    private void editGroup(Group group, boolean newG) {
+    private void editGroup(Group group, boolean newG, Runnable dirtyMarker) {
         if (group == null) {
             return;
         }
@@ -88,7 +88,7 @@ public class GroupsTab extends JPanel {
 
         dialog.add(top, BorderLayout.NORTH);
 
-        dialog.add(new JFilterPanel(group), BorderLayout.CENTER);
+        dialog.add(new JFilterPanel(group, dirtyMarker), BorderLayout.CENTER);
 
         if (DialogHelper.showDialog(GroupsTab.this, dialog, "Edit Group")) {
             if (!newG) {
@@ -99,7 +99,7 @@ public class GroupsTab extends JPanel {
                 group1.setMain(checkBox.isSelected());
                 group1.getFilters().addAll(group.getFilters());
                 if (Strings.isNullOrEmpty(group1.getName()) || !groupManager.addGroupNice(group1)) {
-                    JOptionPane.showMessageDialog(GroupsTab.this, "Failed to add Group! (Perhaps an invalid/duplicate name?)", "Error adding Group", JOptionPane.ERROR_MESSAGE);
+                    DialogHelper.showErrorMessageDialog(GroupsTab.this, "Failed to add Group! (Perhaps an invalid/duplicate name?)", "Error adding Group");
                     return;
                 }
             }

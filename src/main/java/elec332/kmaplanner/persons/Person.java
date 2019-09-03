@@ -15,6 +15,7 @@ import elec332.kmaplanner.util.io.IDataSerializable;
 import org.optaplanner.core.api.domain.lookup.PlanningId;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
@@ -29,12 +30,13 @@ public class Person implements Comparable, IEventFilter, IFilterable, IDataSeria
         this.groups = Sets.newHashSet();
         this.events = Sets.newTreeSet();
         this.filters = Sets.newHashSet();
+        this.filters_ = Collections.unmodifiableSet(filters);
         this.plannerData = new ThreadLocal<>();
     }
 
     private String firstName, lastName;
     private Set<Group> groups;
-    private Set<AbstractFilter> filters;
+    private Set<AbstractFilter> filters, filters_;
     private transient ThreadLocal<PersonPlanningData> plannerData;
     private transient Set<Event> events;
 
@@ -109,6 +111,7 @@ public class Person implements Comparable, IEventFilter, IFilterable, IDataSeria
         return groups;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public Group getMainGroup() {
         return getGroups().stream()
                 .filter(Group::isMainGroup)
@@ -161,6 +164,10 @@ public class Person implements Comparable, IEventFilter, IFilterable, IDataSeria
 
     @Override
     public Set<AbstractFilter> getFilters() {
+        return filters_;
+    }
+
+    public Set<AbstractFilter> getModifiableFilters() {
         return filters;
     }
 

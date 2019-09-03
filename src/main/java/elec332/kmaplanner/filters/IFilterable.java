@@ -7,6 +7,10 @@ import java.util.Set;
  */
 public interface IFilterable {
 
-    public Set<AbstractFilter> getFilters();
+    Set<AbstractFilter> getFilters();
+
+    default Set<AbstractFilter> getModifiableFilters() {
+        return getFilters();
+    }
 
 }

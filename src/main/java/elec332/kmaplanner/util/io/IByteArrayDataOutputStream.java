@@ -4,15 +4,15 @@ import javax.annotation.Nonnull;
 import java.io.DataOutput;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 /**
  * Created by Elec332 on 26-8-2019
  */
-public interface IByteArrayDataOutputStream extends DataOutput {
+public interface IByteArrayDataOutputStream extends DataOutput, IByteArrayObjectWriter<AssertionError> {
+
+    void setVersion(int version);
 
     @Override
     void write(int b);
@@ -68,15 +68,5 @@ public interface IByteArrayDataOutputStream extends DataOutput {
     default void writeObjects(Collection<? extends IDataSerializable> writers) {
         writeObjects(new ArrayList<>(writers));
     }
-
-    <T> void writeObjects(BiConsumer<IByteArrayDataOutputStream, T> serializer, List<T> objects);
-
-    <T> void writeObject(BiConsumer<IByteArrayDataOutputStream, T> serializer, T object);
-
-    void writeObjects(List<IDataSerializable> writers);
-
-    void writeObject(IDataSerializable writer);
-
-    void writeObject(Consumer<IByteArrayDataOutputStream> writer);
 
 }

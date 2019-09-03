@@ -3,10 +3,10 @@ package elec332.kmaplanner.planner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import elec332.kmaplanner.group.GroupManager;
-import elec332.kmaplanner.io.ProjectSettings;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.persons.PersonManager;
 import elec332.kmaplanner.planner.opta.Roster;
+import elec332.kmaplanner.planner.opta.RosterIO;
 import elec332.kmaplanner.planner.opta.RosterScoreCalculator;
 import elec332.kmaplanner.planner.opta.solver.SolverConfigurator;
 import elec332.kmaplanner.planner.opta.solver.phase1.Phase1Configuration;
@@ -16,9 +16,12 @@ import elec332.kmaplanner.planner.opta.solver.phase4.Phase4Configuration;
 import elec332.kmaplanner.planner.opta.solver.phase5.Phase5Configuration;
 import elec332.kmaplanner.planner.opta.solver.phase6.Phase6Configuration;
 import elec332.kmaplanner.planner.opta.util.IAbstractPhaseLifecycleListener;
+import elec332.kmaplanner.project.KMAPlannerProject;
+import elec332.kmaplanner.project.ProjectSettings;
 import elec332.kmaplanner.util.FileHelper;
 import elec332.kmaplanner.util.ObjectReference;
 import elec332.kmaplanner.util.UpdatableTreeSet;
+import elec332.kmaplanner.util.swing.DialogHelper;
 import org.optaplanner.core.api.solver.SolverFactory;
 import org.optaplanner.core.api.solver.event.BestSolutionChangedEvent;
 import org.optaplanner.core.api.solver.event.SolverEventListener;
@@ -33,11 +36,11 @@ import org.optaplanner.core.impl.solver.AbstractSolver;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
@@ -45,19 +48,23 @@ import java.util.function.Supplier;
  */
 public class Planner {
 
-    public Planner(PersonManager personManager, GroupManager groupManager, UpdatableTreeSet<Event> events, ProjectSettings settings, Runnable save) {
+    public Planner(KMAPlannerProject project) {
+        this(project.getPersonManager(), project.getGroupManager(), project.getEvents(), project.getSettings(), project.getUuid());
+    }
+
+    private Planner(PersonManager personManager, GroupManager groupManager, UpdatableTreeSet<Event> events, ProjectSettings settings, UUID projectUuid) {
         this.personManager = personManager;
         this.groupManager = groupManager;
         this.events = events;
         this.settings = settings;
-        this.save = save;
+        this.projectUuid = projectUuid;
     }
 
     private final PersonManager personManager;
     private final GroupManager groupManager;
     private final UpdatableTreeSet<Event> events;
     private final ProjectSettings settings;
-    private final Runnable save;
+    private final UUID projectUuid;
 
     public void initialize() {
         //Maybe..
@@ -79,8 +86,8 @@ public class Planner {
         return events;
     }
 
-    public void saveProject() {
-        save.run();
+    public UUID getProjectUuid() {
+        return projectUuid;
     }
 
     @SuppressWarnings("unused")
@@ -189,12 +196,10 @@ public class Planner {
     private void writeRoster(Roster roster) {
         File file = new File(FileHelper.getExecFolder(), new Date().getTime() + ".kpa");
         try {
-            FileOutputStream fos = new FileOutputStream(file);
-            roster.write(fos);
-            fos.close();
+            RosterIO.writeRoster(roster, file);
         } catch (IOException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(new JFrame(), "Failed to save assignment data.", "Export failed!", JOptionPane.ERROR_MESSAGE);
+            DialogHelper.showErrorMessageDialog("Failed to save assignment data.", "Export failed!");
         }
     }
 

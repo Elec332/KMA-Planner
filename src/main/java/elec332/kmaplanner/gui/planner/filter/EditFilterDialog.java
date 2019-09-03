@@ -15,6 +15,7 @@ import java.util.function.Supplier;
 /**
  * Created by Elec332 on 24-8-2019
  */
+@SuppressWarnings("WeakerAccess")
 public class EditFilterDialog extends JPanel {
 
     @Nullable
@@ -28,7 +29,7 @@ public class EditFilterDialog extends JPanel {
         if (DialogHelper.showDialog(parent, dialog, "Edit Event")) {
             dialog.cB.forEach(Runnable::run);
             if (!dialog.filter.isValid()) {
-                JOptionPane.showMessageDialog(parent, "Filter settings invalid, please check the settings.", "Invalid filter", JOptionPane.ERROR_MESSAGE);
+                DialogHelper.showErrorMessageDialog("Filter settings invalid, please check the settings.", "Invalid filter");
                 return getFilter(dialog.filter, parent);
             }
             return dialog.filter;

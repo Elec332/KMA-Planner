@@ -1,8 +1,10 @@
 package elec332.kmaplanner.gui.planner.tabs;
 
 import com.google.common.base.Strings;
-import elec332.kmaplanner.io.ProjectSettings;
 import elec332.kmaplanner.planner.opta.assignment.PersonSortingType;
+import elec332.kmaplanner.project.KMAPlannerProject;
+import elec332.kmaplanner.project.ProjectSettings;
+import elec332.kmaplanner.util.swing.DialogHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,8 +14,9 @@ import java.awt.*;
  */
 public class SettingsTab extends JPanel {
 
-    public SettingsTab(ProjectSettings settings, Runnable save) {
+    public SettingsTab(KMAPlannerProject project) {
         super(new BorderLayout());
+        ProjectSettings settings = project.getSettings();
         JPanel middle = new JPanel();
 
         JPanel se = new JPanel();
@@ -56,6 +59,7 @@ public class SettingsTab extends JPanel {
             PersonSortingType s = (PersonSortingType) sorting.getSelectedItem();
             if (s != null) {
                 settings.sortingType = s;
+                project.markDirty();
             }
             Long newSeed = null;
             Integer timeD = null, unim = null, mgf = null;
@@ -81,7 +85,7 @@ public class SettingsTab extends JPanel {
                 err += "Invalid group size ";
             }
             if (!Strings.isNullOrEmpty(err)) {
-                JOptionPane.showMessageDialog(this, err, "Invalid number", JOptionPane.ERROR_MESSAGE);
+                DialogHelper.showErrorMessageDialog(this, err, "Invalid number");
                 return;
             }
             if (newSeed != null && timeD != null && unim != null && mgf != null) {
@@ -92,7 +96,7 @@ public class SettingsTab extends JPanel {
             } else {
                 throw new IllegalStateException();
             }
-            save.run();
+            project.markDirty();
         });
     }
 

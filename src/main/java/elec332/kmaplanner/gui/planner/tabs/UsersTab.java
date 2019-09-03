@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  */
 public class UsersTab extends JPanel {
 
-    public UsersTab(PersonManager personManager, GroupManager groupManager) {
+    public UsersTab(PersonManager personManager, GroupManager groupManager, Runnable dirtyMarker) {
         super(new BorderLayout());
         this.personManager = personManager;
         this.groupManager = groupManager;
@@ -82,8 +82,8 @@ public class UsersTab extends JPanel {
         bottomPanel.add(edit);
         bottomPanel.add(remove);
         bottomPanel.add(importB);
-        add.addActionListener(e -> editUser(new Person("", ""), true));
-        edit.addActionListener(e -> editUser(list.getSelectedValue(), false));
+        add.addActionListener(e -> editUser(new Person("", ""), true, dirtyMarker));
+        edit.addActionListener(e -> editUser(list.getSelectedValue(), false, dirtyMarker));
         remove.addActionListener(a -> {
             Person person = list.getSelectedValue();
             if (person != null) {
@@ -131,7 +131,7 @@ public class UsersTab extends JPanel {
         refreshingGroups = false;
     }
 
-    private void editUser(final Person person, boolean newP) {
+    private void editUser(final Person person, boolean newP, Runnable dirtyMarker) {
         if (person == null) {
             return;
         }
@@ -177,12 +177,11 @@ public class UsersTab extends JPanel {
         });
 
 
-        JFilterPanel filterPanel = new JFilterPanel(person);
+        JFilterPanel filterPanel = new JFilterPanel(person, dirtyMarker);
         JScrollPane groupScroller = new JScrollPane(groupList);
         JCheckBox prot = new JCheckBox("Sample Text");
         prot.setPreferredSize(new Dimension(filterPanel.getPreferredSize().width, prot.getPreferredSize().height));
         groupList.setPrototypeCellValue(prot);
-
 
         group.add(groupScroller);
 
@@ -200,7 +199,7 @@ public class UsersTab extends JPanel {
                 Person person1 = new Person(fnf.getText(), lnf.getText());
                 person1.getFilters().addAll(person.getFilters());
                 if (Strings.isNullOrEmpty(person1.getFirstName()) || !personManager.addPersonNice(person1)) {
-                    JOptionPane.showMessageDialog(UsersTab.this, "Failed to add Person! (Perhaps an invalid/duplicate name?)", "Error adding Person", JOptionPane.ERROR_MESSAGE);
+                    DialogHelper.showErrorMessageDialog(UsersTab.this, "Failed to add Person! (Perhaps an invalid/duplicate name?)", "Error adding Person");
                     return;
                 }
             }
@@ -267,7 +266,7 @@ public class UsersTab extends JPanel {
         if (DialogHelper.showDialog(UsersTab.this, dialog, "Person Importer")) {
             String file = fileB.getText();
             if (file.trim().equals(NOT_SELECTED)) {
-                JOptionPane.showMessageDialog(UsersTab.this, "File not selected!", "Invalid file", JOptionPane.ERROR_MESSAGE);
+                DialogHelper.showErrorMessageDialog(UsersTab.this, "File not selected!", "Invalid file");
                 return;
             }
             String fn;

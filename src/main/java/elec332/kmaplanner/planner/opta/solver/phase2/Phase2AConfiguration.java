@@ -1,8 +1,8 @@
 package elec332.kmaplanner.planner.opta.solver.phase2;
 
 import com.google.common.collect.Lists;
-import elec332.kmaplanner.io.ProjectSettings;
 import elec332.kmaplanner.planner.opta.solver.IPhaseConfiguration;
+import elec332.kmaplanner.project.ProjectSettings;
 import org.optaplanner.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import org.optaplanner.core.config.heuristic.selector.move.factory.MoveListFactoryConfig;
 import org.optaplanner.core.config.localsearch.LocalSearchPhaseConfig;
@@ -10,7 +10,7 @@ import org.optaplanner.core.config.solver.termination.TerminationConfig;
 
 /**
  * Created by Elec332 on 31-8-2019
- *
+ * <p>
  * TODO: Rework or remove
  */
 public class Phase2AConfiguration implements IPhaseConfiguration<LocalSearchPhaseConfig> {

@@ -1,6 +1,6 @@
 package elec332.kmaplanner.planner.opta.solver;
 
-import elec332.kmaplanner.io.ProjectSettings;
+import elec332.kmaplanner.project.ProjectSettings;
 import org.optaplanner.core.config.phase.PhaseConfig;
 
 /**

@@ -5,7 +5,6 @@ import org.optaplanner.core.impl.heuristic.move.AbstractMove;
 import org.optaplanner.core.impl.score.director.ScoreDirector;
 
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * Created by Elec332 on 31-8-2019

@@ -2,8 +2,8 @@ package elec332.kmaplanner.group;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import elec332.kmaplanner.io.ProjectReader;
 import elec332.kmaplanner.persons.Person;
+import elec332.kmaplanner.project.ProjectManager;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -21,6 +21,7 @@ public class GroupManager {
         this.groups = Sets.newTreeSet();
         this.groups_ = Collections.unmodifiableSet(groups);
         this.reverseLookup = Maps.newTreeMap();
+        this.callbacks = Sets.newHashSet();
     }
 
     public static final Group EVERYONE = new Group("Everyone") {
@@ -42,11 +43,21 @@ public class GroupManager {
 
     private final Set<Group> groups, groups_;
     private final Map<String, Group> reverseLookup;
+    private final Set<Runnable> callbacks;
 
+    @SuppressWarnings("WeakerAccess")
     public void addGroup(Group group) {
         if (!addGroupNice(group)) {
             throw new IllegalArgumentException(group.toString());
         }
+    }
+
+    public void addCallback(Runnable runnable) {
+        callbacks.add(runnable);
+    }
+
+    private void runCallbacks() {
+        callbacks.forEach(Runnable::run);
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -55,6 +66,7 @@ public class GroupManager {
             return false;
         }
         reverseLookup.put(group.getName(), group);
+        runCallbacks();
         return true;
     }
 
@@ -65,9 +77,10 @@ public class GroupManager {
         reverseLookup.remove(group.getName());
         groups.remove(group);
         Sets.newHashSet(group.getPersons()).forEach(p -> p.removeFromGroup(group));
+        runCallbacks();
     }
 
-    public void load(ProjectReader projectReader) {
+    public void load(ProjectManager.LoadData projectReader) {
         projectReader.getGroups().forEach(this::addGroup);
         groups_.forEach(Group::postRead);
     }
@@ -81,6 +94,7 @@ public class GroupManager {
             consumer.accept(group);
             addGroup(group);
         }
+        runCallbacks();
     }
 
     @Nonnull

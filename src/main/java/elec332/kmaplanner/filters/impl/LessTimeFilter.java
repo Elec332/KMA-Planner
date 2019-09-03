@@ -4,6 +4,7 @@ import elec332.kmaplanner.filters.AbstractFilter;
 import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.util.io.IByteArrayDataInputStream;
 import elec332.kmaplanner.util.io.IByteArrayDataOutputStream;
+import elec332.kmaplanner.util.swing.DialogHelper;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -41,7 +42,7 @@ public class LessTimeFilter extends AbstractFilter {
                 e = Float.parseFloat(eff.getText());
             } catch (Exception ex) {
                 ex.printStackTrace();
-                JOptionPane.showMessageDialog(center, "Failed to parse efficiency.", "Failed to apply", JOptionPane.ERROR_MESSAGE);
+                DialogHelper.showErrorMessageDialog(center, "Failed to parse efficiency.", "Failed to apply");
                 return;
             }
             LessTimeFilter.this.efficiency = e;

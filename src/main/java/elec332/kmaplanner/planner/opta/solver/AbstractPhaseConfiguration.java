@@ -1,9 +1,9 @@
 package elec332.kmaplanner.planner.opta.solver;
 
 import com.google.common.collect.Lists;
-import elec332.kmaplanner.io.ProjectSettings;
 import elec332.kmaplanner.planner.opta.solver.filter.DefaultChangeMoveFilter;
 import elec332.kmaplanner.planner.opta.solver.filter.DefaultSwapMoveFilter;
+import elec332.kmaplanner.project.ProjectSettings;
 import org.optaplanner.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import org.optaplanner.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import org.optaplanner.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;

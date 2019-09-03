@@ -1,12 +1,14 @@
 package elec332.kmaplanner.gui.planner.tabs;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import elec332.kmaplanner.Main;
-import elec332.kmaplanner.io.ProjectReader;
 import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.Planner;
 import elec332.kmaplanner.planner.RosterPrinter;
 import elec332.kmaplanner.planner.opta.Roster;
+import elec332.kmaplanner.planner.opta.RosterIO;
+import elec332.kmaplanner.project.KMAPlannerProject;
+import elec332.kmaplanner.project.ProjectManager;
 import elec332.kmaplanner.util.DateHelper;
 import elec332.kmaplanner.util.swing.DateChooserPanel;
 import elec332.kmaplanner.util.swing.DialogHelper;
@@ -19,7 +21,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.FileInputStream;
+import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
 
@@ -28,17 +30,22 @@ import java.util.Set;
  */
 public class PlannerTab extends JPanel {
 
-    public PlannerTab(Planner planner) {
+    public PlannerTab(KMAPlannerProject project) {
         super(new BorderLayout());
-        this.planner = planner;
+        this.project = project;
+        Planner planner = new Planner(project);
+        planner.initialize();
 
         JPanel middle = new JPanel();
         JList<Event> list = new JList<>(listModel = new DefaultListModel<>());
         list.setCellRenderer(new EventCellRenderer());
-        if (planner != null) {
-            updateList();
-        }
+        updateList();
         JScrollPane eventScroller = new JScrollPane(list);
+        {
+            JList<Event> dummy = new JList<>(new Event[]{new Event("dummy", new Date(), new Date(), 0)});
+            dummy.setCellRenderer(new EventCellRenderer());
+            eventScroller.setPreferredSize(new JScrollPane(dummy).getPreferredSize());
+        }
         middle.add(eventScroller);
         add(middle);
 
@@ -64,30 +71,29 @@ public class PlannerTab extends JPanel {
         remove.addActionListener(a -> {
             Event e = list.getSelectedValue();
             if (e != null) {
-                planner.getEvents().remove(e);
+                project.getEvents().remove(e);
                 updateList();
             }
         });
         import_.addActionListener(a -> {
             File file = FileChooserHelper.openFileProjectChooser(PlannerTab.this);
             if (file != null) {
-                planner.saveProject();
-                file = Main.checkFile(file, true, ".kp");
+                project.saveIfPossible();
                 Set<Event> newEvents = null;
                 try {
-                    newEvents = new ProjectReader(file).read().getEvents();
+                    newEvents = Preconditions.checkNotNull(ProjectManager.loadFile(file)).getEvents();
                 } catch (Exception e) {
-                    JOptionPane.showMessageDialog(PlannerTab.this, "Failed to import events from file: " + file.getAbsolutePath(), "Import failed!", JOptionPane.ERROR_MESSAGE);
+                    DialogHelper.showErrorMessageDialog(PlannerTab.this, "Failed to import events from file: " + file.getAbsolutePath(), "Import failed!");
                 }
                 if (newEvents != null) {
-                    planner.getEvents().addAll(newEvents);
+                    project.getEvents().addAll(newEvents);
                     updateList();
                 }
             }
         });
         plan.addActionListener(a -> planner.plan(PlannerTab.this));
-        continueB.addActionListener(a -> openRoster().ifPresent(roster -> planner.plan(PlannerTab.this, () -> roster)));
-        print.addActionListener(a -> openRoster().ifPresent(roster -> RosterPrinter.printRoster(roster, SwingUtilities.getWindowAncestor(PlannerTab.this))));
+        continueB.addActionListener(a -> openRoster(planner).ifPresent(roster -> planner.plan(PlannerTab.this, () -> roster)));
+        print.addActionListener(a -> openRoster(planner).ifPresent(roster -> RosterPrinter.printRoster(roster, SwingUtilities.getWindowAncestor(PlannerTab.this))));
 
         JPanel bottom = new JPanel(new GridLayout(2, 1));
         JPanel b1 = new JPanel();
@@ -106,32 +112,30 @@ public class PlannerTab extends JPanel {
         add(bottom, BorderLayout.SOUTH);
     }
 
-    private Planner planner;
+    //private Planner planner;
+    private KMAPlannerProject project;
     private DefaultListModel<Event> listModel;
 
-    private Optional<Roster> openRoster() {
-        planner.saveProject();
-        File file = FileChooserHelper.openFileChooser(PlannerTab.this, new FileNameExtensionFilter("KMAPlanner Assignments file (*.kpa)", "kpa"));
+    private Optional<Roster> openRoster(Planner planner) {
+        project.saveIfPossible();
+        File file = FileChooserHelper.openFileChooser(PlannerTab.this, new FileNameExtensionFilter("KMAPlanner Assignments file (*.kpa)", "kpa"), "Open");
         if (file != null) {
-            file = Main.checkFile(file, true, ".kpa");
             Roster roster;
             try {
-                FileInputStream fis = new FileInputStream(file);
-                roster = Roster.readRoster(fis, planner);
-                fis.close();
+                roster = RosterIO.readRoster(file, planner);
             } catch (Exception e) {
                 e.printStackTrace();
-                JOptionPane.showMessageDialog(PlannerTab.this, "Failed to import assignments from file: " + file.getAbsolutePath(), "Import failed!", JOptionPane.ERROR_MESSAGE);
+                DialogHelper.showErrorMessageDialog(PlannerTab.this, "Failed to import assignments from file: " + file.getAbsolutePath(), "Import failed!");
                 return Optional.empty();
             }
-            return Optional.of(roster);
+            return Optional.ofNullable(roster);
         }
         return Optional.empty();
     }
 
     private void updateList() {
         listModel.clear();
-        planner.getEvents().forEach(listModel::addElement);
+        project.getEvents().forEach(listModel::addElement);
     }
 
     private void editEvent(Event event, boolean newE) {
@@ -175,22 +179,22 @@ public class PlannerTab extends JPanel {
 
         if (DialogHelper.showDialog(PlannerTab.this, panel, "Edit Event")) {
             if (!start.getDate().before(end.getDate()) && !start.getDate().equals(end.getDate())) {
-                JOptionPane.showMessageDialog(PlannerTab.this, "End date must be after the starting date!", "Invalid date!", JOptionPane.ERROR_MESSAGE);
+                DialogHelper.showErrorMessageDialog(PlannerTab.this, "End date must be after the starting date!", "Invalid date!");
             } else if (!newE) {
                 event.name = nameField.getText();
                 event.start = start.getDate();
                 event.end = end.getDate();
                 event.everyone = everyone.isSelected();
                 event.requiredPersons = event.everyone ? 0 : (int) snm.getNumber();
-                planner.getEvents().markObjectUpdated(event);
+                project.getEvents().markObjectUpdated(event);
             } else {
                 Event event1 = new Event(nameField.getText(), start.getDate(), end.getDate(), everyone.isSelected() ? 0 : (int) snm.getNumber());
                 event1.everyone = everyone.isSelected();
                 if (Strings.isNullOrEmpty(event1.name) || event1.getDuration() == 0) {
-                    JOptionPane.showMessageDialog(PlannerTab.this, "Failed to add Event! (Perhaps an duplicate name/invalid date?)", "Error adding Event", JOptionPane.ERROR_MESSAGE);
+                    DialogHelper.showErrorMessageDialog(PlannerTab.this, "Failed to add Event! (Perhaps an duplicate name/invalid date?)", "Error adding Event");
                     return;
                 }
-                planner.getEvents().add(event1);
+                project.getEvents().add(event1);
             }
             updateList();
         }

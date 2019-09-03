@@ -9,6 +9,14 @@ import java.awt.*;
 @SuppressWarnings("all")
 public class DialogHelper {
 
+    public static void showErrorMessageDialog(Object message, String title) {
+        showErrorMessageDialog(null, message, title);
+    }
+
+    public static void showErrorMessageDialog(Component parent, Object message, String title) {
+        JOptionPane.showMessageDialog(parent, message, title, JOptionPane.ERROR_MESSAGE);
+    }
+
     public static boolean showDialog(Component parent, Object data, String title) {
         return showDialog(parent, data, title, JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION;
     }

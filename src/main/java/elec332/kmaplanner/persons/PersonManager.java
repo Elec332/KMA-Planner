@@ -2,8 +2,8 @@ package elec332.kmaplanner.persons;
 
 import com.google.common.collect.Sets;
 import elec332.kmaplanner.group.GroupManager;
-import elec332.kmaplanner.io.ProjectReader;
 import elec332.kmaplanner.planner.Event;
+import elec332.kmaplanner.project.ProjectManager;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -22,6 +22,7 @@ public final class PersonManager {
         this.persons = Sets.newTreeSet();
         this.persons_ = Collections.unmodifiableSet(persons);
         this.groupManager = groupManager;
+        this.callbacks = Sets.newHashSet();
     }
 
     public static final Person NULL_PERSON = new Person("No", "Person") {
@@ -34,10 +35,19 @@ public final class PersonManager {
     };
     private final GroupManager groupManager;
     private final Set<Person> persons, persons_;
+    private final Set<Runnable> callbacks;
 
-    public void load(ProjectReader projectReader) {
+    public void load(ProjectManager.LoadData projectReader) {
         projectReader.getPersons().forEach(this::addPerson);
         persons_.forEach(p -> p.postRead(groupManager));
+    }
+
+    public boolean addCallback(Runnable runnable) {
+        return callbacks.add(runnable);
+    }
+
+    private void runCallbacks() {
+        callbacks.forEach(Runnable::run);
     }
 
     public void updatePerson(Person person, Consumer<Person> consumer) {
@@ -45,6 +55,7 @@ public final class PersonManager {
             consumer.accept(person);
             persons.add(person);
         }
+        runCallbacks();
     }
 
     public void addPerson(Person person) {
@@ -55,7 +66,9 @@ public final class PersonManager {
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean addPersonNice(Person person) {
-        return persons.add(person);
+        boolean ret = persons.add(person);
+        runCallbacks();
+        return ret;
     }
 
     public void removePerson(Person person) {
@@ -64,6 +77,7 @@ public final class PersonManager {
         }
         persons.remove(person);
         Sets.newHashSet(person.getGroups()).forEach(person::removeFromGroup);
+        runCallbacks();
     }
 
     @Nonnull

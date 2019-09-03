@@ -1,17 +1,13 @@
 package elec332.kmaplanner.util.io.impl;
 
 import elec332.kmaplanner.util.io.IByteArrayDataOutputStream;
-import elec332.kmaplanner.util.io.IDataSerializable;
 
 import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.UUID;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 /**
  * Created by Elec332 on 26-8-2019
@@ -23,6 +19,16 @@ public class ByteArrayDataOutputStream implements IByteArrayDataOutputStream {
     }
 
     private final DataOutput output;
+    private int version;
+
+    @Override
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    public int getVersion() {
+        return version;
+    }
 
     @Override
     public void write(int b) {
@@ -161,44 +167,6 @@ public class ByteArrayDataOutputStream implements IByteArrayDataOutputStream {
     public void writeUUID(UUID uuid) {
         writeLong(uuid.getMostSignificantBits());
         writeLong(uuid.getLeastSignificantBits());
-    }
-
-    @Override
-    @SuppressWarnings("all")
-    public <T> void writeObjects(BiConsumer<IByteArrayDataOutputStream, T> serializer, List<T> objects) {
-        int siz = objects.size();
-        writeInt(siz);
-        for (int i = 0; i < siz; i++) {
-            writeObject(serializer, objects.get(i));
-        }
-    }
-
-    @Override
-    public <T> void writeObject(BiConsumer<IByteArrayDataOutputStream, T> serializer, final T object) {
-        writeObject(c -> serializer.accept(c, object));
-    }
-
-    @Override
-    @SuppressWarnings("all")
-    public void writeObjects(List<IDataSerializable> writers) {
-        int siz = writers.size();
-        writeInt(siz);
-        for (int i = 0; i < siz; i++) {
-            writeObject(writers.get(i));
-        }
-    }
-
-    @Override
-    public void writeObject(IDataSerializable writer) {
-        writeObject(writer::writeObject);
-    }
-
-    @Override
-    public void writeObject(Consumer<IByteArrayDataOutputStream> writer) {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        IByteArrayDataOutputStream dos = new ByteArrayDataOutputStream(bos);
-        writer.accept(dos);
-        writeByteArray(bos.toByteArray());
     }
 
 }

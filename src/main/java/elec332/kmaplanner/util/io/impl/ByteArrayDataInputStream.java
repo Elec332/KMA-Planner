@@ -1,29 +1,35 @@
 package elec332.kmaplanner.util.io.impl;
 
 import elec332.kmaplanner.util.io.IByteArrayDataInputStream;
-import elec332.kmaplanner.util.io.IDataSerializable;
 
 import javax.annotation.Nonnull;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * Created by Elec332 on 26-8-2019
  */
 public class ByteArrayDataInputStream implements IByteArrayDataInputStream {
 
+    @SuppressWarnings("unused")
     public ByteArrayDataInputStream(ByteArrayInputStream bis) {
+        this(bis, 0);
+    }
+
+    public ByteArrayDataInputStream(ByteArrayInputStream bis, int version) {
         this.input = new DataInputStream(bis);
         this.bis = bis;
+        this.version = version;
     }
 
     private final DataInput input;
     private final ByteArrayInputStream bis;
+    private int version;
+
+    @Override
+    public int getVersion() {
+        return version;
+    }
 
     @Override
     public void readFully(@Nonnull byte[] b) {
@@ -182,49 +188,6 @@ public class ByteArrayDataInputStream implements IByteArrayDataInputStream {
     @Override
     public int availableBytes() {
         return bis.available();
-    }
-
-    @Override
-    public <T> List<T> readObjects(Function<IByteArrayDataInputStream, T> deserializer) {
-        int siz = readInt();
-        List<T> ret = new ArrayList<>();
-        for (int i = 0; i < siz; i++) {
-            ret.add(readObject(deserializer));
-        }
-        return ret;
-    }
-
-    @Override
-    public <T> T readObject(Function<IByteArrayDataInputStream, T> deserializer) {
-        ByteArrayInputStream bis = new ByteArrayInputStream(readByteArray());
-        IByteArrayDataInputStream dis = new ByteArrayDataInputStream(bis);
-        return deserializer.apply(dis);
-    }
-
-    @Override
-    public <T extends IDataSerializable> List<T> readObjects(Supplier<T> typeCreator) {
-        int siz = readInt();
-        List<T> ret = new ArrayList<>();
-        for (int i = 0; i < siz; i++) {
-            T add = typeCreator.get();
-            readObject(add);
-            ret.add(add);
-        }
-        return ret;
-    }
-
-    @Override
-    public <T extends IDataSerializable> T readObject(T serializable) {
-        readObject((Consumer<IByteArrayDataInputStream>) serializable::readObject);
-        return serializable;
-    }
-
-    @Override
-    public void readObject(Consumer<IByteArrayDataInputStream> reader) {
-        readObject((Function<IByteArrayDataInputStream, Void>) t -> {
-            reader.accept(t);
-            return null;
-        });
     }
 
 }

@@ -120,9 +120,7 @@ public class Event implements IDataSerializable, Comparable<Event>, Cloneable, I
         end = new Date(stream.readLong());
         requiredPersons = stream.readInt();
         everyone = stream.readBoolean();
-        if (stream.availableBytes() > 0) {
-            uuid = stream.readUUID();
-        }
+        uuid = stream.readUUID();
     }
 
 }

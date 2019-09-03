@@ -14,7 +14,7 @@ import java.awt.event.MouseEvent;
  */
 public class JFilterPanel extends JPanel {
 
-    public JFilterPanel(IFilterable filterable) {
+    public JFilterPanel(IFilterable filterable, Runnable dirtyMarker) {
         super(new BorderLayout());
         setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Constrictions: "));
 
@@ -52,30 +52,33 @@ public class JFilterPanel extends JPanel {
             if (filter == null) {
                 return;
             }
-            filterable.getFilters().add(filter);
+            filterable.getModifiableFilters().add(filter);
             update();
+            dirtyMarker.run();
         });
         edit.addActionListener(a -> {
             AbstractFilter filter = getSelectedFilter();
             if (filter == null) {
                 return;
             }
-            filterable.getFilters().remove(filter);
+            filterable.getModifiableFilters().remove(filter);
             filter = filter.copy();
             AbstractFilter e = EditFilterDialog.getFilter(filter, this);
             if (e == null) {
                 e = filter;
             }
-            filterable.getFilters().add(e);
+            filterable.getModifiableFilters().add(e);
             update();
+            dirtyMarker.run();
         });
         remove.addActionListener(a -> {
             AbstractFilter filter = getSelectedFilter();
             if (filter == null) {
                 return;
             }
-            filterable.getFilters().remove(filter);
+            filterable.getModifiableFilters().remove(filter);
             update();
+            dirtyMarker.run();
         });
         add(bottom, BorderLayout.SOUTH);
     }
@@ -84,11 +87,11 @@ public class JFilterPanel extends JPanel {
     private final DefaultListModel<AbstractFilter> listModel;
     private final IFilterable filterable;
 
-    public AbstractFilter getSelectedFilter() {
+    private AbstractFilter getSelectedFilter() {
         return list.getSelectedValue();
     }
 
-    public void update() {
+    private void update() {
         listModel.clear();
         filterable.getFilters().forEach(listModel::addElement);
     }

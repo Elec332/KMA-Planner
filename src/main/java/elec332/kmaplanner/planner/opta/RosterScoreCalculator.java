@@ -3,10 +3,10 @@ package elec332.kmaplanner.planner.opta;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import elec332.kmaplanner.group.Group;
-import elec332.kmaplanner.io.ProjectSettings;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.persons.PersonManager;
 import elec332.kmaplanner.planner.Event;
+import elec332.kmaplanner.project.ProjectSettings;
 import org.optaplanner.core.api.score.Score;
 import org.optaplanner.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
 import org.optaplanner.core.impl.score.director.easy.EasyScoreCalculator;
@@ -97,7 +97,6 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
                 mediumScore -= (int) diff / 3;
             }
         }
-
 
         if (settings.mainGroupFactor > 1) {
             Multimap<Event, Person> map = HashMultimap.create();
