@@ -1,7 +1,8 @@
 package elec332.kmaplanner.planner.print;
 
+import elec332.kmaplanner.events.Event;
 import elec332.kmaplanner.persons.Person;
-import elec332.kmaplanner.planner.Event;
+import elec332.kmaplanner.util.AbstractExcelPrinter;
 import elec332.kmaplanner.util.DateHelper;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -10,12 +11,13 @@ import org.apache.poi.ss.usermodel.Workbook;
 /**
  * Created by Elec332 on 29-8-2019
  */
-public class PersonPrinter extends AbstractPrinter {
+public class PersonPrinter extends AbstractExcelPrinter<Person> {
 
     private static final int OFFSET = 2;
     private static final int OFFSET_2 = 2;
 
-    public static void printRoster(Person person, Workbook workbook) {
+    @Override
+    protected void printObject(Person person, Workbook workbook) {
         Sheet sheet = workbook.createSheet(person.toString());
         Row r1 = getOrCreateRow(sheet, 0);
         getCell(r1, 0).setCellValue("Rooster voor: " + person.toString());

@@ -2,12 +2,12 @@ package elec332.kmaplanner.persons;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
+import elec332.kmaplanner.events.Event;
 import elec332.kmaplanner.filters.AbstractFilter;
 import elec332.kmaplanner.filters.FilterManager;
 import elec332.kmaplanner.filters.IFilterable;
 import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.group.GroupManager;
-import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.IEventFilter;
 import elec332.kmaplanner.util.io.IByteArrayDataInputStream;
 import elec332.kmaplanner.util.io.IByteArrayDataOutputStream;

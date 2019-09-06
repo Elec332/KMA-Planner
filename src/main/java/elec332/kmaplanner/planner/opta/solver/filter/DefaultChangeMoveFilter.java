@@ -21,7 +21,7 @@ public class DefaultChangeMoveFilter extends AbstractChangeMoveFilter {
         if (a.event.isDuring(p.getPlannerData().getEvents())) {
             return false;
         }
-        if (!a.groupFilter.test(p.getPlannerData().getMainGroup())) {
+        if (!a.isValidGroup(p.getPlannerData().getMainGroup())) {
             return false;
         }
         return !a.person.equals(p);

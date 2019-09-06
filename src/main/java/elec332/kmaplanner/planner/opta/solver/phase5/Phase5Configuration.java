@@ -1,7 +1,7 @@
 package elec332.kmaplanner.planner.opta.solver.phase5;
 
 import elec332.kmaplanner.planner.opta.solver.AbstractPhaseConfiguration;
-import elec332.kmaplanner.project.ProjectSettings;
+import elec332.kmaplanner.project.PlannerSettings;
 import org.optaplanner.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import org.optaplanner.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
 import org.optaplanner.core.config.localsearch.LocalSearchPhaseConfig;
@@ -13,7 +13,7 @@ import org.optaplanner.core.config.solver.termination.TerminationConfig;
 public class Phase5Configuration extends AbstractPhaseConfiguration {
 
     @Override
-    protected void configure(LocalSearchPhaseConfig phase, SwapMoveSelectorConfig swapMoveSelectorConfig, ChangeMoveSelectorConfig changeMoveSelectorConfig, ProjectSettings settings) {
+    protected void configure(LocalSearchPhaseConfig phase, SwapMoveSelectorConfig swapMoveSelectorConfig, ChangeMoveSelectorConfig changeMoveSelectorConfig, PlannerSettings settings) {
         swapMoveSelectorConfig.getFilterClassList().add(OptimizeTimeSwapMoveFilter.class);
         changeMoveSelectorConfig.getFilterClassList().add(OptimizeTimeChangeMoveFilter.class);
         phase.setTerminationConfig(new TerminationConfig());

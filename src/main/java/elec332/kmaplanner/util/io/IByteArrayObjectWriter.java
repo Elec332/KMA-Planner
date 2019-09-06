@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Created by Elec332 on 3-9-2019
@@ -43,19 +44,45 @@ public interface IByteArrayObjectWriter<E extends Throwable> {
         ByteArrayDataOutputStream dos = new ByteArrayDataOutputStream(bos);
         writer.accept(dos);
         byte[] bytes = bos.toByteArray();
+
         int length = bytes.length;
-        int version = dos.getVersion();
-        if (version != 0) {
+        int version = Math.abs(dos.getVersion()) + 1;
+        if (compress()) {
+            version = -version;
+        }
+        if (version != 1) {
             writeInt(-length);
             writeInt(version);
         } else {
             writeInt(length);
         }
-        write(bos.toByteArray());
+
+        if (version < 0) {
+            try {
+                ByteArrayOutputStream bosC = new ByteArrayOutputStream();
+                GZIPOutputStream zosC = new GZIPOutputStream(bosC);
+                zosC.write(bytes);
+                zosC.close();
+                bytes = bosC.toByteArray();
+                writeInt(bytes.length);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        write(bytes);
     }
 
     void writeInt(int v) throws E;
 
     void write(@Nonnull byte[] b) throws E;
+
+    default boolean compress() {
+        return false;
+    }
+
+    default void setCompressed(boolean compressed) {
+        throw new UnsupportedOperationException();
+    }
 
 }

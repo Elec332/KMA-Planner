@@ -1,6 +1,6 @@
 package elec332.kmaplanner.planner.opta.solver;
 
-import elec332.kmaplanner.project.ProjectSettings;
+import elec332.kmaplanner.project.PlannerSettings;
 import org.optaplanner.core.config.phase.PhaseConfig;
 
 /**
@@ -8,6 +8,6 @@ import org.optaplanner.core.config.phase.PhaseConfig;
  */
 public interface IPhaseConfiguration<C extends PhaseConfig<? extends C>> {
 
-    C createPhase(ProjectSettings settings);
+    C createPhase(PlannerSettings settings);
 
 }

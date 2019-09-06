@@ -3,9 +3,6 @@ package elec332.kmaplanner.util.io;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.function.BiConsumer;
 
 /**
  * Created by Elec332 on 26-8-2019
@@ -16,14 +13,17 @@ public class DataOutputStream extends FilterOutputStream implements IByteArrayOb
         super(out);
     }
 
-    public <T> void writeObjects(BiConsumer<IByteArrayDataOutputStream, T> serializer, Collection<T> objects) throws IOException {
-        writeObjects(serializer, new ArrayList<>(objects));
+    private boolean compress = false;
+
+    @Override
+    public void setCompressed(boolean compressed) {
+        compress = compressed;
     }
 
-    public void writeObjects(Collection<? extends IDataSerializable> writers) throws IOException {
-        writeObjects(new ArrayList<>(writers));
+    @Override
+    public boolean compress() {
+        return compress;
     }
-
 
     @Override
     @SuppressWarnings("all")

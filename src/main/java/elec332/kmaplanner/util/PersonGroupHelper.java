@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 /**
  * Created by Elec332 on 28-8-2019
  */
+@SuppressWarnings("unused")
 public class PersonGroupHelper {
 
     public static long getAverageSoftTime(Collection<Person> people, Roster roster) {
@@ -21,7 +22,7 @@ public class PersonGroupHelper {
     }
 
     public static Set<Person> sortByGroups(Collection<Person> persons, GroupManager groupManager) {
-        return groupManager.getGroups().stream()
+        return groupManager.stream()
                 .filter(Group::isMainGroup)
                 .sorted()
                 .flatMap(group -> persons.stream()
@@ -31,7 +32,7 @@ public class PersonGroupHelper {
     }
 
     public static Map<Group, Set<Person>> sortByGroup(Collection<Person> persons, GroupManager groupManager) {
-        return groupManager.getGroups().stream()
+        return groupManager.stream()
                 .filter(Group::isMainGroup)
                 .filter(g -> persons.stream().anyMatch(g::containsPerson))
                 .sorted()

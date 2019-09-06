@@ -2,6 +2,7 @@ package elec332.kmaplanner.planner;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import elec332.kmaplanner.events.EventManager;
 import elec332.kmaplanner.group.GroupManager;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.persons.PersonManager;
@@ -17,10 +18,9 @@ import elec332.kmaplanner.planner.opta.solver.phase5.Phase5Configuration;
 import elec332.kmaplanner.planner.opta.solver.phase6.Phase6Configuration;
 import elec332.kmaplanner.planner.opta.util.IAbstractPhaseLifecycleListener;
 import elec332.kmaplanner.project.KMAPlannerProject;
-import elec332.kmaplanner.project.ProjectSettings;
+import elec332.kmaplanner.project.PlannerSettings;
 import elec332.kmaplanner.util.FileHelper;
 import elec332.kmaplanner.util.ObjectReference;
-import elec332.kmaplanner.util.UpdatableTreeSet;
 import elec332.kmaplanner.util.swing.DialogHelper;
 import org.optaplanner.core.api.solver.SolverFactory;
 import org.optaplanner.core.api.solver.event.BestSolutionChangedEvent;
@@ -49,10 +49,10 @@ import java.util.function.Supplier;
 public class Planner {
 
     public Planner(KMAPlannerProject project) {
-        this(project.getPersonManager(), project.getGroupManager(), project.getEvents(), project.getSettings(), project.getUuid());
+        this(project.getPersonManager(), project.getGroupManager(), project.getEventManager(), project.getPlannerSettings(), project.getUuid());
     }
 
-    private Planner(PersonManager personManager, GroupManager groupManager, UpdatableTreeSet<Event> events, ProjectSettings settings, UUID projectUuid) {
+    private Planner(PersonManager personManager, GroupManager groupManager, EventManager events, PlannerSettings settings, UUID projectUuid) {
         this.personManager = personManager;
         this.groupManager = groupManager;
         this.events = events;
@@ -62,15 +62,16 @@ public class Planner {
 
     private final PersonManager personManager;
     private final GroupManager groupManager;
-    private final UpdatableTreeSet<Event> events;
-    private final ProjectSettings settings;
+    private final EventManager events;
+    private final PlannerSettings settings;
     private final UUID projectUuid;
+    public Roster roster;
 
     public void initialize() {
         //Maybe..
     }
 
-    public ProjectSettings getSettings() {
+    public PlannerSettings getSettings() {
         return settings;
     }
 
@@ -82,7 +83,7 @@ public class Planner {
         return groupManager;
     }
 
-    public UpdatableTreeSet<Event> getEvents() {
+    public EventManager getEventManager() {
         return events;
     }
 
@@ -90,29 +91,18 @@ public class Planner {
         return projectUuid;
     }
 
-    @SuppressWarnings("unused")
-    public Date getFirstDate() {
-        if (getEvents().isEmpty()) {
-            return new Date();
-        }
-        return (Date) getEvents().first().start.clone();
-    }
-
-    public Date getLastDate() {
-        if (getEvents().isEmpty()) {
-            return new Date();
-        }
-        return (Date) getEvents().last().end.clone();
+    public Roster getRoster() {
+        return roster;
     }
 
     public void plan(Component component) {
-        plan(component, () -> new Roster(this, Preconditions.checkNotNull(settings.sortingType.createEventAssigner())));
+        plan(component, () -> roster = new Roster(this, Preconditions.checkNotNull(settings.sortingType.createEventAssigner())));
     }
 
     public void plan(Component component, Supplier<Roster> roster) {
         initialize();
-        getPersonManager().getPersons().forEach(Person::clearEvents);
-        if (getPersonManager().getPersons().isEmpty() || getEvents().isEmpty()) {
+        getPersonManager().forEach(Person::clearEvents);
+        if (getPersonManager().getObjects().isEmpty() || getEventManager().getObjects().isEmpty()) {
             return;
         }
         plan_(component, roster.get());
@@ -183,14 +173,13 @@ public class Planner {
 
         if (ref.get() == null) {
             solver.terminateEarly();
-            //ThreadFactory.solverGroup.stop();
             writeRoster(solver.getBestSolution());
             return;
         }
 
         Roster rosterP = ref.get();
         writeRoster(rosterP);
-        RosterPrinter.printRoster(rosterP, SwingUtilities.getWindowAncestor(component));
+        RosterPrinter.printRoster(rosterP, SwingUtilities.getWindowAncestor(component), RosterPrinter::printAll);
     }
 
     private void writeRoster(Roster roster) {

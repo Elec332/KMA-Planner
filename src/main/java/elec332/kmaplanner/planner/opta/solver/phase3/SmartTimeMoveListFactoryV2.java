@@ -2,13 +2,13 @@ package elec332.kmaplanner.planner.opta.solver.phase3;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Streams;
+import elec332.kmaplanner.events.Event;
 import elec332.kmaplanner.persons.Person;
-import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.opta.Assignment;
 import elec332.kmaplanner.planner.opta.Roster;
 import elec332.kmaplanner.planner.opta.solver.move.AbstractRosterMove;
 import elec332.kmaplanner.planner.opta.solver.move.RosterSwapMove;
-import elec332.kmaplanner.project.ProjectSettings;
+import elec332.kmaplanner.project.PlannerSettings;
 import org.optaplanner.core.impl.heuristic.move.Move;
 import org.optaplanner.core.impl.heuristic.selector.move.factory.MoveListFactory;
 
@@ -25,7 +25,7 @@ public class SmartTimeMoveListFactoryV2 implements MoveListFactory<Roster> {
     public List<? extends Move<Roster>> createMoveList(Roster roster) {
         roster.plannerApply();
         List<AbstractRosterMove> moves = Lists.newArrayList();
-        ProjectSettings settings = roster.getPlanner().getSettings();
+        PlannerSettings settings = roster.getPlanner().getSettings();
 
         roster.getPlanner().getGroupManager().getMainGroups().stream()
                 .filter(g -> g.getPersonIterator().hasNext()).forEach(group -> {

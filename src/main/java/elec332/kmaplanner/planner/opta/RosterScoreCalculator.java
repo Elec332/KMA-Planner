@@ -2,11 +2,11 @@ package elec332.kmaplanner.planner.opta;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import elec332.kmaplanner.events.Event;
 import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.persons.PersonManager;
-import elec332.kmaplanner.planner.Event;
-import elec332.kmaplanner.project.ProjectSettings;
+import elec332.kmaplanner.project.PlannerSettings;
 import org.optaplanner.core.api.score.Score;
 import org.optaplanner.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
 import org.optaplanner.core.impl.score.director.easy.EasyScoreCalculator;
@@ -31,8 +31,8 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
         roster.getAssignments().stream()
                 .filter(assignment -> assignment.getPerson() != PersonManager.NULL_PERSON)
                 .forEach(assignment -> assignment.person.getPlannerData().addEvent(assignment.event));
-        Date start = roster.getPlanner().getFirstDate();
-        Date end = roster.getPlanner().getLastDate();
+        Date start = roster.getPlanner().getEventManager().getFirstDate();
+        Date end = roster.getPlanner().getEventManager().getLastDate();
         long avg = roster.getAveragePersonTimeSoft();
         for (Assignment assignment : roster.getAssignments()) {
 
@@ -54,7 +54,7 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
             }
 
             //Force group filter if set by an EventAssigner
-            if (!assignment.groupFilter.test(assignment.getPerson().getPlannerData().getMainGroup())) {
+            if (!assignment.isValidGroup(assignment.getPerson().getPlannerData().getMainGroup())) {
                 hardScore--;
             }
 
@@ -66,7 +66,7 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
             assignment.person.getPlannerData().getCheckEvents().add(assignment.event);
         }
 
-        ProjectSettings settings = roster.getPlanner().getSettings();
+        PlannerSettings settings = roster.getPlanner().getSettings();
 
         for (Person person : roster.getPersons()) {
             if (person == PersonManager.NULL_PERSON) {
@@ -101,7 +101,7 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
         if (settings.mainGroupFactor > 1) {
             Multimap<Event, Person> map = HashMultimap.create();
             roster.getAssignments().forEach(a -> map.put(a.event, a.person));
-            Set<Group> mainGroups = roster.getPlanner().getGroupManager().getGroups().stream()
+            Set<Group> mainGroups = roster.getPlanner().getGroupManager().stream()
                     .filter(Group::isMainGroup)
                     .filter(g -> g.getGroupSize() >= settings.mainGroupFactor * 1.2f)
                     .collect(Collectors.toSet());

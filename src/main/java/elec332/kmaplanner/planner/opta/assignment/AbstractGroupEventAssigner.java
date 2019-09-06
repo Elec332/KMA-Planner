@@ -1,9 +1,9 @@
 package elec332.kmaplanner.planner.opta.assignment;
 
 import com.google.common.collect.Sets;
+import elec332.kmaplanner.events.Event;
 import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.persons.Person;
-import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.Planner;
 import elec332.kmaplanner.planner.opta.Assignment;
 
@@ -40,7 +40,9 @@ public abstract class AbstractGroupEventAssigner<T> implements IInitialEventAssi
         }
         int groupsInit = Math.max((int) Math.floor(event.requiredPersons / (planner.getSettings().mainGroupFactor * 2.5f)), 1) - 1;
         int groups = groupsInit;
-        Set<Group> mainGroups = planner.getGroupManager().getMainGroups();
+        Set<Group> mainGroups = planner.getGroupManager().getMainGroups().stream()
+                .filter(event::canGroupParticipate)
+                .collect(Collectors.toSet());
         Set<Group> allowed = Sets.newHashSet();
         while (groups > allowed.size() || groups <= 0) {
             groups++;

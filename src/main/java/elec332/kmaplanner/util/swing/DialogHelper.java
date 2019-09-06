@@ -9,6 +9,10 @@ import java.awt.*;
 @SuppressWarnings("all")
 public class DialogHelper {
 
+    public static void requestFocusInDialog(JComponent component) {
+        component.addAncestorListener(new RequestFocusListener());
+    }
+
     public static void showErrorMessageDialog(Object message, String title) {
         showErrorMessageDialog(null, message, title);
     }

@@ -1,7 +1,7 @@
 package elec332.kmaplanner.filters;
 
 import com.google.common.base.Strings;
-import elec332.kmaplanner.planner.Event;
+import elec332.kmaplanner.events.Event;
 import elec332.kmaplanner.planner.IEventFilter;
 import elec332.kmaplanner.planner.ISoftDuration;
 import elec332.kmaplanner.util.io.IByteArrayDataInputStream;

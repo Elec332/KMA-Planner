@@ -1,13 +1,7 @@
 package elec332.kmaplanner.util.io;
 
 import javax.annotation.Nonnull;
-import java.io.EOFException;
-import java.io.FilterInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
+import java.io.*;
 
 /**
  * Created by Elec332 on 26-8-2019
@@ -15,16 +9,7 @@ import java.util.function.Function;
 public class DataInputStream extends FilterInputStream implements IByteArrayObjectReader<IOException> {
 
     public DataInputStream(InputStream in) {
-        super(in);
-    }
-
-    public <T> List<T> readObjects(Function<IByteArrayDataInputStream, T> deserializer) throws IOException {
-        int siz = readInt();
-        List<T> ret = new ArrayList<>();
-        for (int i = 0; i < siz; i++) {
-            ret.add(readObject(deserializer));
-        }
-        return ret;
+        super(new BufferedInputStream(in)); //Buffered stream to improve performance
     }
 
     @Override

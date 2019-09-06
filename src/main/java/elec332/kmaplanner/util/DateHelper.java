@@ -18,7 +18,7 @@ public class DateHelper {
     private static final String MONTHS = "Januari,Februari,Maart,April,Mei,Juni,Juli,Augustus,September,Oktober,November,December";
 
     private static final SimpleDateFormat SD_ADDITIONAL = new SimpleDateFormat("yyyy HH:mm");
-    private static final SimpleDateFormat SHORT_DATE = new SimpleDateFormat("EEE, d MMM yyyy HH:mm");
+    private static final SimpleDateFormat SHORT_DATE = new SimpleDateFormat("EEE, d MMM ''yy HH:mm");
 
     public static String getShortDate(Date date) {
         return SHORT_DATE.format(date);

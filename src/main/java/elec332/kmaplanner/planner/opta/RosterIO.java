@@ -5,8 +5,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import elec332.kmaplanner.events.Event;
 import elec332.kmaplanner.persons.Person;
-import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.Planner;
 import elec332.kmaplanner.planner.opta.assignment.IInitialEventAssigner;
 import elec332.kmaplanner.util.FileValidator;
@@ -72,15 +72,19 @@ public class RosterIO {
 
     private static void write(IByteArrayDataOutputStream dos, RosterData data) {
         dos.setVersion(SAVE_VERSION);
-        dos.writeObjects(RosterIO::writeAssignment, data.assignments);
         dos.writeUUID(data.projectUuid);
+        dos.writeObjects(RosterIO::writeAssignment, data.assignments);
     }
 
     private static RosterData read(IByteArrayDataInputStream dis, Planner planner) {
         Map<String, Person> names = planner.getPersonManager().makeNameMap();
-        Map<UUID, Event> eventMap = planner.getEvents().stream().collect(Collectors.toMap(Event::getUuid, Function.identity()));
+        UUID uuid = dis.readUUID();
+        if (!planner.getProjectUuid().equals(uuid)) {
+            return null;
+        }
+        Map<UUID, Event> eventMap = planner.getEventManager().stream().collect(Collectors.toMap(Event::getUuid, Function.identity()));
         List<Assignment> assignments = dis.readObjects(stream -> readAssignment(stream, names, eventMap));
-        return new RosterData(assignments, dis.readUUID()).checkAssignments(planner);
+        return new RosterData(assignments, uuid).checkAssignments(planner);
     }
 
     private static void writeAssignment(IByteArrayDataOutputStream stream, Assignment assignment) {
@@ -140,14 +144,14 @@ public class RosterIO {
                 return null;
             }
 
-            Collection<Person> persons = planner.getPersonManager().getPersons();
+            Collection<Person> persons = planner.getPersonManager().getObjects();
             final List<Person> persons_ = Collections.unmodifiableList(Lists.newArrayList(persons));
 
             @SuppressWarnings("unchecked")
             IInitialEventAssigner<T> assigner = (IInitialEventAssigner<T>) planner.getSettings().sortingType.createEventAssigner();
-            ObjectReference<T> data = new ObjectReference<>(assigner.createInitialData(Lists.newArrayList(persons), Sets.newHashSet(planner.getEvents()), planner));
+            ObjectReference<T> data = new ObjectReference<>(assigner.createInitialData(Lists.newArrayList(persons), Sets.newHashSet(planner.getEventManager().getObjects()), planner));
 
-            Set<Event> events = planner.getEvents().stream()
+            Set<Event> events = planner.getEventManager().stream()
                     .filter(e -> !e.everyone)
                     .collect(Collectors.toSet());
 

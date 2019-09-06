@@ -1,9 +1,9 @@
 package elec332.kmaplanner.planner.opta;
 
+import elec332.kmaplanner.events.Event;
 import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.persons.PersonManager;
-import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.opta.util.AssignmentDifficultyComparator;
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.lookup.PlanningId;
@@ -26,7 +26,7 @@ public class Assignment {
         this.event = event;
         this.person = PersonManager.NULL_PERSON;
         this.identifier = UUID.randomUUID();
-        this.groupFilter = g -> true;
+        this.groupFilter = event::canGroupParticipate;
     }
 
     public Event event;
@@ -38,6 +38,11 @@ public class Assignment {
     @PlanningId
     @SuppressWarnings("FieldCanBeLocal")
     private UUID identifier;
+
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    public boolean isValidGroup(Group group) {
+        return groupFilter == null || groupFilter.test(group);
+    }
 
     public Person getPerson() {
         return person;

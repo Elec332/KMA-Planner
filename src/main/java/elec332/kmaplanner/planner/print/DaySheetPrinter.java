@@ -3,10 +3,11 @@ package elec332.kmaplanner.planner.print;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import elec332.kmaplanner.events.Event;
 import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.persons.Person;
-import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.opta.Roster;
+import elec332.kmaplanner.util.AbstractExcelPrinter;
 import elec332.kmaplanner.util.DateHelper;
 import elec332.kmaplanner.util.PersonGroupHelper;
 import org.apache.commons.compress.utils.Lists;
@@ -21,20 +22,21 @@ import java.util.stream.Collectors;
 /**
  * Created by Elec332 on 28-8-2019
  */
-public class DaySheetPrinter extends AbstractPrinter {
+public class DaySheetPrinter extends AbstractExcelPrinter<Roster> {
 
-    public static void printRoster(Roster roster, Workbook workbook) {
+    @Override
+    public void printObject(Roster roster, Workbook workbook) {
         roster.apply();
         Multimap<Integer, Event> eventDayMap = HashMultimap.create();
 
         List<Event> events = Lists.newArrayList();
-        roster.getPlanner().getEvents().stream()
+        roster.getPlanner().getEventManager().stream()
                 .filter(e -> !e.everyone)
                 .forEach(events::add);
-        Date day = roster.getPlanner().getFirstDate();
+        Date day = roster.getPlanner().getEventManager().getFirstDate();
         int i = 1;
         while (!events.isEmpty()) {
-            Date day2 = roster.getPlanner().getLastDate();
+            Date day2 = roster.getPlanner().getEventManager().getLastDate();
             for (Iterator<Event> it = events.iterator(); it.hasNext(); ) {
                 Event event = it.next();
                 if (DateHelper.sameDay(day, event.start())) {
@@ -46,15 +48,17 @@ public class DaySheetPrinter extends AbstractPrinter {
             }
             day = day2;
             i++;
+            if (i > 7) {
+                System.exit(0);
+            }
         }
-
         for (int j : eventDayMap.keySet()) {
             Sheet sheet = workbook.createSheet("Day " + j);
             writeDay(sheet, eventDayMap.get(j), roster);
         }
     }
 
-    private static void writeDay(Sheet sheet, Collection<Event> events, Roster roster) {
+    private void writeDay(Sheet sheet, Collection<Event> events, Roster roster) {
         int i = 0;
         for (Event event : Sets.newTreeSet(events)) {
             writeEvent(sheet, i, event, roster);
@@ -63,7 +67,7 @@ public class DaySheetPrinter extends AbstractPrinter {
         getCell(getOrCreateRow(sheet, 0), i + 2).setCellValue("");
     }
 
-    private static void writeEvent(Sheet sheet, int colStart, Event event, Roster roster) {
+    private void writeEvent(Sheet sheet, int colStart, Event event, Roster roster) {
         Row row = getOrCreateRow(sheet, 0);
         Cell cell = getCell(row, colStart);
         cell.setCellValue(event.name + "   " + event.requiredPersons + " pax");

@@ -2,18 +2,12 @@ package elec332.kmaplanner.planner.opta;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import elec332.kmaplanner.events.Event;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.persons.PersonManager;
-import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.Planner;
 import elec332.kmaplanner.planner.opta.assignment.IInitialEventAssigner;
-import elec332.kmaplanner.planner.print.DaySheetPrinter;
-import elec332.kmaplanner.planner.print.ExportPrinter;
-import elec332.kmaplanner.util.FileHelper;
 import elec332.kmaplanner.util.ObjectReference;
-import elec332.kmaplanner.util.swing.DialogHelper;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.optaplanner.core.api.domain.solution.PlanningEntityCollectionProperty;
 import org.optaplanner.core.api.domain.solution.PlanningScore;
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
@@ -21,8 +15,6 @@ import org.optaplanner.core.api.domain.solution.drools.ProblemFactCollectionProp
 import org.optaplanner.core.api.domain.valuerange.ValueRangeProvider;
 import org.optaplanner.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.*;
 
 /**
@@ -34,18 +26,20 @@ public class Roster {
 
     public <T> Roster(final Planner planner, IInitialEventAssigner<T> assigner) {
         this(planner);
-        Collection<Person> persons = planner.getPersonManager().getPersons();
-        final ObjectReference<T> data = new ObjectReference<>(assigner.createInitialData(Lists.newArrayList(persons), Sets.newHashSet(planner.getEvents()), planner));
+        Collection<Person> persons = planner.getPersonManager().getObjects();
+        final ObjectReference<T> data = new ObjectReference<>(assigner.createInitialData(Lists.newArrayList(persons), Sets.newHashSet(planner.getEventManager().getObjects()), planner));
         final List<Person> persons_ = Collections.unmodifiableList(Lists.newArrayList(persons));
-        planner.getEvents().stream().filter(e -> !e.everyone).forEach(event -> {
-            List<Assignment> eventAssignments = Lists.newArrayList();
-            for (int i = 0; i < event.requiredPersons; i++) {
-                eventAssignments.add(new Assignment(event));
-            }
-            data.use(d -> assigner.assignPersonsTo(Collections.unmodifiableList(eventAssignments), event, persons_, d, planner));
-            assignments.addAll(eventAssignments);
-        });
-
+        planner.getEventManager().stream()
+                .filter(e -> !e.everyone)
+                .forEach(event -> {
+                    List<Assignment> eventAssignments = Lists.newArrayList();
+                    for (int i = 0; i < event.requiredPersons; i++) {
+                        eventAssignments.add(new Assignment(event));
+                    }
+                    data.use(d -> assigner.assignPersonsTo(Collections.unmodifiableList(eventAssignments), event, persons_, d, planner));
+                    assignments.addAll(eventAssignments);
+                });
+        getPlanner().getPersonManager().forEach(Person::clearEvents);
     }
 
     public Roster(RosterIO.RosterData data, Planner planner) {
@@ -54,13 +48,13 @@ public class Roster {
             throw new IllegalArgumentException();
         }
         assignments.addAll(data.getAssignments());
-        getPlanner().getPersonManager().getPersons().forEach(Person::clearEvents);
+        getPlanner().getPersonManager().forEach(Person::clearEvents);
     }
 
     private Roster(Planner planner) {
         this();
         this.planner = planner;
-        persons.addAll(this.planner.getPersonManager().getPersons());
+        persons.addAll(this.planner.getPersonManager().getObjects());
         persons.add(PersonManager.NULL_PERSON);
         projectUuid = planner.getProjectUuid();
     }
@@ -110,7 +104,7 @@ public class Roster {
 
     public long getAveragePersonTimeReal() {
         if (avg == null) {
-            long totTime = getPlanner().getEvents().stream()
+            long totTime = getPlanner().getEventManager().stream()
                     .filter(e -> !e.everyone)
                     .mapToLong(e -> e.getDuration() * e.getRequiredPersons())
                     .sum();
@@ -132,20 +126,20 @@ public class Roster {
 
     public Date getStartDate() {
         if (start == null) {
-            start = planner.getFirstDate();
+            start = planner.getEventManager().getFirstDate();
         }
         return start;
     }
 
     public Date getEndDate() {
         if (end == null) {
-            end = planner.getLastDate();
+            end = planner.getEventManager().getLastDate();
         }
         return end;
     }
 
     public void apply() {
-        getPlanner().getPersonManager().getPersons().forEach(Person::clearEvents);
+        getPlanner().getPersonManager().forEach(Person::clearEvents);
         for (Assignment assignment : getAssignments()) {
             Person p = assignment.person;
             Event e = assignment.event;
@@ -153,15 +147,15 @@ public class Roster {
                 p.getPrintableEvents().add(e);
             }
         }
-        planner.getEvents().stream()
+        planner.getEventManager().stream()
                 .filter(e -> e.everyone)
-                .forEach(e -> planner.getPersonManager().getPersons().forEach(p -> p.getPrintableEvents().add(e)));
+                .forEach(e -> planner.getPersonManager().forEach(p -> p.getPrintableEvents().add(e)));
 
-        planner.getPersonManager().getPersons().forEach(p -> p.getPlannerData().importEvents());
+        planner.getPersonManager().forEach(p -> p.getPlannerData().importEvents());
     }
 
     public void plannerApply() {
-        getPlanner().getPersonManager().getPersons().forEach(p -> p.getPlannerData().clearEvents());
+        getPlanner().getPersonManager().forEach(p -> p.getPlannerData().clearEvents());
         for (Assignment assignment : getAssignments()) {
             Person p = assignment.person;
             Event e = assignment.event;
@@ -169,31 +163,9 @@ public class Roster {
         }
     }
 
-    public void print() {
+    public void debugPrint() {
         apply();
-        debugPrint();
-        try {
-            Workbook workbook = new XSSFWorkbook();
-            ExportPrinter.printRoster(this, workbook);
-            File f = new File(FileHelper.getExecFolder(), "export.xlsx");
-            FileOutputStream fos = new FileOutputStream(f);
-            workbook.write(fos);
-            fos.close();
-
-            workbook = new XSSFWorkbook();
-            DaySheetPrinter.printRoster(this, workbook);
-            f = new File(FileHelper.getExecFolder(), "days.xlsx");
-            fos = new FileOutputStream(f);
-            workbook.write(fos);
-            fos.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            DialogHelper.showErrorMessageDialog("Failed to export planner.", "Export failed!");
-        }
-    }
-
-    private void debugPrint() {
-        planner.getPersonManager().getPersons().forEach(p -> {
+        planner.getPersonManager().forEach(p -> {
             System.out.println();
             System.out.println(p);
             p.getPrintableEvents().forEach(System.out::println);

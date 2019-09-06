@@ -1,7 +1,7 @@
 package elec332.kmaplanner.planner.opta.solver.phase4;
 
 import elec332.kmaplanner.planner.opta.solver.IPhaseConfiguration;
-import elec332.kmaplanner.project.ProjectSettings;
+import elec332.kmaplanner.project.PlannerSettings;
 import org.optaplanner.core.config.heuristic.selector.move.factory.MoveListFactoryConfig;
 import org.optaplanner.core.config.localsearch.LocalSearchPhaseConfig;
 import org.optaplanner.core.config.solver.termination.TerminationConfig;
@@ -12,7 +12,7 @@ import org.optaplanner.core.config.solver.termination.TerminationConfig;
 public class Phase4Configuration implements IPhaseConfiguration<LocalSearchPhaseConfig> {
 
     @Override
-    public LocalSearchPhaseConfig createPhase(ProjectSettings settings) {
+    public LocalSearchPhaseConfig createPhase(PlannerSettings settings) {
         LocalSearchPhaseConfig phase = new LocalSearchPhaseConfig();
 
         phase.setTerminationConfig(new TerminationConfig());

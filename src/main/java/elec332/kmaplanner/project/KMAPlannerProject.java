@@ -1,12 +1,13 @@
 package elec332.kmaplanner.project;
 
 import com.google.common.base.Preconditions;
+import elec332.kmaplanner.events.EventManager;
 import elec332.kmaplanner.group.GroupManager;
 import elec332.kmaplanner.persons.PersonManager;
-import elec332.kmaplanner.planner.Event;
-import elec332.kmaplanner.util.UpdatableTreeSet;
+import elec332.kmaplanner.planner.Planner;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -19,12 +20,13 @@ import java.util.function.Supplier;
  */
 public class KMAPlannerProject {
 
-    KMAPlannerProject(@Nonnull PersonManager personManager, @Nonnull GroupManager groupManager, @Nonnull UpdatableTreeSet<Event> events, @Nonnull ProjectSettings settings, @Nonnull UUID id, File file) {
+    KMAPlannerProject(@Nonnull PersonManager personManager, @Nonnull GroupManager groupManager, @Nonnull EventManager events, @Nonnull PlannerSettings settings, @Nonnull UUID id, @Nonnull ProjectSettings projSettings, File file) {
         this.personManager = Preconditions.checkNotNull(personManager);
         this.groupManager = Preconditions.checkNotNull(groupManager);
         this.events = Preconditions.checkNotNull(events);
         this.settings = Preconditions.checkNotNull(settings);
         this.id = Preconditions.checkNotNull(id);
+        this.projSettings = Preconditions.checkNotNull(projSettings);
         this.file = file;
         this.dirty = false;
         init();
@@ -33,6 +35,10 @@ public class KMAPlannerProject {
     private void init() {
         getPersonManager().addCallback(this::markDirty);
         getGroupManager().addCallback(this::markDirty);
+        getEventManager().addCallback(this::markDirty);
+
+        //Todo: Properly implement planner
+        planner = new Planner(this);
     }
 
     @Nonnull
@@ -40,12 +46,15 @@ public class KMAPlannerProject {
     @Nonnull
     private final GroupManager groupManager;
     @Nonnull
-    private final UpdatableTreeSet<Event> events;
+    private final EventManager events;
     @Nonnull
-    private final ProjectSettings settings;
+    private final PlannerSettings settings;
     @Nonnull
     private final UUID id;
+    @Nonnull
+    private final ProjectSettings projSettings;
 
+    private Planner planner;
     private File file;
     private boolean dirty;
 
@@ -60,18 +69,32 @@ public class KMAPlannerProject {
     }
 
     @Nonnull
-    public UpdatableTreeSet<Event> getEvents() {
+    public EventManager getEventManager() {
         return events;
     }
 
     @Nonnull
-    public ProjectSettings getSettings() {
+    public PlannerSettings getPlannerSettings() {
         return settings;
+    }
+
+    @Nonnull
+    public ProjectSettings getProjectSettings() {
+        return projSettings;
     }
 
     @Nonnull
     public UUID getUuid() {
         return id;
+    }
+
+    @Nonnull
+    public Optional<Planner> getPlanner() {
+        return Optional.ofNullable(planner);
+    }
+
+    public void setPlanner(@Nullable Planner planner) {
+        this.planner = planner;
     }
 
     public Optional<Path> getSaveLocation() {

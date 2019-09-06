@@ -11,7 +11,7 @@ import java.util.function.Supplier;
  */
 public class UISettings {
 
-    @ClassProperties.PropertyData(value = "Look and Feel", dynamicValidValues = LookAndFeelFilter.class)
+    @ClassProperties.PropertyData(value = "LookAndFeel", dynamicValidValues = LookAndFeelFilter.class)
     private String lookAndFeel = UIManager.getLookAndFeel().getName();
 
     public void apply(JFrame frame) {

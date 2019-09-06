@@ -1,5 +1,5 @@
 group 'kmaplanner'
-version '1.1.0'
+version '1.2.0'
 
 buildscript {
     repositories {
@@ -16,23 +16,13 @@ buildscript {
 
 apply plugin: 'java'
 apply plugin: 'edu.sc.seis.launch4j'
-apply plugin: "com.github.johnrengelman.shadow"
+apply plugin: 'com.github.johnrengelman.shadow'
 
 sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
 }
-
-launch4j {
-    mainClassName = 'elec332.kmaplanner.Main'
-    windowTitle = "KMA Planner"
-    //icon = "${projectDir}/icons/myApp.ico"
-    copyConfigurable = project.tasks.shadowJar.outputs.files
-    jar = "lib/${project.tasks.shadowJar.archiveName}"
-}
-
-tasks.launch4j.dependsOn("shadowJar")
 
 dependencies {
     compile "com.google.guava:guava:21.0"
@@ -42,3 +32,35 @@ dependencies {
     compile 'org.apache.poi:poi-ooxml:4.1.0'
     compile 'org.mnode.ical4j:ical4j:3.0.9'
 }
+
+processResources {
+
+	//Ensure task is redone when version changes
+	inputs.property "version", project.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'about.txt'
+
+        expand 'version': project.version
+    }
+
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'about.txt'
+    }
+
+    from("${projectDir}") {
+        include "icons/"
+    }
+
+}
+
+launch4j {
+    mainClassName = 'elec332.kmaplanner.Main'
+    windowTitle = "KMA Planner"
+    icon = "${projectDir}/icons/icon.ico"
+    copyConfigurable = project.tasks.shadowJar.outputs.files
+    jar = "lib/${project.tasks.shadowJar.archiveName}"
+}
+
+tasks.launch4j.dependsOn("shadowJar")

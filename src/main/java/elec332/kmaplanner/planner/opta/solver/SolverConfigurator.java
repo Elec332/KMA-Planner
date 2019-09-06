@@ -1,6 +1,6 @@
 package elec332.kmaplanner.planner.opta.solver;
 
-import elec332.kmaplanner.project.ProjectSettings;
+import elec332.kmaplanner.project.PlannerSettings;
 import org.optaplanner.core.api.solver.SolverFactory;
 
 import java.util.Arrays;
@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  */
 public class SolverConfigurator {
 
-    public static void configureSolver(SolverFactory<?> factory, ProjectSettings settings, IPhaseConfiguration<?>... phases) {
+    public static void configureSolver(SolverFactory<?> factory, PlannerSettings settings, IPhaseConfiguration<?>... phases) {
         factory.getSolverConfig().setPhaseConfigList(Arrays.stream(phases)
                 .filter(Objects::nonNull)
                 .map(c -> c.createPhase(settings))

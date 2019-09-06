@@ -1,39 +1,24 @@
 package elec332.kmaplanner.project;
 
-import elec332.kmaplanner.planner.opta.assignment.PersonSortingType;
 import elec332.kmaplanner.util.io.IByteArrayDataInputStream;
 import elec332.kmaplanner.util.io.IByteArrayDataOutputStream;
 import elec332.kmaplanner.util.io.IDataSerializable;
 
-import java.util.Random;
-
 /**
- * Created by Elec332 on 14-6-2019
+ * Created by Elec332 on 4-9-2019
  */
-public final class ProjectSettings implements IDataSerializable {
+public class ProjectSettings implements IDataSerializable {
 
-    public long seed = new Random().nextLong();
-    public PersonSortingType sortingType = PersonSortingType.RANDOM;
-    public int unimprovedSteps = 30;
-    public int timeDiffThreshold = 45;
-    public int mainGroupFactor = 5;
+    public boolean enableCompression = true;
 
     @Override
     public void writeObject(IByteArrayDataOutputStream stream) {
-        stream.writeLong(seed);
-        stream.writeByte(sortingType.ordinal());
-        stream.writeInt(unimprovedSteps);
-        stream.writeInt(timeDiffThreshold);
-        stream.writeInt(mainGroupFactor);
+        stream.writeBoolean(enableCompression);
     }
 
     @Override
     public void readObject(IByteArrayDataInputStream stream) {
-        this.seed = stream.readLong();
-        sortingType = PersonSortingType.values()[stream.readByte()];
-        unimprovedSteps = stream.readInt();
-        timeDiffThreshold = stream.readInt();
-        mainGroupFactor = stream.readInt();
+        enableCompression = stream.readBoolean();
     }
 
 }

@@ -26,10 +26,10 @@ public class DefaultSwapMoveFilter extends AbstractSwapMoveFilter {
         if (a2.event.isDuring(a1.person.getPlannerData().getEvents())) {
             return false;
         }
-        if (!a1.groupFilter.test(a2.person.getPlannerData().getMainGroup())) {
+        if (!a1.isValidGroup(a2.person.getPlannerData().getMainGroup())) {
             return false;
         }
-        if (!a2.groupFilter.test(a1.person.getPlannerData().getMainGroup())) {
+        if (!a2.isValidGroup(a1.person.getPlannerData().getMainGroup())) {
             return false;
         }
         if (a1.person.equals(a2.person)) {

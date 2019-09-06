@@ -19,6 +19,9 @@ public class VersionedReader<T> implements Function<Integer, Function<IByteArray
     private final Map<Integer, Function<IByteArrayDataInputStream, T>> versionMap;
 
     public void registerVersion(int version, Function<IByteArrayDataInputStream, T> reader) {
+        if (version < 1) {
+            throw new IllegalArgumentException();
+        }
         versionMap.put(version, reader);
     }
 

@@ -54,7 +54,7 @@ public class GroupsTab extends JPanel {
         remove.addActionListener(a -> {
             Group g = list.getSelectedValue();
             if (g != null) {
-                groupManager.removeGroup(g);
+                groupManager.removeObject(g);
                 updateList();
             }
         });
@@ -67,7 +67,7 @@ public class GroupsTab extends JPanel {
 
     void updateList() {
         listModel.clear();
-        groupManager.getGroups().forEach(listModel::addElement);
+        groupManager.forEach(listModel::addElement);
         callback.run();
     }
 
@@ -80,6 +80,7 @@ public class GroupsTab extends JPanel {
         JPanel top = new JPanel();
         top.add(new JLabel("Name: "));
         JTextField name = new JTextField(group.getName(), 20);
+        //DialogHelper.requestFocusInDialog(name);
         top.add(name);
 
         JCheckBox checkBox = new JCheckBox("Is main group? ");
@@ -92,13 +93,15 @@ public class GroupsTab extends JPanel {
 
         if (DialogHelper.showDialog(GroupsTab.this, dialog, "Edit Group")) {
             if (!newG) {
-                group.setMain(checkBox.isSelected());
-                groupManager.updateGroup(group, group1 -> group1.setName(name.getText()));
+                groupManager.updateObject(group, group1 -> {
+                    group1.setMain(checkBox.isSelected());
+                    group1.setName(name.getText());
+                });
             } else {
                 Group group1 = new Group(name.getText());
                 group1.setMain(checkBox.isSelected());
                 group1.getFilters().addAll(group.getFilters());
-                if (Strings.isNullOrEmpty(group1.getName()) || !groupManager.addGroupNice(group1)) {
+                if (Strings.isNullOrEmpty(group1.getName()) || !groupManager.addObjectNice(group1)) {
                     DialogHelper.showErrorMessageDialog(GroupsTab.this, "Failed to add Group! (Perhaps an invalid/duplicate name?)", "Error adding Group");
                     return;
                 }

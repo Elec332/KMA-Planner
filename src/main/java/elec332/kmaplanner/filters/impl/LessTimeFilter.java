@@ -1,7 +1,7 @@
 package elec332.kmaplanner.filters.impl;
 
+import elec332.kmaplanner.events.Event;
 import elec332.kmaplanner.filters.AbstractFilter;
-import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.util.io.IByteArrayDataInputStream;
 import elec332.kmaplanner.util.io.IByteArrayDataOutputStream;
 import elec332.kmaplanner.util.swing.DialogHelper;

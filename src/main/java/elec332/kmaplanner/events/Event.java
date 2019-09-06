@@ -1,6 +1,7 @@
-package elec332.kmaplanner.planner;
+package elec332.kmaplanner.events;
 
 import com.google.common.base.Preconditions;
+import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.util.ITimeSpan;
 import elec332.kmaplanner.util.io.IByteArrayDataInputStream;
@@ -46,6 +47,10 @@ public class Event implements IDataSerializable, Comparable<Event>, Cloneable, I
     }
 
     public boolean canPersonParticipate(Person person) {
+        return canGroupParticipate(person.getMainGroup());
+    }
+
+    public boolean canGroupParticipate(Group group) {
         return true;
     }
 

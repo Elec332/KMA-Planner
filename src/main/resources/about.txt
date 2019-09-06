@@ -1,0 +1,3 @@
+KMAPlanner version ${version}
+
+Developed by: Elec332

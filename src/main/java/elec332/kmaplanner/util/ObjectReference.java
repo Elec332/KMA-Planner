@@ -1,5 +1,6 @@
 package elec332.kmaplanner.util;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -40,6 +41,10 @@ public class ObjectReference<T> implements Consumer<T>, Supplier<T> {
     @Override
     public T get() {
         return object;
+    }
+
+    public Optional<T> toOptional() {
+        return Optional.ofNullable(object);
     }
 
 }

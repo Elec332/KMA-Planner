@@ -1,8 +1,8 @@
 package elec332.kmaplanner.persons;
 
 import com.google.common.collect.Sets;
+import elec332.kmaplanner.events.Event;
 import elec332.kmaplanner.group.Group;
-import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.opta.Roster;
 
 import java.util.Collections;

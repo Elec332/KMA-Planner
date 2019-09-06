@@ -1,8 +1,8 @@
 package elec332.kmaplanner.gui.planner;
 
+import elec332.kmaplanner.gui.planner.tabs.EventsTab;
 import elec332.kmaplanner.gui.planner.tabs.GroupsTab;
 import elec332.kmaplanner.gui.planner.tabs.PlannerTab;
-import elec332.kmaplanner.gui.planner.tabs.SettingsTab;
 import elec332.kmaplanner.gui.planner.tabs.UsersTab;
 import elec332.kmaplanner.project.KMAPlannerProject;
 
@@ -24,10 +24,10 @@ public class PlannerGuiMain extends JPanel {
         usersTab.setGroupTab(groupsTab);
 
 
-        tabbedPane.addTab("Planner", new PlannerTab(project));
+        tabbedPane.addTab("Events", new EventsTab(project));
         tabbedPane.addTab("Persons", usersTab);
         tabbedPane.addTab("Groups", groupsTab);
-        tabbedPane.addTab("Settings", new SettingsTab(project));
+        tabbedPane.addTab("Planner", new PlannerTab(project));
 
         add(tabbedPane);
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);

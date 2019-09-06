@@ -1,10 +1,15 @@
 package elec332.kmaplanner.gui;
 
+import com.google.common.base.Preconditions;
+import elec332.kmaplanner.gui.dialogs.AboutPanel;
 import elec332.kmaplanner.gui.dialogs.ProjectSettingsPanel;
 import elec332.kmaplanner.gui.dialogs.UISettingsPanel;
 import elec332.kmaplanner.gui.planner.PlannerGuiMain;
+import elec332.kmaplanner.planner.Planner;
+import elec332.kmaplanner.planner.RosterPrinter;
 import elec332.kmaplanner.project.KMAPlannerProject;
 import elec332.kmaplanner.project.ProjectManager;
+import elec332.kmaplanner.util.DesktopHelper;
 import elec332.kmaplanner.util.ObjectReference;
 import elec332.kmaplanner.util.swing.DialogHelper;
 import elec332.kmaplanner.util.swing.FileChooserHelper;
@@ -24,6 +29,9 @@ public class MainGui extends JFrame {
 
     public MainGui(UISettings settings) {
         project = new ObjectReference<>(ProjectManager.createNewProject());
+
+        ImageIcon img = new ImageIcon(Preconditions.checkNotNull(getClass().getClassLoader().getResource("icons/icon.png")));
+        setIconImage(img.getImage());
 
         settings.apply(this);
         setTitle("KMAPlanner");
@@ -100,13 +108,39 @@ public class MainGui extends JFrame {
         projectSettings.addActionListener(a -> ProjectSettingsPanel.openDialog(project.get(), this));
 
         JMenu export = new JMenu("Export");
+        JMenuItem printAll = new JMenuItem("Print all");
+        JMenuItem printDays = new JMenuItem("Print days");
+        JMenuItem printExport = new JMenuItem("Print default export");
+        JMenuItem printIndividual = new JMenuItem("Print individual rosters");
+        export.add(printAll);
+        export.addSeparator();
+        export.add(printDays);
+        export.add(printExport);
+        export.add(printIndividual);
+        printAll.addActionListener(a -> RosterPrinter.printRoster(project.get().getPlanner().map(Planner::getRoster).orElse(null), MainGui.this, RosterPrinter::printAll));
+        printDays.addActionListener(a -> RosterPrinter.printRoster(project.get().getPlanner().map(Planner::getRoster).orElse(null), MainGui.this, RosterPrinter::printDays));
+        printExport.addActionListener(a -> RosterPrinter.printRoster(project.get().getPlanner().map(Planner::getRoster).orElse(null), MainGui.this, RosterPrinter::printDefault));
+        printIndividual.addActionListener(a -> RosterPrinter.printRoster(project.get().getPlanner().map(Planner::getRoster).orElse(null), MainGui.this, RosterPrinter::printPrivateRosters));
 
-        JMenu about = new JMenu("About");
+        JMenu help = new JMenu("Help");
+        JMenuItem bug = new JMenuItem("Report a bug");
+        JMenuItem projectPage = new JMenuItem("Project page");
+        JMenuItem guide = new JMenuItem("Help");
+        JMenuItem about = new JMenuItem("About");
+        help.add(projectPage);
+        help.add(bug);
+        help.addSeparator();
+        help.add(about);
+        help.add(guide);
+        about.addActionListener(a -> AboutPanel.openDialog(this));
+        bug.addActionListener(a -> DesktopHelper.openWebPage("https://github.com/Elec332/KMA-Planner/issues"));
+        projectPage.addActionListener(a -> DesktopHelper.openWebPage("https://github.com/Elec332/KMA-Planner"));
+        guide.addActionListener(a -> DesktopHelper.openWebPage("https://github.com/Elec332/KMA-Planner/wiki"));
 
         menuBar.add(fileMenu);
         menuBar.add(stuff);
         menuBar.add(export);
-        menuBar.add(about);
+        menuBar.add(help);
 
         addWindowListener(new WindowAdapter() {
 

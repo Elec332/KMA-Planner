@@ -4,12 +4,16 @@ import com.google.common.base.Preconditions;
 import elec332.kmaplanner.util.io.impl.ByteArrayDataInputStream;
 
 import javax.annotation.Nonnull;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Created by Elec332 on 3-9-2019
@@ -37,7 +41,25 @@ public interface IByteArrayObjectReader<E extends Throwable> {
             len = -len;
         }
         byte[] ret = new byte[len];
-        readFully(ret);
+        if (version < 0) {
+            version = Math.abs(version);
+            try {
+                byte[] retC = new byte[readInt()];
+                readFully(retC);
+                ByteArrayInputStream bisC = new ByteArrayInputStream(retC);
+                InputStream zisC = new BufferedInputStream(new GZIPInputStream(bisC));
+                int i = zisC.read(ret);
+                zisC.close();
+                if (ret.length != i) {
+                    throw new EOFException();
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            readFully(ret);
+        }
+        version--;
         ByteArrayInputStream bis = new ByteArrayInputStream(ret);
         IByteArrayDataInputStream dis = new ByteArrayDataInputStream(bis, version);
         return Preconditions.checkNotNull(deserializer.apply(version)).apply(dis);

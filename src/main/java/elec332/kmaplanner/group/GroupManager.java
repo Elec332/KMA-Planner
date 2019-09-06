@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.project.ProjectManager;
+import elec332.kmaplanner.util.IObjectManager;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
 /**
  * Created by Elec332 on 14-6-2019
  */
-public class GroupManager {
+public class GroupManager implements IObjectManager<Group, ProjectManager.LoadData> {
 
     public GroupManager() {
         this.groups = Sets.newTreeSet();
@@ -45,13 +46,7 @@ public class GroupManager {
     private final Map<String, Group> reverseLookup;
     private final Set<Runnable> callbacks;
 
-    @SuppressWarnings("WeakerAccess")
-    public void addGroup(Group group) {
-        if (!addGroupNice(group)) {
-            throw new IllegalArgumentException(group.toString());
-        }
-    }
-
+    @Override
     public void addCallback(Runnable runnable) {
         callbacks.add(runnable);
     }
@@ -60,8 +55,14 @@ public class GroupManager {
         callbacks.forEach(Runnable::run);
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean addGroupNice(Group group) {
+    @Override
+    public void load(ProjectManager.LoadData projectReader) {
+        projectReader.getGroups().forEach(this::addObject);
+        groups_.forEach(Group::postRead);
+    }
+
+    @Override
+    public boolean addObjectNice(Group group) {
         if (reverseLookup.containsKey(group.getName()) || !groups.add(group)) {
             return false;
         }
@@ -70,7 +71,8 @@ public class GroupManager {
         return true;
     }
 
-    public void removeGroup(final Group group) {
+    @Override
+    public void removeObject(Group group) {
         if (!reverseLookup.containsKey(group.getName()) || !groups.contains(group)) {
             throw new IllegalArgumentException();
         }
@@ -80,30 +82,29 @@ public class GroupManager {
         runCallbacks();
     }
 
-    public void load(ProjectManager.LoadData projectReader) {
-        projectReader.getGroups().forEach(this::addGroup);
-        groups_.forEach(Group::postRead);
-    }
-
-    public void updateGroup(Group group, Consumer<Group> consumer) {
+    @Override
+    public void updateObject(Group group, Consumer<Group> consumer) {
         if (!reverseLookup.containsKey(group.getName())) {
             throw new IllegalArgumentException();
         }
         reverseLookup.remove(group.getName());
         if (groups.remove(group)) {
             consumer.accept(group);
-            addGroup(group);
+            addObject(group);
         }
         runCallbacks();
     }
 
     @Nonnull
-    public Set<Group> getGroups() {
+    @Override
+    public Set<Group> getObjects() {
         return this.groups_;
     }
 
     public Set<Group> getMainGroups() {
-        return getGroups().stream().filter(Group::isMainGroup).collect(Collectors.toSet());
+        return stream()
+                .filter(Group::isMainGroup)
+                .collect(Collectors.toSet());
     }
 
     public Group getGroup(String name) {
@@ -113,7 +114,7 @@ public class GroupManager {
     public Group getOrCreate(String name) {
         Group group = getGroup(name);
         if (group == null) {
-            addGroup(group = new Group(name));
+            addObject(group = new Group(name));
         }
         return group;
     }

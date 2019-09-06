@@ -1,5 +1,7 @@
 package elec332.kmaplanner.planner;
 
+import elec332.kmaplanner.events.Event;
+
 /**
  * Created by Elec332 on 15-8-2019
  */

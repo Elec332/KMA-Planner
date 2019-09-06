@@ -87,7 +87,7 @@ public class UsersTab extends JPanel {
         remove.addActionListener(a -> {
             Person person = list.getSelectedValue();
             if (person != null) {
-                personManager.removePerson(person);
+                personManager.removeObject(person);
                 updateList();
             }
         });
@@ -116,7 +116,7 @@ public class UsersTab extends JPanel {
             return;
         }
         listModel.clear();
-        personManager.getPersons().stream()
+        personManager.stream()
                 .filter(((Group) Objects.requireNonNull(groupFilter.getSelectedItem()))::containsPerson)
                 .filter(p -> p.toString().contains(nameFilter.getText()))
                 .forEach(listModel::addElement);
@@ -125,7 +125,7 @@ public class UsersTab extends JPanel {
     public void updateGroups() {
         refreshingGroups = true;
         listModelG.removeAllElements();
-        Set<Group> groups = Sets.newTreeSet(groupManager.getGroups());
+        Set<Group> groups = Sets.newTreeSet(groupManager.getObjects());
         groups.add(GroupManager.EVERYONE);
         groups.forEach(listModelG::addElement);
         refreshingGroups = false;
@@ -155,7 +155,7 @@ public class UsersTab extends JPanel {
         JPanel group = new JPanel();
         group.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Groups: "));
 
-        Vector<JCheckBox> gVec = groupManager.getGroups().stream().map(g -> {
+        Vector<JCheckBox> gVec = groupManager.stream().map(g -> {
             JCheckBox ret = new JCheckBox(g.toString());
             ret.setSelected(person.getGroups().contains(g));
             return ret;
@@ -191,14 +191,14 @@ public class UsersTab extends JPanel {
         dialog.add(middle, BorderLayout.CENTER);
         if (DialogHelper.showDialog(UsersTab.this, dialog, "Edit Person")) {
             if (!newP) {
-                personManager.updatePerson(person, person1 -> {
-                    groupManager.getGroups().forEach(person1::removeFromGroup);
+                personManager.updateObject(person, person1 -> {
+                    groupManager.forEach(person1::removeFromGroup);
                     person1.setName(fnf.getText(), lnf.getText());
                 });
             } else {
                 Person person1 = new Person(fnf.getText(), lnf.getText());
                 person1.getFilters().addAll(person.getFilters());
-                if (Strings.isNullOrEmpty(person1.getFirstName()) || !personManager.addPersonNice(person1)) {
+                if (Strings.isNullOrEmpty(person1.getFirstName()) || !personManager.addObjectNice(person1)) {
                     DialogHelper.showErrorMessageDialog(UsersTab.this, "Failed to add Person! (Perhaps an invalid/duplicate name?)", "Error adding Person");
                     return;
                 }
@@ -277,7 +277,7 @@ public class UsersTab extends JPanel {
                 fn = fn.substring(0, fn.indexOf('.'));
             }
             Set<Person> people = PersonExcelReader.readPersons(fileBf[0], fn, groupManager, getOption(usg, PersonExcelReader.Options.USE_SHEET_GROUP), getOption(ufg, PersonExcelReader.Options.USE_FILE_GROUP), getOption(mfsn, PersonExcelReader.Options.MERGE_FILE_SHEET_NAME));
-            people.forEach(personManager::addPerson);
+            people.forEach(personManager::addObject);
             updateList();
             groupCallback.run();
         }

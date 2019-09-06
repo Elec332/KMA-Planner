@@ -1,9 +1,9 @@
 package elec332.kmaplanner.planner.opta.solver.phase3;
 
 import com.google.common.collect.Lists;
+import elec332.kmaplanner.events.Event;
 import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.persons.Person;
-import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.opta.Assignment;
 import elec332.kmaplanner.planner.opta.Roster;
 import elec332.kmaplanner.planner.opta.solver.move.AbstractRosterMove;
@@ -24,7 +24,7 @@ public class SmartTimeMoveListFactory implements MoveListFactory<Roster> {
     @Override
     public List<? extends Move<Roster>> createMoveList(Roster roster) {
         roster.plannerApply();
-        Map<Group, Set<Person>> groups = PersonGroupHelper.sortByGroup(roster.getPlanner().getPersonManager().getPersons(), roster.getPlanner().getGroupManager());
+        Map<Group, Set<Person>> groups = PersonGroupHelper.sortByGroup(roster.getPlanner().getPersonManager().getObjects(), roster.getPlanner().getGroupManager());
         List<AbstractRosterMove> moves = Lists.newArrayList();
         List<Group> sortedGroup = groups.keySet().stream()
                 .sorted(Comparator.comparingLong(g -> g.getAverageSoftTime(roster)))

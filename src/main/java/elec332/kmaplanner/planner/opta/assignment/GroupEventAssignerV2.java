@@ -2,9 +2,9 @@ package elec332.kmaplanner.planner.opta.assignment;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import elec332.kmaplanner.events.Event;
 import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.persons.Person;
-import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.Planner;
 import elec332.kmaplanner.planner.opta.Assignment;
 

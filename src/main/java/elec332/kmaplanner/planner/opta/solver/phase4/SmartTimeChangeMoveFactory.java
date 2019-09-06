@@ -2,13 +2,12 @@ package elec332.kmaplanner.planner.opta.solver.phase4;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Streams;
+import elec332.kmaplanner.events.Event;
 import elec332.kmaplanner.persons.Person;
-import elec332.kmaplanner.planner.Event;
 import elec332.kmaplanner.planner.opta.Assignment;
 import elec332.kmaplanner.planner.opta.Roster;
 import elec332.kmaplanner.planner.opta.solver.move.AbstractRosterMove;
 import elec332.kmaplanner.planner.opta.solver.move.RosterChangeMove;
-import elec332.kmaplanner.project.ProjectSettings;
 import org.optaplanner.core.impl.heuristic.move.Move;
 import org.optaplanner.core.impl.heuristic.selector.move.factory.MoveListFactory;
 
@@ -25,8 +24,7 @@ public class SmartTimeChangeMoveFactory implements MoveListFactory<Roster> {
     public List<? extends Move<Roster>> createMoveList(Roster roster) {
         roster.plannerApply();
         List<AbstractRosterMove> moves = Lists.newArrayList();
-        ProjectSettings settings = roster.getPlanner().getSettings();
-        long avgEventDuration = roster.getPlanner().getEvents().stream().mapToLong(Event::getDuration).sum() / roster.getPlanner().getEvents().size();
+        long avgEventDuration = roster.getPlanner().getEventManager().stream().mapToLong(Event::getDuration).sum() / roster.getPlanner().getEventManager().getObjects().size();
 
         roster.getPlanner().getGroupManager().getMainGroups().stream()
                 .filter(g -> g.getPersonIterator().hasNext()).forEach(group -> {

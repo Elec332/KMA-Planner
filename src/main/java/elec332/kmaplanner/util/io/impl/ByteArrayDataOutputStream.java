@@ -20,6 +20,17 @@ public class ByteArrayDataOutputStream implements IByteArrayDataOutputStream {
 
     private final DataOutput output;
     private int version;
+    private boolean compress = false;
+
+    @Override
+    public void setCompressed(boolean compressed) {
+        compress = compressed;
+    }
+
+    @Override
+    public boolean compress() {
+        return compress;
+    }
 
     @Override
     public void setVersion(int version) {
