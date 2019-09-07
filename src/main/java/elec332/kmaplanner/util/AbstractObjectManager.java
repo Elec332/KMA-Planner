@@ -12,25 +12,22 @@ import java.util.function.Consumer;
 /**
  * Created by Elec332 on 4-9-2019
  */
+@SuppressWarnings("WeakerAccess")
 public abstract class AbstractObjectManager<O, R> implements IObjectManager<O, R> {
 
     public AbstractObjectManager() {
         this.objects = Sets.newTreeSet(getComparator());
         this.objects_ = Collections.unmodifiableSet(objects);
-        this.callbacks = Sets.newHashSet();
+        this.callbacks = new WeakCallbackHandler();
     }
 
     protected final SortedSet<O> objects;
     protected final Set<O> objects_;
-    private final Set<Runnable> callbacks;
+    protected final WeakCallbackHandler callbacks;
 
     @Override
-    public void addCallback(Runnable runnable) {
-        callbacks.add(runnable);
-    }
-
-    protected void runCallbacks() {
-        callbacks.forEach(Runnable::run);
+    public void addCallback(Object weakKey, Runnable runnable) {
+        callbacks.addCallback(weakKey, runnable);
     }
 
     @Override

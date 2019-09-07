@@ -10,7 +10,7 @@ import java.awt.*;
  */
 public interface IDefaultListCellRenderer<T> extends ListCellRenderer<T> {
 
-    public static <T extends JComponent> ListCellRenderer<T> getDefault() {
+    static <T extends JComponent> ListCellRenderer<T> getDefault() {
         return new IDefaultListCellRenderer<T>() {
 
         };

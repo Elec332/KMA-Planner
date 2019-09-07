@@ -31,6 +31,7 @@ public enum FilterManager implements Function<IByteArrayDataInputStream, Abstrac
     private final HashMap<Class, String> reverseLookup;
     private final HashMap<String, String> descriptionGetter;
 
+    @SuppressWarnings("UnusedReturnValue")
     public boolean registerFilter(Supplier<AbstractFilter> filterFunction, final String shortName) {
         if (Strings.isNullOrEmpty(shortName)) {
             throw new IllegalArgumentException();

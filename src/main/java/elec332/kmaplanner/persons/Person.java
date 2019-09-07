@@ -78,17 +78,16 @@ public class Person implements Comparable, IEventFilter, IFilterable, IDataSeria
         this.lastName = lastName;
     }
 
-    public Person addToGroup(Group group) {
+    public void addToGroup(Group group) {
         Preconditions.checkNotNull(group);
         if (group.isMainGroup() && groups.stream().anyMatch(Group::isMainGroup)) {
-            return this; //Nope
+            return; //Nope
         }
         if (groups.contains(group)) {
-            return this;
+            return;
         }
         groups.add(group);
         groupInjector.accept(group, this);
-        return this;
     }
 
     public void removeFromGroup(Group group) {
@@ -111,7 +110,6 @@ public class Person implements Comparable, IEventFilter, IFilterable, IDataSeria
         return groups;
     }
 
-    @SuppressWarnings("WeakerAccess")
     public Group getMainGroup() {
         return getGroups().stream()
                 .filter(Group::isMainGroup)

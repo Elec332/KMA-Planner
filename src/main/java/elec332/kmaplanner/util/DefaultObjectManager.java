@@ -16,7 +16,7 @@ public abstract class DefaultObjectManager<O, R> extends AbstractObjectManager<O
         boolean ret = objects.add(object);
         if (ret) {
             postAddPerson(object);
-            runCallbacks();
+            callbacks.runCallbacks();
         }
         return ret;
     }
@@ -31,7 +31,7 @@ public abstract class DefaultObjectManager<O, R> extends AbstractObjectManager<O
         }
         objects.remove(object);
         postRemoveObject(object);
-        runCallbacks();
+        callbacks.runCallbacks();
     }
 
     protected void postRemoveObject(O object) {
@@ -43,7 +43,7 @@ public abstract class DefaultObjectManager<O, R> extends AbstractObjectManager<O
             consumer.accept(object);
             objects.add(object);
             postUpdateObject(object);
-            runCallbacks();
+            callbacks.runCallbacks();
         }
     }
 

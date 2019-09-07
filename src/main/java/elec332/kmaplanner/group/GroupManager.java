@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.project.ProjectManager;
 import elec332.kmaplanner.util.IObjectManager;
+import elec332.kmaplanner.util.WeakCallbackHandler;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -22,7 +23,7 @@ public class GroupManager implements IObjectManager<Group, ProjectManager.LoadDa
         this.groups = Sets.newTreeSet();
         this.groups_ = Collections.unmodifiableSet(groups);
         this.reverseLookup = Maps.newTreeMap();
-        this.callbacks = Sets.newHashSet();
+        this.callbacks = new WeakCallbackHandler();
     }
 
     public static final Group EVERYONE = new Group("Everyone") {
@@ -44,15 +45,17 @@ public class GroupManager implements IObjectManager<Group, ProjectManager.LoadDa
 
     private final Set<Group> groups, groups_;
     private final Map<String, Group> reverseLookup;
-    private final Set<Runnable> callbacks;
+    private final WeakCallbackHandler callbacks;
+
+//    @Override
+//    public void addCallback(Runnable runnable) {
+//        callbacks.add(runnable);
+//    }
+
 
     @Override
-    public void addCallback(Runnable runnable) {
-        callbacks.add(runnable);
-    }
-
-    private void runCallbacks() {
-        callbacks.forEach(Runnable::run);
+    public void addCallback(Object weakKey, Runnable runnable) {
+        callbacks.addCallback(weakKey, runnable);
     }
 
     @Override
@@ -67,7 +70,7 @@ public class GroupManager implements IObjectManager<Group, ProjectManager.LoadDa
             return false;
         }
         reverseLookup.put(group.getName(), group);
-        runCallbacks();
+        callbacks.runCallbacks();
         return true;
     }
 
@@ -79,7 +82,7 @@ public class GroupManager implements IObjectManager<Group, ProjectManager.LoadDa
         reverseLookup.remove(group.getName());
         groups.remove(group);
         Sets.newHashSet(group.getPersons()).forEach(p -> p.removeFromGroup(group));
-        runCallbacks();
+        callbacks.runCallbacks();
     }
 
     @Override
@@ -92,7 +95,7 @@ public class GroupManager implements IObjectManager<Group, ProjectManager.LoadDa
             consumer.accept(group);
             addObject(group);
         }
-        runCallbacks();
+        callbacks.runCallbacks();
     }
 
     @Nonnull

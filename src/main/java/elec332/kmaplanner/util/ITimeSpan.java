@@ -10,19 +10,19 @@ import java.util.concurrent.TimeUnit;
  */
 public interface ITimeSpan {
 
-    public Date start();
+    Date start();
 
-    public Date end();
+    Date end();
 
-    default public long getDuration(@Nonnull TimeUnit timeUnit) {
+    default long getDuration(@Nonnull TimeUnit timeUnit) {
         return timeUnit.convert(Math.abs(end().getTime() - start().getTime()), TimeUnit.MILLISECONDS);
     }
 
-    default public boolean isDuring(ITimeSpan other) {
+    default boolean isDuring(ITimeSpan other) {
         return other.start().before(end()) && !(other.end().before(start()) || other.end().equals(start()));
     }
 
-    default public boolean isDuring(Collection<? extends ITimeSpan> other) {
+    default boolean isDuring(Collection<? extends ITimeSpan> other) {
         return other.stream().anyMatch(this::isDuring);
     }
 

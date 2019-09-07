@@ -1,23 +1,18 @@
 package elec332.kmaplanner.gui.planner.tabs;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import elec332.kmaplanner.events.Event;
 import elec332.kmaplanner.project.KMAPlannerProject;
-import elec332.kmaplanner.project.ProjectManager;
 import elec332.kmaplanner.util.DateHelper;
 import elec332.kmaplanner.util.swing.DateChooserPanel;
 import elec332.kmaplanner.util.swing.DialogHelper;
-import elec332.kmaplanner.util.swing.FileChooserHelper;
 import elec332.kmaplanner.util.swing.IDefaultListCellRenderer;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.util.Date;
-import java.util.Set;
 
 /**
  * Created by Elec332 on 13-8-2019
@@ -44,7 +39,6 @@ public class EventsTab extends JPanel {
         JButton edit = new JButton("Edit");
         JButton add = new JButton("Add");
         JButton remove = new JButton("Remove");
-        JButton import_ = new JButton("Import events");
         list.addMouseListener(new MouseAdapter() {
 
             @Override
@@ -64,28 +58,13 @@ public class EventsTab extends JPanel {
                 updateList();
             }
         });
-        import_.addActionListener(a -> {
-            File file = FileChooserHelper.openFileProjectChooser(EventsTab.this);
-            if (file != null) {
-                project.saveIfPossible();
-                Set<Event> newEvents = null;
-                try {
-                    newEvents = Preconditions.checkNotNull(ProjectManager.loadFile(file)).getEvents();
-                } catch (Exception e) {
-                    DialogHelper.showErrorMessageDialog(EventsTab.this, "Failed to import events from file: " + file.getAbsolutePath(), "Import failed!");
-                }
-                if (newEvents != null) {
-                    newEvents.forEach(project.getEventManager()::addObjectNice);
-                    updateList();
-                }
-            }
-        });
+
+        project.getEventManager().addCallback(this, this::updateList);
 
         JPanel bottom = new JPanel();
         bottom.add(add);
         bottom.add(edit);
         bottom.add(remove);
-        bottom.add(import_);
         add(bottom, BorderLayout.SOUTH);
     }
 

@@ -11,7 +11,7 @@ import java.util.stream.Stream;
  */
 public interface IObjectManager<O, R> extends Iterable<O> {
 
-    void addCallback(Runnable runnable);
+    void addCallback(Object weakKey, Runnable runnable);
 
     void load(R reader);
 

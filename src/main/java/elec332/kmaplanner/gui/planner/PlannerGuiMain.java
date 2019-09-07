@@ -19,14 +19,9 @@ public class PlannerGuiMain extends JPanel {
         setPreferredSize(new Dimension(600, 400));
         JTabbedPane tabbedPane = new JTabbedPane();
 
-        UsersTab usersTab = new UsersTab(project.getPersonManager(), project.getGroupManager(), project::markDirty);
-        GroupsTab groupsTab = new GroupsTab(project.getGroupManager(), usersTab::updateGroups, project::markDirty);
-        usersTab.setGroupTab(groupsTab);
-
-
         tabbedPane.addTab("Events", new EventsTab(project));
-        tabbedPane.addTab("Persons", usersTab);
-        tabbedPane.addTab("Groups", groupsTab);
+        tabbedPane.addTab("Persons", new UsersTab(project.getPersonManager(), project.getGroupManager(), project::markDirty));
+        tabbedPane.addTab("Groups", new GroupsTab(project.getGroupManager(), project::markDirty));
         tabbedPane.addTab("Planner", new PlannerTab(project));
 
         add(tabbedPane);

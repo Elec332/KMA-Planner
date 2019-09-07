@@ -33,9 +33,9 @@ public class KMAPlannerProject {
     }
 
     private void init() {
-        getPersonManager().addCallback(this::markDirty);
-        getGroupManager().addCallback(this::markDirty);
-        getEventManager().addCallback(this::markDirty);
+        getPersonManager().addCallback(this, this::markDirty);
+        getGroupManager().addCallback(this, this::markDirty);
+        getEventManager().addCallback(this, this::markDirty);
 
         //Todo: Properly implement planner
         planner = new Planner(this);

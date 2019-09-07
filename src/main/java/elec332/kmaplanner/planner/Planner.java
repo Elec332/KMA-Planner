@@ -21,7 +21,9 @@ import elec332.kmaplanner.project.KMAPlannerProject;
 import elec332.kmaplanner.project.PlannerSettings;
 import elec332.kmaplanner.util.FileHelper;
 import elec332.kmaplanner.util.ObjectReference;
+import elec332.kmaplanner.util.WeakCallbackHandler;
 import elec332.kmaplanner.util.swing.DialogHelper;
+import elec332.kmaplanner.util.swing.FileChooserHelper;
 import org.optaplanner.core.api.solver.SolverFactory;
 import org.optaplanner.core.api.solver.event.BestSolutionChangedEvent;
 import org.optaplanner.core.api.solver.event.SolverEventListener;
@@ -34,6 +36,7 @@ import org.optaplanner.core.impl.phase.scope.AbstractStepScope;
 import org.optaplanner.core.impl.solver.AbstractSolver;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -41,7 +44,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 /**
  * Created by Elec332 on 14-6-2019
@@ -49,15 +51,17 @@ import java.util.function.Supplier;
 public class Planner {
 
     public Planner(KMAPlannerProject project) {
-        this(project.getPersonManager(), project.getGroupManager(), project.getEventManager(), project.getPlannerSettings(), project.getUuid());
+        this(project.getPersonManager(), project.getGroupManager(), project.getEventManager(), project.getPlannerSettings(), project.getUuid(), project::saveIfPossible);
     }
 
-    private Planner(PersonManager personManager, GroupManager groupManager, EventManager events, PlannerSettings settings, UUID projectUuid) {
+    private Planner(PersonManager personManager, GroupManager groupManager, EventManager events, PlannerSettings settings, UUID projectUuid, Runnable saveIfPossible) {
         this.personManager = personManager;
         this.groupManager = groupManager;
         this.events = events;
         this.settings = settings;
         this.projectUuid = projectUuid;
+        this.save = saveIfPossible;
+        this.callbacks = new WeakCallbackHandler();
     }
 
     private final PersonManager personManager;
@@ -65,7 +69,9 @@ public class Planner {
     private final EventManager events;
     private final PlannerSettings settings;
     private final UUID projectUuid;
-    public Roster roster;
+    private final Runnable save;
+    private final WeakCallbackHandler callbacks;
+    private Roster roster;
 
     public void initialize() {
         //Maybe..
@@ -91,21 +97,45 @@ public class Planner {
         return projectUuid;
     }
 
+    public void addRosterCallback(Object ref, Runnable callback) {
+        callbacks.addCallback(ref, callback);
+    }
+
     public Roster getRoster() {
         return roster;
     }
 
-    public void plan(Component component) {
-        plan(component, () -> roster = new Roster(this, Preconditions.checkNotNull(settings.sortingType.createEventAssigner())));
+    public void setRoster(Roster roster) {
+        this.roster = roster;
+        callbacks.runCallbacks();
     }
 
-    public void plan(Component component, Supplier<Roster> roster) {
+    public void openRosterFromUI() {
+        save.run();
+        setRoster(null);
+        File file = FileChooserHelper.openFileChooser(null, new FileNameExtensionFilter("KMAPlanner Assignments file (*.kpa)", "kpa"), "Open");
+        if (file != null) {
+            Roster roster;
+            try {
+                roster = RosterIO.readRoster(file, this);
+                setRoster(roster);
+            } catch (Exception e) {
+                e.printStackTrace();
+                DialogHelper.showErrorMessageDialog("Failed to import assignments from file: " + file.getAbsolutePath(), "Import failed!");
+            }
+        }
+    }
+
+    public void plan(Component component) {
+        if (getRoster() == null) {
+            setRoster(new Roster(this, Preconditions.checkNotNull(settings.sortingType.createEventAssigner())));
+        }
         initialize();
         getPersonManager().forEach(Person::clearEvents);
         if (getPersonManager().getObjects().isEmpty() || getEventManager().getObjects().isEmpty()) {
             return;
         }
-        plan_(component, roster.get());
+        plan_(component, getRoster());
     }
 
     private void configureSolver(SolverFactory<?> factory) {
@@ -173,11 +203,13 @@ public class Planner {
 
         if (ref.get() == null) {
             solver.terminateEarly();
+            setRoster(solver.getBestSolution());
             writeRoster(solver.getBestSolution());
             return;
         }
 
         Roster rosterP = ref.get();
+        setRoster(rosterP);
         writeRoster(rosterP);
         RosterPrinter.printRoster(rosterP, SwingUtilities.getWindowAncestor(component), RosterPrinter::printAll);
     }

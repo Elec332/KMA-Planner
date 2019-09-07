@@ -44,6 +44,7 @@ public class PersonPlanningData {
         eventsChanged();
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public boolean addEvent(Event event) {
         boolean ret = events.add(event);
         eventsChanged();

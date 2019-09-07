@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 /**
  * Created by Elec332 on 29-8-2019
  */
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class DateHelper {
 
     private static final Supplier<Calendar> CALENDAR_SUPPLIER = Calendar::getInstance;

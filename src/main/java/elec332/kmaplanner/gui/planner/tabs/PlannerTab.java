@@ -3,18 +3,15 @@ package elec332.kmaplanner.gui.planner.tabs;
 import com.google.common.base.Strings;
 import elec332.kmaplanner.planner.Planner;
 import elec332.kmaplanner.planner.opta.Roster;
-import elec332.kmaplanner.planner.opta.RosterIO;
+import elec332.kmaplanner.planner.opta.RosterScoreCalculator;
 import elec332.kmaplanner.planner.opta.assignment.PersonSortingType;
 import elec332.kmaplanner.project.KMAPlannerProject;
 import elec332.kmaplanner.project.PlannerSettings;
 import elec332.kmaplanner.util.swing.DialogHelper;
-import elec332.kmaplanner.util.swing.FileChooserHelper;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.border.EtchedBorder;
 import java.awt.*;
-import java.io.File;
-import java.util.Optional;
 
 /**
  * Created by Elec332 on 26-8-2019
@@ -23,11 +20,13 @@ public class PlannerTab extends JPanel {
 
     public PlannerTab(KMAPlannerProject project) {
         super(new BorderLayout());
-        this.project = project;
         PlannerSettings settings = project.getPlannerSettings();
         Planner planner = project.getPlanner().orElseThrow(NullPointerException::new);
         planner.initialize();
-        JPanel middle = new JPanel();
+        JPanel middle = new JPanel(new BorderLayout());
+        JPanel settingsP = new JPanel(new GridLayout(5, 1));
+        settingsP.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Planner settings: "));
+
 
         JPanel se = new JPanel();
         se.add(new JLabel("Seed: "));
@@ -55,24 +54,44 @@ public class PlannerTab extends JPanel {
         JTextField mgs = new JTextField("" + settings.mainGroupFactor, 4);
         gf.add(mgs);
 
-        middle.add(se);
-        middle.add(so);
-        middle.add(td);
-        middle.add(uis);
-        middle.add(gf);
+        JPanel sc = new JPanel();
+        sc.add(new JLabel("Current roster score: "));
+        JLabel score = new JLabel("NaN");
+        sc.add(score);
+        planner.addRosterCallback(this, () -> {
+            Roster roster = planner.getRoster();
+            String txt;
+            sorting.setEnabled(roster == null);
+            if (roster == null) {
+                txt = "NaN";
+            } else {
+                txt = new RosterScoreCalculator().calculateScore(roster).toString();
+            }
+            score.setText(txt);
+        });
+
+        settingsP.add(so);
+        settingsP.add(se);
+        settingsP.add(td);
+        settingsP.add(uis);
+        settingsP.add(gf);
+        settingsP.setPreferredSize(settingsP.getMinimumSize());
+        middle.add(settingsP, BorderLayout.CENTER);
+        JPanel bottom = new JPanel(new GridLayout(3, 1));
+        bottom.add(new JPanel());
+        bottom.add(sc);
+        bottom.add(new JPanel());
+        middle.add(bottom, BorderLayout.SOUTH);
 
         add(middle, BorderLayout.CENTER);
 
-        JButton apply = new JButton("Apply");
+        JButton apply = new JButton("Apply planner settings");
 
         JPanel b2 = new JPanel();
         JButton plan = new JButton("Plan!");
-        JButton continueB = new JButton("Continue planning!");
         b2.add(apply);
         b2.add(plan);
-        b2.add(continueB);
         plan.addActionListener(a -> planner.plan(PlannerTab.this));
-        continueB.addActionListener(a -> openRoster(planner).ifPresent(roster -> planner.plan(PlannerTab.this, () -> roster)));
         add(b2, BorderLayout.SOUTH);
 
         apply.addActionListener(a -> {
@@ -118,26 +137,6 @@ public class PlannerTab extends JPanel {
             }
             project.markDirty();
         });
-    }
-
-    private KMAPlannerProject project;
-
-    private Optional<Roster> openRoster(Planner planner) {
-        project.saveIfPossible();
-        File file = FileChooserHelper.openFileChooser(PlannerTab.this, new FileNameExtensionFilter("KMAPlanner Assignments file (*.kpa)", "kpa"), "Open");
-        if (file != null) {
-            Roster roster;
-            try {
-                roster = RosterIO.readRoster(file, planner);
-                planner.roster = roster;
-            } catch (Exception e) {
-                e.printStackTrace();
-                DialogHelper.showErrorMessageDialog(PlannerTab.this, "Failed to import assignments from file: " + file.getAbsolutePath(), "Import failed!");
-                return Optional.empty();
-            }
-            return Optional.ofNullable(roster);
-        }
-        return Optional.empty();
     }
 
 }

@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 /**
  * Created by Elec332 on 30-8-2019
  */
+@SuppressWarnings("WeakerAccess")
 public abstract class AbstractGroupEventAssigner<T> implements IInitialEventAssigner<AbstractGroupEventAssigner.Data<T>> {
 
     public AbstractGroupEventAssigner(IInitialEventAssigner<T> def) {

@@ -11,6 +11,7 @@ import java.util.Optional;
 /**
  * Created by Elec332 on 4-9-2019
  */
+@SuppressWarnings("WeakerAccess")
 public class DesktopHelper {
 
     public static void openWebPage(String page) {

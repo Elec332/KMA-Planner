@@ -16,10 +16,9 @@ import java.awt.event.MouseEvent;
  */
 public class GroupsTab extends JPanel {
 
-    public GroupsTab(final GroupManager groupManager, Runnable callback, Runnable dirtyMarker) {
+    public GroupsTab(final GroupManager groupManager, Runnable dirtyMarker) {
         super(new BorderLayout());
         this.groupManager = groupManager;
-        this.callback = callback;
         JButton edit = new JButton("Edit");
         JButton add = new JButton("Add");
         JButton remove = new JButton("Remove");
@@ -59,16 +58,16 @@ public class GroupsTab extends JPanel {
             }
         });
         add(bottomPanel, BorderLayout.SOUTH);
+
+        groupManager.addCallback(this, this::updateList);
     }
 
     private DefaultListModel<Group> listModel;
     private GroupManager groupManager;
-    private final Runnable callback;
 
-    void updateList() {
+    private void updateList() {
         listModel.clear();
         groupManager.forEach(listModel::addElement);
-        callback.run();
     }
 
     private void editGroup(Group group, boolean newG, Runnable dirtyMarker) {
@@ -100,7 +99,7 @@ public class GroupsTab extends JPanel {
             } else {
                 Group group1 = new Group(name.getText());
                 group1.setMain(checkBox.isSelected());
-                group1.getFilters().addAll(group.getFilters());
+                group1.getModifiableFilters().addAll(group.getFilters());
                 if (Strings.isNullOrEmpty(group1.getName()) || !groupManager.addObjectNice(group1)) {
                     DialogHelper.showErrorMessageDialog(GroupsTab.this, "Failed to add Group! (Perhaps an invalid/duplicate name?)", "Error adding Group");
                     return;

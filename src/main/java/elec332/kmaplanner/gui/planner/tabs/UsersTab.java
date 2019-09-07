@@ -5,20 +5,16 @@ import com.google.common.collect.Sets;
 import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.group.GroupManager;
 import elec332.kmaplanner.gui.planner.filter.JFilterPanel;
-import elec332.kmaplanner.io.PersonExcelReader;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.persons.PersonManager;
-import elec332.kmaplanner.util.FileHelper;
 import elec332.kmaplanner.util.JCheckBoxList;
 import elec332.kmaplanner.util.swing.DialogHelper;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.util.Objects;
 import java.util.Set;
 import java.util.Vector;
@@ -37,7 +33,6 @@ public class UsersTab extends JPanel {
         JButton edit = new JButton("Edit");
         JButton add = new JButton("Add");
         JButton remove = new JButton("Remove");
-        JButton importB = new JButton("Import");
 
         JPanel top = new JPanel(new GridLayout(2, 1));
         JPanel p = new JPanel();
@@ -81,7 +76,6 @@ public class UsersTab extends JPanel {
         bottomPanel.add(add);
         bottomPanel.add(edit);
         bottomPanel.add(remove);
-        bottomPanel.add(importB);
         add.addActionListener(e -> editUser(new Person("", ""), true, dirtyMarker));
         edit.addActionListener(e -> editUser(list.getSelectedValue(), false, dirtyMarker));
         remove.addActionListener(a -> {
@@ -91,11 +85,12 @@ public class UsersTab extends JPanel {
                 updateList();
             }
         });
-        importB.addActionListener(a -> importPersons());
+
+        personManager.addCallback(this, this::updateList);
+        groupManager.addCallback(this, this::updateGroups);
+
         add(bottomPanel, BorderLayout.SOUTH);
     }
-
-    private static final String NOT_SELECTED = "Not Selected";
 
     private JComboBox<Group> groupFilter;
     private JTextField nameFilter;
@@ -103,13 +98,8 @@ public class UsersTab extends JPanel {
     private DefaultComboBoxModel<Group> listModelG;
     private PersonManager personManager;
     private GroupManager groupManager;
-    private Runnable groupCallback;
 
     private boolean refreshingGroups;
-
-    public void setGroupTab(GroupsTab groupTab) {
-        this.groupCallback = groupTab::updateList;
-    }
 
     private void updateList() {
         if (refreshingGroups) {
@@ -122,7 +112,7 @@ public class UsersTab extends JPanel {
                 .forEach(listModel::addElement);
     }
 
-    public void updateGroups() {
+    private void updateGroups() {
         refreshingGroups = true;
         listModelG.removeAllElements();
         Set<Group> groups = Sets.newTreeSet(groupManager.getObjects());
@@ -197,7 +187,7 @@ public class UsersTab extends JPanel {
                 });
             } else {
                 Person person1 = new Person(fnf.getText(), lnf.getText());
-                person1.getFilters().addAll(person.getFilters());
+                person1.getModifiableFilters().addAll(person.getFilters());
                 if (Strings.isNullOrEmpty(person1.getFirstName()) || !personManager.addObjectNice(person1)) {
                     DialogHelper.showErrorMessageDialog(UsersTab.this, "Failed to add Person! (Perhaps an invalid/duplicate name?)", "Error adding Person");
                     return;
@@ -207,87 +197,6 @@ public class UsersTab extends JPanel {
             updateList();
         }
 
-    }
-
-    private void importPersons() {
-        JPanel dialog = new JPanel(new BorderLayout());
-        JPanel tp = new JPanel();
-        tp.add(new JLabel("File location: "));
-        JButton fileB = new JButton(NOT_SELECTED);
-        File[] fileBf = {null};
-        tp.add(fileB);
-        fileB.addActionListener(a -> {
-            JFileChooser fc = new JFileChooser();
-            fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            fc.setCurrentDirectory(FileHelper.getExecFolder());
-            FileNameExtensionFilter f = new FileNameExtensionFilter("Excel 2007 files (*.xlsx)", "xlsx");
-            fc.addChoosableFileFilter(f);
-            fc.setFileFilter(f);
-            f = new FileNameExtensionFilter("Excel '97 files (*.xls)", "xls");
-            fc.addChoosableFileFilter(f);
-            fc.removeChoosableFileFilter(fc.getAcceptAllFileFilter());
-            int ret = fc.showOpenDialog(this);
-            if (ret == JFileChooser.APPROVE_OPTION) {
-                fileBf[0] = fc.getSelectedFile();
-                String file = fileBf[0].getAbsolutePath();
-                fileB.setText(file.substring(file.lastIndexOf(File.separator) + 1));
-            }
-        });
-        dialog.add(tp, BorderLayout.NORTH);
-        JPanel middle = new JPanel(new GridLayout(3, 1));
-        JCheckBox usg = new JCheckBox(PersonExcelReader.Options.USE_SHEET_GROUP.toString(), true);
-        JCheckBox ufg = new JCheckBox(PersonExcelReader.Options.USE_FILE_GROUP.toString(), true);
-
-        JCheckBox mfsn = new JCheckBox(PersonExcelReader.Options.MERGE_FILE_SHEET_NAME.toString(), true);
-        middle.add(usg);
-        middle.add(ufg);
-        middle.add(mfsn);
-        dialog.add(middle);
-
-        JPanel btm = new JPanel();
-        btm.add(new JLabel("Group name: "));
-        JTextField name = new JTextField(15);
-        btm.add(name);
-        dialog.add(btm, BorderLayout.SOUTH);
-        name.setEnabled(!ufg.isSelected());
-        String[] lastName = {""};
-
-        ufg.addActionListener(a -> {
-            if (ufg.isSelected()) {
-                lastName[0] = name.getText();
-                name.setText("");
-                name.setEnabled(false);
-            } else {
-                name.setText(lastName[0]);
-                name.setEnabled(true);
-            }
-        });
-
-        if (DialogHelper.showDialog(UsersTab.this, dialog, "Person Importer")) {
-            String file = fileB.getText();
-            if (file.trim().equals(NOT_SELECTED)) {
-                DialogHelper.showErrorMessageDialog(UsersTab.this, "File not selected!", "Invalid file");
-                return;
-            }
-            String fn;
-            if (!ufg.isSelected()) {
-                fn = name.getText();
-            } else {
-                fn = file.substring(file.lastIndexOf(File.separator) + 1);
-                fn = fn.substring(0, fn.indexOf('.'));
-            }
-            Set<Person> people = PersonExcelReader.readPersons(fileBf[0], fn, groupManager, getOption(usg, PersonExcelReader.Options.USE_SHEET_GROUP), getOption(ufg, PersonExcelReader.Options.USE_FILE_GROUP), getOption(mfsn, PersonExcelReader.Options.MERGE_FILE_SHEET_NAME));
-            people.forEach(personManager::addObject);
-            updateList();
-            groupCallback.run();
-        }
-    }
-
-    private static PersonExcelReader.Options getOption(JCheckBox checkBox, PersonExcelReader.Options option) {
-        if (checkBox.isSelected()) {
-            return option;
-        }
-        return null;
     }
 
 }

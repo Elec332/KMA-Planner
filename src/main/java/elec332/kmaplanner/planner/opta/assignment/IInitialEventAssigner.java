@@ -13,8 +13,8 @@ import java.util.Set;
  */
 public interface IInitialEventAssigner<T> {
 
-    public T assignPersonsTo(List<Assignment> assignments, Event event, List<Person> persons, T data, Planner planner);
+    T assignPersonsTo(List<Assignment> assignments, Event event, List<Person> persons, T data, Planner planner);
 
-    public T createInitialData(List<Person> persons, Set<Event> events, Planner planner);
+    T createInitialData(List<Person> persons, Set<Event> events, Planner planner);
 
 }

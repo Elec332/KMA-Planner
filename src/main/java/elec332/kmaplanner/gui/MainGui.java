@@ -1,10 +1,12 @@
 package elec332.kmaplanner.gui;
 
 import com.google.common.base.Preconditions;
+import elec332.kmaplanner.events.Event;
 import elec332.kmaplanner.gui.dialogs.AboutPanel;
 import elec332.kmaplanner.gui.dialogs.ProjectSettingsPanel;
 import elec332.kmaplanner.gui.dialogs.UISettingsPanel;
 import elec332.kmaplanner.gui.planner.PlannerGuiMain;
+import elec332.kmaplanner.io.PersonExcelReader;
 import elec332.kmaplanner.planner.Planner;
 import elec332.kmaplanner.planner.RosterPrinter;
 import elec332.kmaplanner.project.KMAPlannerProject;
@@ -21,6 +23,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Set;
 
 /**
  * Created by Elec332 on 2-9-2019
@@ -107,6 +110,34 @@ public class MainGui extends JFrame {
         uiSettings.addActionListener(a -> UISettingsPanel.openDialog(settings, this));
         projectSettings.addActionListener(a -> ProjectSettingsPanel.openDialog(project.get(), this));
 
+        JMenu importM = new JMenu("Import");
+        JMenuItem events = new JMenuItem("Import events");
+        JMenuItem person = new JMenuItem("Import persons");
+        JMenuItem roster = new JMenuItem("Import previously saved roster");
+        importM.add(events);
+        importM.add(person);
+        importM.addSeparator();
+        importM.add(roster);
+        events.setToolTipText("Import events from another project.");
+        person.setToolTipText("Import persons from an excel file.");
+        events.addActionListener(a -> {
+            File file = FileChooserHelper.openFileProjectChooser(MainGui.this);
+            if (file != null) {
+                project.get().saveIfPossible();
+                Set<Event> newEvents = null;
+                try {
+                    newEvents = Preconditions.checkNotNull(ProjectManager.loadFile(file)).getEvents();
+                } catch (Exception e) {
+                    DialogHelper.showErrorMessageDialog(MainGui.this, "Failed to import events from file: " + file.getAbsolutePath(), "Import failed!");
+                }
+                if (newEvents != null) {
+                    newEvents.forEach(project.get().getEventManager()::addObjectNice);
+                }
+            }
+        });
+        person.addActionListener(a -> PersonExcelReader.importPersons(MainGui.this, project.get()));
+        roster.addActionListener(a -> project.get().getPlanner().ifPresent(Planner::openRosterFromUI));
+
         JMenu export = new JMenu("Export");
         JMenuItem printAll = new JMenuItem("Print all");
         JMenuItem printDays = new JMenuItem("Print days");
@@ -139,6 +170,7 @@ public class MainGui extends JFrame {
 
         menuBar.add(fileMenu);
         menuBar.add(stuff);
+        menuBar.add(importM);
         menuBar.add(export);
         menuBar.add(help);
 
@@ -152,7 +184,7 @@ public class MainGui extends JFrame {
         });
 
         setJMenuBar(menuBar);
-        setProject(ProjectManager.createNewProject());
+        setProject(project.get());
         pack();
         setVisible(true);
     }

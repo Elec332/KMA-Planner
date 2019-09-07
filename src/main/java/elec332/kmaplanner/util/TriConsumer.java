@@ -5,6 +5,6 @@ package elec332.kmaplanner.util;
  */
 public interface TriConsumer<A, B, C> {
 
-    public void accept(A a, B b, C c);
+    void accept(A a, B b, C c);
 
 }
