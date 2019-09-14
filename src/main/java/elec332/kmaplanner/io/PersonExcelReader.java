@@ -10,6 +10,7 @@ import elec332.kmaplanner.project.KMAPlannerProject;
 import elec332.kmaplanner.util.FileHelper;
 import elec332.kmaplanner.util.swing.DialogHelper;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
@@ -149,8 +150,19 @@ public class PersonExcelReader {
     private static List<Pair<Person, List<String>>> readSheet(Sheet sheet) {
         List<Pair<Person, List<String>>> ret = Lists.newArrayList();
         sheet.rowIterator().forEachRemaining(row -> {
-            String fn = row.getCell(0).getStringCellValue().trim();
-            String ln = row.getCell(1).getStringCellValue().trim();
+            Cell fnC = row.getCell(0);
+            Cell lnC = row.getCell(1);
+            if (fnC == null || lnC == null){
+                return;
+            }
+            String fn = fnC.getStringCellValue();
+            String ln = lnC.getStringCellValue();
+            if (Strings.isNullOrEmpty(fn) || Strings.isNullOrEmpty(ln)){
+                return;
+            }
+            fn = fn.trim();
+            ln = ln.trim();
+
             List<String> groups = Lists.newArrayList();
             for (int i = 2; i < row.getLastCellNum(); i++) {
                 String str = row.getCell(i).getStringCellValue();

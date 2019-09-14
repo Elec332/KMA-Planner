@@ -35,13 +35,13 @@ dependencies {
 
 processResources {
 
-	//Ensure task is redone when version changes
-	inputs.property "version", project.version
+    //Ensure task is redone when version changes
+    inputs.property "version", project.version
 
     from(sourceSets.main.resources.srcDirs) {
         include 'about.txt'
 
-        expand 'version': project.version
+         expand 'version': project.version
     }
 
 
