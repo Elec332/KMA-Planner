@@ -57,7 +57,7 @@ public class LessTimeFilter extends AbstractFilter {
 
     @Override
     public long getSoftDuration(long duration, long avg, Date start, Date end) {
-        return (long) (duration * efficiency);
+        return (long) (duration * (efficiency - 1));
     }
 
     @Nonnull

@@ -3,6 +3,7 @@ package elec332.kmaplanner.planner.opta;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import elec332.kmaplanner.events.Event;
+import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.persons.PersonManager;
 import elec332.kmaplanner.planner.Planner;
@@ -16,6 +17,7 @@ import org.optaplanner.core.api.domain.valuerange.ValueRangeProvider;
 import org.optaplanner.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Elec332 on 15-8-2019
@@ -113,13 +115,17 @@ public class Roster {
         return avg;
     }
 
-    public long getAveragePersonTimeSoft() {
-        if (softAvg == null) {
+    public long getAveragePersonTimeSoft(boolean refresh) {
+        if (softAvg == null || refresh) {
             long avg = getAveragePersonTimeReal();
-            long totSoft = getPersons().stream()
-                    .mapToLong(p -> p.getPlannerData().getSoftDuration(avg, getStartDate(), getEndDate()))
-                    .sum();
-            softAvg = totSoft / getPersons().size();
+//            long totSoft = getPersons().stream()
+//                    .mapToLong(p -> p.getPlannerData().getSoftDuration(avg, getStartDate(), getEndDate()))
+//                    .sum();
+            Set<Group> gr = getPlanner().getGroupManager().getMainGroups().stream()
+                    .filter(g -> g.getPersonIterator().hasNext()).collect(Collectors.toSet());
+            softAvg = gr.stream()
+                    .mapToLong(g -> g.getAverageSoftTime(this))
+                    .sum() / gr.size();
         }
         return softAvg;
     }
@@ -177,7 +183,8 @@ public class Roster {
         getAssignments().forEach(System.out::println);
         System.out.println();
         System.out.println("Average: " + getAveragePersonTimeReal());
-        System.out.println("Average Soft: " + getAveragePersonTimeSoft());
+        System.out.println("Average Soft NR: " + getAveragePersonTimeSoft(false));
+        System.out.println("Average Soft RF: " + getAveragePersonTimeSoft(true));
         System.out.println("Score: " + getScore());
     }
 

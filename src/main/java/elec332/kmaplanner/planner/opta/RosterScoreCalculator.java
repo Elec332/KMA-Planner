@@ -24,6 +24,10 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
 
     @Override
     public Score calculateScore(Roster roster) {
+        return calculateScore(roster, false);
+    }
+
+    public static Score calculateScore(Roster roster, boolean debug) {
         int hardScore = 0;
         int mediumScore = 0;
         int softScore = 0;
@@ -33,7 +37,11 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
                 .forEach(assignment -> assignment.person.getPlannerData().addEvent(assignment.event));
         Date start = roster.getPlanner().getEventManager().getFirstDate();
         Date end = roster.getPlanner().getEventManager().getLastDate();
-        long avg = roster.getAveragePersonTimeSoft();
+        long avg = roster.getAveragePersonTimeSoft(true);
+        long avgH = roster.getAveragePersonTimeReal();
+        if (debug) {
+            System.out.println("APTS: " + avg);
+        }
         for (Assignment assignment : roster.getAssignments()) {
 
             if (assignment.person == null || assignment.person == PersonManager.NULL_PERSON) {
@@ -55,11 +63,15 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
 
             //Force group filter if set by an EventAssigner
             if (!assignment.isValidGroup(assignment.getPerson().getPlannerData().getMainGroup())) {
-                hardScore--;
+                hardScore -= 50;
             }
+
 
             for (Event e : assignment.person.getPlannerData().getCheckEvents()) {
                 if (assignment.event.isDuring(e)) {
+                    if (debug) {
+                        System.out.println("PD: " + e + "  " + assignment.person + "  " + assignment.event);
+                    }
                     hardScore -= 11;
                 }
             }
@@ -72,7 +84,7 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
             if (person == PersonManager.NULL_PERSON) {
                 continue;
             }
-            long dur = person.getPlannerData().getSoftDuration(avg, start, end);
+            long dur = person.getPlannerData().getSoftDuration(avgH, start, end);
             if (dur > (avg + settings.timeDiffThreshold)) {
                 softScore -= ((dur - avg) / 5);
             }
@@ -92,12 +104,17 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
                 continue;
             }
             long gAvg = group.getAverageSoftTime(roster);
-            if (gAvg > avg + settings.timeDiffThreshold / 2 || gAvg < avg - settings.timeDiffThreshold / 3) {
+            if (debug) {
+                System.out.println("gaVG: " + gAvg);
+            }
+            if (gAvg > avg + settings.timeDiffThreshold / 1.5f || gAvg < avg - settings.timeDiffThreshold / 1.5f) {
                 long diff = Math.abs(gAvg - avg);
-                mediumScore -= (int) diff / 3;
+                mediumScore -= (int) diff * 3;
             }
         }
-
+        if (debug) {
+            System.out.println("MS1: " + mediumScore);
+        }
         if (settings.mainGroupFactor > 1) {
             Multimap<Event, Person> map = HashMultimap.create();
             roster.getAssignments().forEach(a -> map.put(a.event, a.person));
@@ -108,7 +125,7 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
 
             for (Map.Entry<Event, Collection<Person>> pc : map.asMap().entrySet()) {
                 int groupF = Math.min(settings.mainGroupFactor, pc.getKey().requiredPersons);
-                mediumScore -= mainGroups.stream()
+                int mt = mainGroups.stream()
                         .mapToInt(g -> {
                             int ret = (int) pc.getValue().stream()
                                     .filter(g::containsPerson)
@@ -121,9 +138,15 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
                         .filter(i -> i > 0)
                         .filter(i -> i < groupF)
                         .reduce(0, (a, b) -> a + (groupF - b) * 10);
+                mediumScore -= mt;
+                if (debug && mt > 0) {
+                    System.out.println(pc.getKey() + "  " + (-mt));
+                }
             }
         }
-
+        if (debug) {
+            System.out.println("MS2: " + mediumScore);
+        }
         return HardMediumSoftScore.of(hardScore, mediumScore, softScore);
     }
 

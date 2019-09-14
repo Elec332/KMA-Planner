@@ -27,6 +27,7 @@ public class GroupEventAssignerV2<T> extends AbstractGroupEventAssigner<T> {
     @Override
     protected void assignPersons(List<Assignment> assignments, Event event, List<Person> persons, Data<T> data, Planner planner, List<Group> groups) {
         List<Group> groupFilter = Lists.newArrayList(groups);
+        System.out.println(event + "  " + groups);
         Random rand = new Random(planner.getSettings().seed);
         int toDo = event.requiredPersons;
         Iterator<Assignment> it = assignments.iterator();
@@ -50,7 +51,7 @@ public class GroupEventAssignerV2<T> extends AbstractGroupEventAssigner<T> {
                 }
                 Assignment assignment = it.next();
                 assignment.person = person;
-                assignment.groupFilter = groupFilter::contains;
+                assignment.groupFilter = groupFilter::contains; //groupFilter.size() <= 2 ? groupFilter::contains : null;
                 person.getPrintableEvents().add(event);
                 if (!last) {
                     toDo--;

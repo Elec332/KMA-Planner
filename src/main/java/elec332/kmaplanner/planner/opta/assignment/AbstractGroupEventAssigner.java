@@ -26,7 +26,7 @@ public abstract class AbstractGroupEventAssigner<T> implements IInitialEventAssi
 
     @Override
     public Data<T> assignPersonsTo(List<Assignment> assignments, Event event, List<Person> persons, Data<T> data, Planner planner) {
-        if (event.requiredPersons > planner.getSettings().mainGroupFactor * 10) {
+        if (event.requiredPersons > planner.getSettings().mainGroupFactor * 8) {
             data.t = defaultAssigner.assignPersonsTo(assignments, event, persons, data.t, planner);
             return data;
         } else {
@@ -40,6 +40,7 @@ public abstract class AbstractGroupEventAssigner<T> implements IInitialEventAssi
             throw new IllegalArgumentException();
         }
         int groupsInit = Math.max((int) Math.floor(event.requiredPersons / (planner.getSettings().mainGroupFactor * 2.5f)), 1) - 1;
+        boolean retry = false;
         int groups = groupsInit;
         Set<Group> mainGroups = planner.getGroupManager().getMainGroups().stream()
                 .filter(event::canGroupParticipate)
@@ -50,20 +51,20 @@ public abstract class AbstractGroupEventAssigner<T> implements IInitialEventAssi
             float ppg = (float) event.requiredPersons / groups;
             allowed = mainGroups.stream().filter(g -> g.getGroupSize() / 1.8f >= ppg).collect(Collectors.toSet());
             allowed.removeAll(data.groups);
-            if (ppg < planner.getSettings().mainGroupFactor * 1.5f) {
-                if (groupsInit >= 0) {
-                    groups = groupsInit;
-                    groupsInit = -1;
+            if (ppg < planner.getSettings().mainGroupFactor * 1.75f && groups > 1) {
+                if (!retry) {
+                    retry = true;
                     allowed = Sets.newHashSet();
+                    groups = groupsInit;
                     data.groups.clear();
                 } else {
+                    System.out.println("Failoe: " + event);
                     data.t = defaultAssigner.assignPersonsTo(assignments, event, persons, data.t, planner);
                     return;
                 }
             }
         }
         List<Group> used = allowed.stream().sorted(Comparator.comparingInt(Group::getGroupSize)).collect(Collectors.toList());
-        System.out.println("groups: " + groups);
         used = used.subList(0, groups);
         data.groups.addAll(used);
         assignPersons(assignments, event, persons, data, planner, used);

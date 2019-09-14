@@ -3,19 +3,16 @@ package elec332.kmaplanner.planner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import elec332.kmaplanner.events.EventManager;
+import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.group.GroupManager;
 import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.persons.PersonManager;
 import elec332.kmaplanner.planner.opta.Roster;
 import elec332.kmaplanner.planner.opta.RosterIO;
 import elec332.kmaplanner.planner.opta.RosterScoreCalculator;
-import elec332.kmaplanner.planner.opta.solver.SolverConfigurator;
-import elec332.kmaplanner.planner.opta.solver.phase1.Phase1Configuration;
-import elec332.kmaplanner.planner.opta.solver.phase2.Phase2Configuration;
-import elec332.kmaplanner.planner.opta.solver.phase3.Phase3Configuration;
-import elec332.kmaplanner.planner.opta.solver.phase4.Phase4Configuration;
-import elec332.kmaplanner.planner.opta.solver.phase5.Phase5Configuration;
-import elec332.kmaplanner.planner.opta.solver.phase6.Phase6Configuration;
+import elec332.kmaplanner.planner.opta.solver.ISolverConfiguration;
+import elec332.kmaplanner.planner.opta.solver.Solver1;
+import elec332.kmaplanner.planner.opta.solver.Solver2;
 import elec332.kmaplanner.planner.opta.util.IAbstractPhaseLifecycleListener;
 import elec332.kmaplanner.project.KMAPlannerProject;
 import elec332.kmaplanner.project.PlannerSettings;
@@ -24,6 +21,7 @@ import elec332.kmaplanner.util.ObjectReference;
 import elec332.kmaplanner.util.WeakCallbackHandler;
 import elec332.kmaplanner.util.swing.DialogHelper;
 import elec332.kmaplanner.util.swing.FileChooserHelper;
+import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
 import org.optaplanner.core.api.solver.event.BestSolutionChangedEvent;
 import org.optaplanner.core.api.solver.event.SolverEventListener;
@@ -40,10 +38,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 /**
  * Created by Elec332 on 14-6-2019
@@ -135,10 +132,12 @@ public class Planner {
         if (getPersonManager().getObjects().isEmpty() || getEventManager().getObjects().isEmpty()) {
             return;
         }
-        plan_(component, getRoster());
+        long time = System.currentTimeMillis();
+        plan_(component, getRoster(), new Solver1(), new Solver2());
+        System.out.println("TIME: " + ((System.currentTimeMillis() - time) / 1000f) / 60f);
     }
 
-    private void configureSolver(SolverFactory<?> factory) {
+    private void configureSolver(SolverFactory<Roster> factory, BiConsumer<SolverFactory<Roster>, PlannerSettings> cfg) {
         //factory.getSolverConfig().setTerminationConfig(new TerminationConfig());
         //factory.getSolverConfig().getTerminationConfig().setUnimprovedSecondsSpentLimit((long) settings.unimprovedSeconds);
 
@@ -152,42 +151,55 @@ public class Planner {
         factory.getSolverConfig().setScoreDirectorFactoryConfig(new ScoreDirectorFactoryConfig());
         factory.getSolverConfig().getScoreDirectorFactoryConfig().setEasyScoreCalculatorClass(RosterScoreCalculator.class);
 
+        cfg.accept(factory, getSettings());
+
         //A lot of *sigh*'s in here, you've been warned
-        SolverConfigurator.configureSolver(factory, getSettings(),
-                new Phase1Configuration(),
-                new Phase2Configuration(),
-                new Phase3Configuration(),
-                new Phase4Configuration(),
-                new Phase5Configuration(),
-                new Phase6Configuration());
+
 
     }
 
-    private void plan_(Component component, Roster roster) {
-        SolverFactory<Roster> factory = SolverFactory.createEmpty();
-        configureSolver(factory);
-
-        AbstractSolver<Roster> solver = (AbstractSolver<Roster>) factory.buildSolver();
-        solver.addEventListener(event -> {
-            System.out.println(event.getNewBestSolution().getAveragePersonTimeSoft());
-            System.out.println(event.getNewBestSolution().getAveragePersonTimeReal());
-            event.getNewBestSolution().getPlanner().getGroupManager().getMainGroups().stream()
-                    .filter(g -> g.getPersonIterator().hasNext())
-                    .sorted(Comparator.comparingLong(g -> g.getAverageSoftTime(roster)))
-                    .forEach(g -> System.out.print(g + " " + g.getAverageSoftTime(roster) + " | "));
-            System.out.println();
-            System.out.println(event.getNewBestScore());
-        });
-
+    private void plan_(Component component, Roster roster, ISolverConfiguration... solvers) {
+        if (solvers == null || solvers.length < 1) {
+            throw new IllegalArgumentException();
+        }
         ObjectReference<Roster> ref = new ObjectReference<>();
+        ObjectReference<Solver<Roster>> solver = new ObjectReference<>();
+        ObjectReference<Boolean> exitThread = new ObjectReference<>(false);
         PlannerUI ui = new PlannerUI();
-        solver.addEventListener(ui);
-        solver.addPhaseLifecycleListener(ui);
+
         new Thread(() -> {
-            ref.accept(solver.solve(roster));
+            Roster r = roster;
+            for (ISolverConfiguration phaz : solvers) {
+                if (exitThread.get()) {
+                    return;
+                }
+                SolverFactory<Roster> factory = SolverFactory.createEmpty();
+                configureSolver(factory, phaz::configureSolver);
+
+                AbstractSolver<Roster> aSolver = (AbstractSolver<Roster>) factory.buildSolver();
+                solver.set(aSolver);
+                addSolverEventListeners(aSolver, ui);
+                if (exitThread.get()) {
+                    return;
+                }
+                phaz.preSolve(r, getSettings());
+                if (exitThread.get()) {
+                    return;
+                }
+                r = aSolver.solve(r);
+                if (exitThread.get()) {
+                    return;
+                }
+                phaz.postSolve(r, getSettings());
+            }
+            if (exitThread.get()) {
+                return;
+            }
+            ref.set(r);
             Optional.ofNullable(SwingUtilities.getWindowAncestor(ui))
                     .ifPresent(Window::dispose);
         }).start();
+
 
         while (!(component instanceof Window)) {
             component = component.getParent();
@@ -202,9 +214,10 @@ public class Planner {
         frame.setVisible(true);
 
         if (ref.get() == null) {
-            solver.terminateEarly();
-            setRoster(solver.getBestSolution());
-            writeRoster(solver.getBestSolution());
+            exitThread.set(true);
+            solver.get().terminateEarly();
+            setRoster(solver.get().getBestSolution());
+            writeRoster(solver.get().getBestSolution());
             return;
         }
 
@@ -213,6 +226,34 @@ public class Planner {
         writeRoster(rosterP);
         RosterPrinter.printRoster(rosterP, SwingUtilities.getWindowAncestor(component), RosterPrinter::printAll);
     }
+
+    private static void addSolverEventListeners(AbstractSolver<Roster> solver, PlannerUI ui) {
+        ui.nextSolver();
+        solver.addEventListener(event -> {
+            Roster roster1 = event.getNewBestSolution();
+            System.out.println("------------------");
+            RosterScoreCalculator.calculateScore(event.getNewBestSolution(), true);
+            System.out.println(event.getNewBestSolution().getAveragePersonTimeSoft(false));
+            System.out.println(event.getNewBestSolution().getAveragePersonTimeSoft(true));
+            System.out.println(event.getNewBestSolution().getAveragePersonTimeReal());
+            Set<Group> gr = event.getNewBestSolution().getPlanner().getGroupManager().getMainGroups().stream()
+                    .filter(g -> g.getPersonIterator().hasNext()).collect(Collectors.toSet());
+            System.out.println(gr.stream()
+                    .mapToLong(g -> g.getAverageSoftTime(roster1))
+                    .sum() / gr.size()
+            );
+            event.getNewBestSolution().getPlanner().getGroupManager().getMainGroups().stream()
+                    .filter(g -> g.getPersonIterator().hasNext())
+                    .sorted(Comparator.comparingLong(g -> g.getAverageSoftTime(roster1)))
+                    .forEach(g -> System.out.print(g + " " + g.getAverageSoftTime(roster1) + " | "));
+            System.out.println();
+            System.out.println(event.getNewBestScore());
+            System.out.println("------------------");
+        });
+        solver.addEventListener(ui);
+        solver.addPhaseLifecycleListener(ui);
+    }
+
 
     private void writeRoster(Roster roster) {
         File file = new File(FileHelper.getExecFolder(), new Date().getTime() + ".kpa");
@@ -229,9 +270,12 @@ public class Planner {
         private PlannerUI() {
             super(new GridLayout(3, 1));
             JPanel ph = new JPanel();
+            ph.add(new JLabel("Solver: "));
+            ph.add(solverLabel = new JLabel(solver + "  "));
+            ph.add(new JLabel("   ")); //Spacer
             ph.add(new JLabel("Phase: "));
             ph.add(phaseLabel = new JLabel(phase + "  "));
-            ph.add(new JLabel("   "));
+            ph.add(new JLabel("   ")); //Spacer
             ph.add(new JLabel("Step: "));
             ph.add(stepLabel = new JLabel(step + "  "));
 
@@ -244,8 +288,16 @@ public class Planner {
             add(sc);
         }
 
-        private int phase = 1, step;
-        private JLabel scoreLabel, phaseLabel, stepLabel;
+        private int phase = 1, step, solver;
+        private JLabel scoreLabel, phaseLabel, stepLabel, solverLabel;
+
+        private void nextSolver() {
+            solver++;
+            solverLabel.setText(solver + "");
+            phase = 1;
+            step = 0;
+            setPhaseAndStep();
+        }
 
         @Override
         public void bestSolutionChanged(BestSolutionChangedEvent<Roster> event) {
@@ -261,8 +313,12 @@ public class Planner {
         @Override
         public void phaseEnded(AbstractPhaseScope<Roster> phaseScope) {
             phase++;
-            phaseLabel.setText("" + phase);
             step = 0;
+            setPhaseAndStep();
+        }
+
+        private void setPhaseAndStep() {
+            phaseLabel.setText("" + phase);
             stepLabel.setText("" + step);
         }
 

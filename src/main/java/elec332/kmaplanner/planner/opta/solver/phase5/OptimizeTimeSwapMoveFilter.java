@@ -17,7 +17,7 @@ public class OptimizeTimeSwapMoveFilter extends AbstractSwapMoveFilter {
         if (t1 == t2) {
             return false;
         }
-        long avg = (long) (roster.getAveragePersonTimeSoft() * 1.1f);
+        long avg = (long) (roster.getAveragePersonTimeSoft(false) * 1.1f);
         long a1Dur = a1.person.getPlannerData().getSoftDuration(roster);
         long a2Dur = a2.person.getPlannerData().getSoftDuration(roster);
         if (Math.abs(a1Dur - a2Dur) < 10) {

@@ -65,7 +65,7 @@ public class PlannerTab extends JPanel {
             if (roster == null) {
                 txt = "NaN";
             } else {
-                txt = new RosterScoreCalculator().calculateScore(roster).toString();
+                txt = RosterScoreCalculator.calculateScore(roster, false).toString();
             }
             score.setText(txt);
         });

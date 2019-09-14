@@ -152,12 +152,12 @@ public class PersonExcelReader {
         sheet.rowIterator().forEachRemaining(row -> {
             Cell fnC = row.getCell(0);
             Cell lnC = row.getCell(1);
-            if (fnC == null || lnC == null){
+            if (fnC == null || lnC == null) {
                 return;
             }
             String fn = fnC.getStringCellValue();
             String ln = lnC.getStringCellValue();
-            if (Strings.isNullOrEmpty(fn) || Strings.isNullOrEmpty(ln)){
+            if (Strings.isNullOrEmpty(fn) || Strings.isNullOrEmpty(ln)) {
                 return;
             }
             fn = fn.trim();

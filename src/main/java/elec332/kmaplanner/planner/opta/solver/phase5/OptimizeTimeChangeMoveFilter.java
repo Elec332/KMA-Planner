@@ -14,7 +14,7 @@ public class OptimizeTimeChangeMoveFilter extends AbstractChangeMoveFilter {
     @Override
     protected boolean accept(Roster roster, Assignment a, Person p) {
         PlannerSettings settings = roster.getPlanner().getSettings();
-        long dur = roster.getAveragePersonTimeSoft();
+        long dur = roster.getAveragePersonTimeSoft(false);
         dur *= 1.1f;
         long cPDur = a.person.getPlannerData().getSoftDuration(dur, roster.getStartDate(), roster.getEndDate());
         if (Math.abs(dur - cPDur) < settings.timeDiffThreshold) {
