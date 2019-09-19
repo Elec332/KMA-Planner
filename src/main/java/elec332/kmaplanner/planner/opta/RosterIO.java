@@ -74,6 +74,7 @@ public class RosterIO {
         dos.setVersion(SAVE_VERSION);
         dos.writeUUID(data.projectUuid);
         dos.writeObjects(RosterIO::writeAssignment, data.assignments);
+        dos.writeInt(data.getPOffset());
     }
 
     private static RosterData read(IByteArrayDataInputStream dis, Planner planner) {
@@ -84,7 +85,11 @@ public class RosterIO {
         }
         Map<UUID, Event> eventMap = planner.getEventManager().stream().collect(Collectors.toMap(Event::getUuid, Function.identity()));
         List<Assignment> assignments = dis.readObjects(stream -> readAssignment(stream, names, eventMap));
-        return new RosterData(assignments, uuid).checkAssignments(planner);
+        int po = 0;
+        if (dis.availableBytes() > 0) {
+            po = dis.readInt();
+        }
+        return new RosterData(assignments, uuid, po).checkAssignments(planner);
     }
 
     private static void writeAssignment(IByteArrayDataOutputStream stream, Assignment assignment) {
@@ -103,18 +108,20 @@ public class RosterIO {
     public static class RosterData {
 
         private RosterData(Roster roster) {
-            this(roster.getAssignments(), roster.getProjectUuid());
+            this(roster.getAssignments(), roster.getProjectUuid(), roster.groupOffset);
             this.init = true;
         }
 
-        private RosterData(@Nonnull List<Assignment> assignments, @Nonnull UUID projectUuid) {
+        private RosterData(@Nonnull List<Assignment> assignments, @Nonnull UUID projectUuid, int pOffset) {
             this.assignments = Preconditions.checkNotNull(assignments);
             this.projectUuid = Preconditions.checkNotNull(projectUuid);
             this.init = false;
+            this.pOffset = Math.min(pOffset, 1);
         }
 
         private final List<Assignment> assignments;
         private final UUID projectUuid;
+        private final int pOffset;
 
         private boolean init;
 
@@ -128,6 +135,10 @@ public class RosterIO {
         public UUID getProjectUuid() {
             checkInit();
             return projectUuid;
+        }
+
+        public int getPOffset() {
+            return pOffset;
         }
 
         private void checkInit() {
@@ -179,7 +190,7 @@ public class RosterIO {
                     }
                 }
             });
-            RosterData ret = new RosterData(assignments, projectUuid);
+            RosterData ret = new RosterData(assignments, projectUuid, pOffset);
             ret.init = true;
             return ret;
         }

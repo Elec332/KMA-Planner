@@ -8,9 +8,9 @@ import elec332.kmaplanner.planner.opta.solver.move.RosterChangeMove;
 import elec332.kmaplanner.planner.opta.solver.move.factory.AbstractChangeMoveListFactory;
 
 /**
- * Created by Elec332 on 31-8-2019
+ * Created by Elec332 on 16-9-2019
  */
-public class Phase2AChangeMoveListFactory extends AbstractChangeMoveListFactory {
+public class GroupChangeMoveFactory extends AbstractChangeMoveListFactory {
 
     @Override
     protected AbstractRosterMove createMove(Assignment a1, Person p, Roster roster) {

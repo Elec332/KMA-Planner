@@ -42,9 +42,10 @@ public abstract class AbstractFilter implements IEventFilter, ISoftDuration {
         JPanel ret = new JPanel(new BorderLayout());
         JPanel top = new JPanel();
         top.add(new JLabel("Filter Name: "));
-        final JTextField textField = new JTextField(getName(), 15);
+        final JTextField textField = new JTextField(getName() + " ", 15);
+        textField.setText(getName());
         top.add(textField);
-        textField.addActionListener(a -> setName(textField.getText()));
+        //textField.addActionListener(a -> setName(textField.getText()));
         ret.add(top, BorderLayout.NORTH);
         ret.add(createCenterPanel(applyCallback), BorderLayout.CENTER);
         applyCallback.accept(() -> setName(textField.getText()));

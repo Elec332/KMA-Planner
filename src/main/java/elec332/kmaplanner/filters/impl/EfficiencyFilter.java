@@ -14,9 +14,9 @@ import java.util.function.Consumer;
 /**
  * Created by Elec332 on 29-8-2019
  */
-public class LessTimeFilter extends AbstractFilter {
+public class EfficiencyFilter extends AbstractFilter {
 
-    public LessTimeFilter() {
+    public EfficiencyFilter() {
         desc = "Person will be assigned x% less (or more) assignments.";
     }
 
@@ -45,7 +45,7 @@ public class LessTimeFilter extends AbstractFilter {
                 DialogHelper.showErrorMessageDialog(center, "Failed to parse efficiency.", "Failed to apply");
                 return;
             }
-            LessTimeFilter.this.efficiency = e;
+            EfficiencyFilter.this.efficiency = e;
         });
         return center;
     }
@@ -63,8 +63,9 @@ public class LessTimeFilter extends AbstractFilter {
     @Nonnull
     @Override
     public AbstractFilter copy() {
-        LessTimeFilter ret = new LessTimeFilter();
+        EfficiencyFilter ret = new EfficiencyFilter();
         ret.efficiency = efficiency;
+        ret.setName(getName());
         return ret;
     }
 

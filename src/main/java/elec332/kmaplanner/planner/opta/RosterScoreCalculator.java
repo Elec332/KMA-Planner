@@ -27,7 +27,7 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
         return calculateScore(roster, false);
     }
 
-    public static Score calculateScore(Roster roster, boolean debug) {
+    public static HardMediumSoftScore calculateScore(Roster roster, boolean debug) {
         int hardScore = 0;
         int mediumScore = 0;
         int softScore = 0;
@@ -80,22 +80,24 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
 
         PlannerSettings settings = roster.getPlanner().getSettings();
 
-        for (Person person : roster.getPersons()) {
-            if (person == PersonManager.NULL_PERSON) {
-                continue;
-            }
-            long dur = person.getPlannerData().getSoftDuration(avgH, start, end);
-            if (dur > (avg + settings.timeDiffThreshold)) {
-                softScore -= ((dur - avg) / 5);
-            }
-            if (dur > (avg + settings.timeDiffThreshold * 2.5f)) {
-                softScore -= ((dur - avg) / 5) * 2;
-            }
-            if (dur < (avg - settings.timeDiffThreshold)) {
-                softScore -= (int) (((avg - dur) / 5f) * 1.5f);
-            }
-            if (dur < avg / 2) { //This one is doing waaaay to little...
-                softScore -= (avg - dur) * 5;
+        if (!roster.noSoft) {
+            for (Person person : roster.getPersons()) {
+                if (person == PersonManager.NULL_PERSON) {
+                    continue;
+                }
+                long dur = person.getPlannerData().getSoftDuration(avgH, start, end);
+                if (dur > (avg + settings.timeDiffThreshold)) {
+                    softScore -= ((dur - avg) / 5);
+                }
+                if (dur > (avg + settings.timeDiffThreshold * 2)) {
+                    softScore -= ((dur - avg) / 5) * 2;
+                }
+                if (dur < (avg - settings.timeDiffThreshold)) {
+                    softScore -= (int) (((avg - dur) / 5f) * 1.5f);
+                }
+                if (dur < avg / 2) { //This one is doing waaaay to little...
+                    softScore -= (avg - dur) * 5;
+                }
             }
         }
 
@@ -109,7 +111,7 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
             }
             if (gAvg > avg + settings.timeDiffThreshold / 1.5f || gAvg < avg - settings.timeDiffThreshold / 1.5f) {
                 long diff = Math.abs(gAvg - avg);
-                mediumScore -= (int) diff * 3;
+                mediumScore -= Math.floorDiv(diff, 3);
             }
         }
         if (debug) {
@@ -124,7 +126,7 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
                     .collect(Collectors.toSet());
 
             for (Map.Entry<Event, Collection<Person>> pc : map.asMap().entrySet()) {
-                int groupF = Math.min(settings.mainGroupFactor, pc.getKey().requiredPersons);
+                int groupF = Math.min(settings.mainGroupFactor - roster.getGroupOffset(), pc.getKey().requiredPersons);
                 int mt = mainGroups.stream()
                         .mapToInt(g -> {
                             int ret = (int) pc.getValue().stream()
@@ -146,6 +148,9 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
         }
         if (debug) {
             System.out.println("MS2: " + mediumScore);
+        }
+        if (roster.noSoft) {
+            softScore = Integer.MIN_VALUE;
         }
         return HardMediumSoftScore.of(hardScore, mediumScore, softScore);
     }

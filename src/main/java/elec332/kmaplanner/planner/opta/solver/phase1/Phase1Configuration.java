@@ -12,9 +12,15 @@ import org.optaplanner.core.config.localsearch.LocalSearchPhaseConfig;
  */
 public class Phase1Configuration extends AbstractPhaseConfiguration {
 
+    public Phase1Configuration(int end) {
+        this.end = end;
+    }
+
+    private final int end;
+
     @Override
     protected void configure(LocalSearchPhaseConfig phase, SwapMoveSelectorConfig swapMoveSelectorConfig, ChangeMoveSelectorConfig changeMoveSelectorConfig, PlannerSettings settings) {
-        phase.getTerminationConfig().setBestScoreLimit(HardMediumSoftScore.of(0, Integer.MIN_VALUE, Integer.MIN_VALUE).toString());
+        phase.getTerminationConfig().setBestScoreLimit(HardMediumSoftScore.of(end, Integer.MIN_VALUE, Integer.MIN_VALUE).toString());
     }
 
 }

@@ -1,10 +1,13 @@
 package elec332.kmaplanner.planner.opta.solver;
 
 import elec332.kmaplanner.planner.opta.Roster;
+import elec332.kmaplanner.planner.opta.RosterScoreCalculator;
+import elec332.kmaplanner.planner.opta.solver.phase1.Phase1AConfiguration;
+import elec332.kmaplanner.planner.opta.solver.phase1.Phase1BConfiguration;
+import elec332.kmaplanner.planner.opta.solver.phase1.Phase1CConfiguration;
 import elec332.kmaplanner.planner.opta.solver.phase1.Phase1Configuration;
-import elec332.kmaplanner.planner.opta.solver.phase2.Phase2Configuration;
-import elec332.kmaplanner.planner.opta.solver.phase4.Phase4AConfiguration;
 import elec332.kmaplanner.project.PlannerSettings;
+import org.optaplanner.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
 import org.optaplanner.core.api.solver.SolverFactory;
 
 /**
@@ -13,16 +16,39 @@ import org.optaplanner.core.api.solver.SolverFactory;
 public class Solver1 implements ISolverConfiguration {
 
     @Override
-    public void configureSolver(SolverFactory<Roster> factory, PlannerSettings settings) {
+    public void preSolve(Roster roster, PlannerSettings settings) {
+        roster.noSoft = true;
+    }
+
+    @Override
+    public void configureSolver(SolverFactory<Roster> factory, Roster roster, PlannerSettings settings) {
+        HardMediumSoftScore score = RosterScoreCalculator.calculateScore(roster, false);
+        float hs = score.getHardScore();
         SolverConfigurator.configureSolver(factory, settings,
-                new Phase1Configuration(),
-                new Phase2Configuration(true),
-                new Phase4AConfiguration(),
-                new Phase2Configuration(true),
-                new Phase4AConfiguration(),
-                new Phase2Configuration(true),
-                new Phase4AConfiguration(),
-                new Phase2Configuration(true, true));
+                new Phase1Configuration((int) (hs * 0.5f)),
+                new Phase1AConfiguration(),
+                new Phase1BConfiguration(),
+                new Phase1Configuration((int) (hs * 0.1f)),
+                new Phase1AConfiguration(),
+                new Phase1BConfiguration(),
+                new Phase1Configuration((int) (hs * 0.05f)),
+                new Phase1AConfiguration(),
+                new Phase1BConfiguration(),
+                new Phase1CConfiguration(),
+                new Phase1Configuration((int) (hs * 0.02f)),
+                new Phase1AConfiguration(),
+                new Phase1BConfiguration(),
+                new Phase1CConfiguration(),
+                new Phase1Configuration((int) (hs * 0.01f)),
+                new Phase1AConfiguration(),
+                new Phase1BConfiguration(),
+                new Phase1CConfiguration(),
+                new Phase1Configuration(0));
+    }
+
+    @Override
+    public void postSolve(Roster roster, PlannerSettings settings) {
+        roster.noSoft = false;
     }
 
 }

@@ -28,6 +28,7 @@ public class EditFilterDialog extends JPanel {
         EditFilterDialog dialog = new EditFilterDialog(original);
         if (DialogHelper.showDialog(parent, dialog, "Edit Event")) {
             dialog.cB.forEach(Runnable::run);
+            System.out.println("APPERET");
             if (!dialog.filter.isValid()) {
                 DialogHelper.showErrorMessageDialog("Filter settings invalid, please check the settings.", "Invalid filter");
                 return getFilter(dialog.filter, parent);
@@ -71,7 +72,6 @@ public class EditFilterDialog extends JPanel {
         select.addActionListener(a -> {
             @SuppressWarnings("unchecked")
             Supplier<AbstractFilter> sel = (Supplier<AbstractFilter>) select.getSelectedItem();
-            select.setToolTipText("dummy");
             JPanel newPanel = null;
             if (sel == null) {
                 if (initNull) {
@@ -86,8 +86,8 @@ public class EditFilterDialog extends JPanel {
                     return;
                 }
                 cB = new ArrayList<>();
-                newPanel = newF.createConfigPanel(cB::add);
                 this.filter = newF;
+                newPanel = newF.createConfigPanel(cB::add);
             }
             middle.remove(this.middle);
             this.middle = newPanel;

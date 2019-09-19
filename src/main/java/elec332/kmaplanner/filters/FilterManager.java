@@ -2,7 +2,7 @@ package elec332.kmaplanner.filters;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import elec332.kmaplanner.filters.impl.LessTimeFilter;
+import elec332.kmaplanner.filters.impl.EfficiencyFilter;
 import elec332.kmaplanner.filters.impl.NeverFilter;
 import elec332.kmaplanner.filters.impl.TimeFilter;
 import elec332.kmaplanner.util.io.IByteArrayDataInputStream;
@@ -75,7 +75,7 @@ public enum FilterManager implements Function<IByteArrayDataInputStream, Abstrac
     static {
         INSTANCE.registerFilter(() -> NeverFilter.INSTANCE, "Never participate");
         INSTANCE.registerFilter(TimeFilter::new, "Unavailable during");
-        INSTANCE.registerFilter(LessTimeFilter::new, "Efficiency");
+        INSTANCE.registerFilter(EfficiencyFilter::new, "Efficiency");
     }
 
     @Override

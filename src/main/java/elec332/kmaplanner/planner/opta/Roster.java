@@ -51,6 +51,7 @@ public class Roster {
         }
         assignments.addAll(data.getAssignments());
         getPlanner().getPersonManager().forEach(Person::clearEvents);
+        groupOffset = data.getPOffset();
     }
 
     private Roster(Planner planner) {
@@ -75,8 +76,15 @@ public class Roster {
     private List<Assignment> assignments;
     private HardMediumSoftScore score;
 
+    public int groupOffset = 0;
+    public boolean noSoft = false;
+
     public Planner getPlanner() {
         return planner;
+    }
+
+    public int getGroupOffset() {
+        return groupOffset;
     }
 
     @SuppressWarnings("WeakerAccess")

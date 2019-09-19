@@ -19,9 +19,11 @@ public abstract class AbstractExcelPrinter<O> implements IObjectPrinter<O> {
 
     @Override
     public void printObject(@Nonnull File file, @Nonnull O object) throws IOException {
-        Workbook workbook = new XSSFWorkbook();
+        XSSFWorkbook workbook = new XSSFWorkbook();
         printObject(Preconditions.checkNotNull(object), workbook);
         FileOutputStream fos = new FileOutputStream(Preconditions.checkNotNull(file));
+        workbook.getProperties().getCoreProperties().setCreator(System.getProperty("user.name"));
+        workbook.getProperties().getExtendedProperties().getUnderlyingProperties().setApplication(UIStrings.UI_NAME);
         workbook.write(fos);
         fos.close();
     }

@@ -12,10 +12,6 @@ import org.optaplanner.core.config.localsearch.LocalSearchPhaseConfig;
  */
 public class Phase2Configuration extends AbstractPhaseConfiguration {
 
-    public Phase2Configuration() {
-        this(false, false);
-    }
-
     public Phase2Configuration(boolean step) {
         this(step, false);
     }
@@ -33,8 +29,11 @@ public class Phase2Configuration extends AbstractPhaseConfiguration {
         changeMoveSelectorConfig.getFilterClassList().add(OptimizeGroupChangeMoveFilter.class);
 
         phase.getTerminationConfig().setBestScoreLimit(HardMediumSoftScore.of(0, 0, Integer.MIN_VALUE).toString());
+        if (usm) {
+            phase.getTerminationConfig().setUnimprovedSecondsSpentLimit(60L);
+        }
         if (me) {
-            int mul = 2;
+            int mul = 3;
             if (usm) {
                 mul += 2;
             }

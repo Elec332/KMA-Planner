@@ -183,6 +183,7 @@ public class Person implements Comparable, IEventFilter, IFilterable, IDataSeria
         lastName = stream.readUTF();
         groups = Sets.newHashSet(stream.readObjects(() -> new Group("")));
         filters = Sets.newHashSet(stream.readObjects(FilterManager.INSTANCE));
+        filters_ = Collections.unmodifiableSet(filters);
     }
 
 }

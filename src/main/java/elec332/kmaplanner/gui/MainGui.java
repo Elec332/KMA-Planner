@@ -13,6 +13,7 @@ import elec332.kmaplanner.project.KMAPlannerProject;
 import elec332.kmaplanner.project.ProjectManager;
 import elec332.kmaplanner.util.DesktopHelper;
 import elec332.kmaplanner.util.ObjectReference;
+import elec332.kmaplanner.util.UIStrings;
 import elec332.kmaplanner.util.swing.DialogHelper;
 import elec332.kmaplanner.util.swing.FileChooserHelper;
 
@@ -37,7 +38,7 @@ public class MainGui extends JFrame {
         setIconImage(img.getImage());
 
         settings.apply(this);
-        setTitle("KMAPlanner");
+        setTitle(UIStrings.UI_NAME);
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         add(mainUI = new JPanel());
         mainUI.setPreferredSize(new Dimension(600, 400));

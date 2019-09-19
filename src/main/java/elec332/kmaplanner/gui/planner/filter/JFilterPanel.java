@@ -62,8 +62,7 @@ public class JFilterPanel extends JPanel {
                 return;
             }
             filterable.getModifiableFilters().remove(filter);
-            filter = filter.copy();
-            AbstractFilter e = EditFilterDialog.getFilter(filter, this);
+            AbstractFilter e = EditFilterDialog.getFilter(filter.copy(), this);
             if (e == null) {
                 e = filter;
             }

@@ -29,11 +29,12 @@ public class Group implements Comparable<Group>, IEventFilter, IDataSerializable
         this.persons_ = Collections.unmodifiableSet(persons);
         this.main = false;
         this.filters = Sets.newHashSet();
+        this.filters_ = Collections.unmodifiableSet(filters);
     }
 
     private String name;
     private boolean main;
-    private Set<AbstractFilter> filters;
+    private Set<AbstractFilter> filters, filters_;
     //Higher weight is more important
     @SuppressWarnings("unused")
     private int weight;
@@ -138,6 +139,11 @@ public class Group implements Comparable<Group>, IEventFilter, IDataSerializable
 
     @Override
     public Set<AbstractFilter> getFilters() {
+        return filters_;
+    }
+
+    @Override
+    public Set<AbstractFilter> getModifiableFilters() {
         return filters;
     }
 
@@ -153,6 +159,7 @@ public class Group implements Comparable<Group>, IEventFilter, IDataSerializable
         name = stream.readUTF();
         main = stream.readBoolean();
         filters = Sets.newHashSet(stream.readObjects(FilterManager.INSTANCE));
+        filters_ = Collections.unmodifiableSet(filters);
     }
 
 }

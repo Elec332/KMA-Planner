@@ -2,6 +2,7 @@ package elec332.kmaplanner.planner;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import elec332.kmaplanner.Main;
 import elec332.kmaplanner.events.EventManager;
 import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.group.GroupManager;
@@ -10,9 +11,7 @@ import elec332.kmaplanner.persons.PersonManager;
 import elec332.kmaplanner.planner.opta.Roster;
 import elec332.kmaplanner.planner.opta.RosterIO;
 import elec332.kmaplanner.planner.opta.RosterScoreCalculator;
-import elec332.kmaplanner.planner.opta.solver.ISolverConfiguration;
-import elec332.kmaplanner.planner.opta.solver.Solver1;
-import elec332.kmaplanner.planner.opta.solver.Solver2;
+import elec332.kmaplanner.planner.opta.solver.*;
 import elec332.kmaplanner.planner.opta.util.IAbstractPhaseLifecycleListener;
 import elec332.kmaplanner.project.KMAPlannerProject;
 import elec332.kmaplanner.project.PlannerSettings;
@@ -38,6 +37,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
@@ -133,7 +133,7 @@ public class Planner {
             return;
         }
         long time = System.currentTimeMillis();
-        plan_(component, getRoster(), new Solver1(), new Solver2());
+        plan_(component, getRoster(), new Solver1(), new Solver2A(), new Solver2B(), new Solver2C(), new Solver3());
         System.out.println("TIME: " + ((System.currentTimeMillis() - time) / 1000f) / 60f);
     }
 
@@ -167,14 +167,17 @@ public class Planner {
         ObjectReference<Boolean> exitThread = new ObjectReference<>(false);
         PlannerUI ui = new PlannerUI();
 
+        List<Long> times = Lists.newArrayList();
+        times.add(System.currentTimeMillis());
+
         new Thread(() -> {
-            Roster r = roster;
+            final ObjectReference<Roster> r = new ObjectReference<>(roster);
             for (ISolverConfiguration phaz : solvers) {
                 if (exitThread.get()) {
                     return;
                 }
                 SolverFactory<Roster> factory = SolverFactory.createEmpty();
-                configureSolver(factory, phaz::configureSolver);
+                configureSolver(factory, ((factory1, settings1) -> phaz.configureSolver(factory1, r.get(), settings1)));
 
                 AbstractSolver<Roster> aSolver = (AbstractSolver<Roster>) factory.buildSolver();
                 solver.set(aSolver);
@@ -182,24 +185,25 @@ public class Planner {
                 if (exitThread.get()) {
                     return;
                 }
-                phaz.preSolve(r, getSettings());
+                phaz.preSolve(r.get(), getSettings());
                 if (exitThread.get()) {
                     return;
                 }
-                r = aSolver.solve(r);
+                r.use(aSolver::solve);
                 if (exitThread.get()) {
                     return;
                 }
-                phaz.postSolve(r, getSettings());
+                phaz.postSolve(r.get(), getSettings());
+                times.add(System.currentTimeMillis());
             }
             if (exitThread.get()) {
                 return;
             }
-            ref.set(r);
+            ref.set(r.get());
             Optional.ofNullable(SwingUtilities.getWindowAncestor(ui))
                     .ifPresent(Window::dispose);
         }).start();
-
+        Main.preventComputerSleepHack();
 
         while (!(component instanceof Window)) {
             component = component.getParent();
@@ -224,7 +228,16 @@ public class Planner {
         Roster rosterP = ref.get();
         setRoster(rosterP);
         writeRoster(rosterP);
+        Main.stopKeepAlive();
         RosterPrinter.printRoster(rosterP, SwingUtilities.getWindowAncestor(component), RosterPrinter::printAll);
+
+        if (times.size() < 2) {
+            return;
+        }
+        int phaz = 1;
+        for (int i = 1; i < times.size(); i++) {
+            System.out.println("Phase" + phaz + " time: " + ((times.get(i) - times.get(i - 1)) / 1000f) / 60f);
+        }
     }
 
     private static void addSolverEventListeners(AbstractSolver<Roster> solver, PlannerUI ui) {

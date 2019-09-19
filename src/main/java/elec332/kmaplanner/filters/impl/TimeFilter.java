@@ -84,7 +84,7 @@ public class TimeFilter extends AbstractFilter implements ITimeSpan {
     @Override
     public long getSoftDuration(long duration, long avg, Date start, Date end) {
         long ed = end.getTime() - start.getTime();
-        long fd = end().getTime() - start().getTime();
+        long fd = end().getTime() - Math.max(start().getTime(), start.getTime());
         ed /= 10;
         fd /= 10;
         float div = (fd * 1f) / ed;

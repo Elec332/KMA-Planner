@@ -12,7 +12,7 @@ public interface ISolverConfiguration {
     default void preSolve(Roster roster, PlannerSettings settings) {
     }
 
-    void configureSolver(SolverFactory<Roster> factory, PlannerSettings settings);
+    void configureSolver(SolverFactory<Roster> factory, Roster roster, PlannerSettings settings);
 
     default void postSolve(Roster roster, PlannerSettings settings) {
     }

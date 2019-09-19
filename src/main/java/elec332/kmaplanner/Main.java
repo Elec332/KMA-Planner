@@ -5,6 +5,7 @@ import elec332.kmaplanner.gui.MainGui;
 import elec332.kmaplanner.gui.UISettings;
 import elec332.kmaplanner.util.ClassProperties;
 import elec332.kmaplanner.util.FileHelper;
+import elec332.kmaplanner.util.ObjectReference;
 import elec332.kmaplanner.util.swing.DialogHelper;
 
 import javax.swing.*;
@@ -32,6 +33,8 @@ public class Main {
 
     public static final File UI_SETTINGS_FILE;
     public static final String ABOUT_TEXT;
+
+    private static final ObjectReference<Boolean> stopKA = new ObjectReference<>(false), KAActive = new ObjectReference<>(false);
 
     private static void error(Throwable e) {
         e.printStackTrace();
@@ -61,6 +64,41 @@ public class Main {
         //JFrame.setDefaultLookAndFeelDecorated(true);
         UISettings settings = ClassProperties.readProperties(UISettings.class, UI_SETTINGS_FILE);
         new MainGui(settings);
+    }
+
+    public static void stopKeepAlive() {
+        if (!KAActive.get()) {
+            return;
+        }
+        stopKA.set(true);
+    }
+
+    public static void preventComputerSleepHack() {
+        if (KAActive.get()) {
+            return;
+        }
+        new Thread(() -> {
+            try {
+                Robot hal = new Robot();
+                while (true) {
+                    if (stopKA.get()) {
+                        stopKA.set(false);
+                        break;
+                    }
+                    hal.delay(1000 * 30);
+                    Point pObj = MouseInfo.getPointerInfo().getLocation();
+                    //System.out.println(pObj.toString() + "x>>" + pObj.x + "  y>>" + pObj.y);
+                    hal.mouseMove(pObj.x, pObj.y);
+                    //hal.mouseMove(pObj.x + 1, pObj.y + 1);
+                    //hal.mouseMove(pObj.x - 1, pObj.y - 1);
+                    //pObj = MouseInfo.getPointerInfo().getLocation();
+                    //System.out.println(pObj.toString() + "x>>" + pObj.x + "  y>>" + pObj.y);
+                }
+            } catch (Exception e) {
+                error(e);
+            }
+        }).start();
+        KAActive.set(true);
     }
 
     static {
