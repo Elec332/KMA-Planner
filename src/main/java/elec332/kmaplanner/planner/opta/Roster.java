@@ -163,7 +163,9 @@ public class Roster {
         }
         planner.getEventManager().stream()
                 .filter(e -> e.everyone)
-                .forEach(e -> planner.getPersonManager().forEach(p -> p.getPrintableEvents().add(e)));
+                .forEach(e -> planner.getPersonManager().stream()
+                        .filter(p -> p.canParticipateIn(e))
+                        .forEach(p -> p.getPrintableEvents().add(e)));
 
         planner.getPersonManager().forEach(p -> p.getPlannerData().importEvents());
     }

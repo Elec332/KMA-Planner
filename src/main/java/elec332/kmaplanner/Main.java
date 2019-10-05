@@ -77,7 +77,7 @@ public class Main {
         if (KAActive.get()) {
             return;
         }
-        new Thread(() -> {
+        Thread t = new Thread(() -> {
             try {
                 Robot hal = new Robot();
                 while (true) {
@@ -97,7 +97,9 @@ public class Main {
             } catch (Exception e) {
                 error(e);
             }
-        }).start();
+        });
+        t.setDaemon(true);
+        t.start();
         KAActive.set(true);
     }
 
