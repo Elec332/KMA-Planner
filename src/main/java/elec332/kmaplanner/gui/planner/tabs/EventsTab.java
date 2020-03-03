@@ -127,7 +127,7 @@ public class EventsTab extends JPanel {
                     event1.requiredPersons = event.everyone ? 0 : (int) snm.getNumber();
                 });
             } else {
-                Event event1 = new Event(nameField.getText(), start.getDate(), end.getDate(), everyone.isSelected() ? 0 : (int) snm.getNumber());
+                Event event1 = new Event(nameField.getText(), start.getDate(), end.getDate(), everyone.isSelected() ? 0 : (int) snm.getNumber(), event.getUuid());
                 event1.everyone = everyone.isSelected();
                 if (Strings.isNullOrEmpty(event1.name) || event1.getDuration() == 0 || !project.getEventManager().addObjectNice(event1)) {
                     DialogHelper.showErrorMessageDialog(EventsTab.this, "Failed to add Event! (Perhaps an duplicate name/invalid date?)", "Error adding Event");

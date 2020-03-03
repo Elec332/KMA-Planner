@@ -8,14 +8,14 @@ import elec332.kmaplanner.project.PlannerSettings;
  */
 public class Solver2C extends Solver2A {
 
-    public Solver2C() {
-        super(true);
-    }
-
     @Override
     public void preSolve(Roster roster, PlannerSettings settings) {
         super.preSolve(roster, settings);
-        roster.getAssignments().forEach(assignment -> assignment.groupFilter = assignment.event::canGroupParticipate);
+        roster.getAssignments().forEach(assignment -> {
+            if (!assignment.event.everyone && assignment.event.requiredPersons > settings.mainGroupFactor * 2.5f) {
+                assignment.groupFilter = assignment.event::canGroupParticipate;
+            }
+        });
     }
 
 }

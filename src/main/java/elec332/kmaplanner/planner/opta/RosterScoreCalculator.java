@@ -44,6 +44,10 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
         }
         for (Assignment assignment : roster.getAssignments()) {
 
+            if (assignment.event.everyone) {
+                continue;
+            }
+
             if (assignment.person == null || assignment.person == PersonManager.NULL_PERSON) {
                 hardScore -= 10;
                 continue;
@@ -54,10 +58,16 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
             }
 
             if (!assignment.person.canParticipateIn(assignment.event)) {
+                if (debug) {
+                    System.out.println("P cannot in e: " + assignment.person + "  " + assignment.event);
+                }
                 hardScore--;
             }
 
             if (!assignment.event.canPersonParticipate(assignment.person)) {
+                if (debug) {
+                    System.out.println("e cannot p: " + assignment.person + "  " + assignment.event);
+                }
                 hardScore--;
             }
 
@@ -68,7 +78,7 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
 
 
             for (Event e : assignment.person.getPlannerData().getCheckEvents()) {
-                if (assignment.event.isDuring(e)) {
+                if (!e.everyone && assignment.event.isDuring(e)) {
                     if (debug) {
                         System.out.println("PD: " + e + "  " + assignment.person + "  " + assignment.event);
                     }

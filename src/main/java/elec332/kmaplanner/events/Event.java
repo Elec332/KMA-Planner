@@ -19,6 +19,10 @@ import java.util.concurrent.TimeUnit;
 public class Event implements IDataSerializable, Comparable<Event>, Cloneable, ITimeSpan {
 
     public Event(String name, Date start, Date end, int requiredPersons) {
+        this(name, start, end, requiredPersons, UUID.randomUUID());
+    }
+
+    public Event(String name, Date start, Date end, int requiredPersons, UUID uuid) {
         this.name = Preconditions.checkNotNull(name);
         if (Preconditions.checkNotNull(start).after(Preconditions.checkNotNull(end))) {
             Date rem = start;
@@ -28,7 +32,7 @@ public class Event implements IDataSerializable, Comparable<Event>, Cloneable, I
         this.start = start;
         this.end = end;
         this.requiredPersons = requiredPersons;
-        this.uuid = UUID.randomUUID();
+        this.uuid = uuid;
     }
 
     public String name;

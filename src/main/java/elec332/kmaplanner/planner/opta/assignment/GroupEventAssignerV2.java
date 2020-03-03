@@ -41,6 +41,10 @@ public class GroupEventAssignerV2<T> extends AbstractGroupEventAssigner<T> {
                 Person person = null;
                 while (person == null) {
                     person = group.getRandomPerson(rand);
+                    if ((!event.canPersonParticipate(person) || !person.canParticipateIn(event)) && rand.nextDouble() > 0.05) {
+                        person = null;
+                        continue;
+                    }
                     if (!group.containsPerson(person) || (event.isDuring(person.getPrintableEvents()) && rand.nextDouble() > 0.2)) {
                         person = null;
                         continue;

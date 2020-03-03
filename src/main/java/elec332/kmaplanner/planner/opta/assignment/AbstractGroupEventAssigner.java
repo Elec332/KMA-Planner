@@ -44,6 +44,7 @@ public abstract class AbstractGroupEventAssigner<T> implements IInitialEventAssi
         int groups = groupsInit;
         Set<Group> mainGroups = planner.getGroupManager().getMainGroups().stream()
                 .filter(event::canGroupParticipate)
+                .filter(g -> g.canParticipateIn(event))
                 .collect(Collectors.toSet());
         Set<Group> allowed = Sets.newHashSet();
         while (groups > allowed.size() || groups <= 0) {

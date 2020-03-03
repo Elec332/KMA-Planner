@@ -89,8 +89,11 @@ public class PlannerTab extends JPanel {
 
         JPanel b2 = new JPanel();
         JButton plan = new JButton("Plan!");
+        JButton sp = new JButton("Save Planner");
         b2.add(apply);
         b2.add(plan);
+        b2.add(sp);
+        sp.addActionListener(a -> planner.save(PlannerTab.this));
         plan.addActionListener(a -> planner.plan(PlannerTab.this));
         add(b2, BorderLayout.SOUTH);
 

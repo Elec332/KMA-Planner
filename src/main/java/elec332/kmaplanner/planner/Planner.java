@@ -3,6 +3,7 @@ package elec332.kmaplanner.planner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import elec332.kmaplanner.Main;
+import elec332.kmaplanner.events.Event;
 import elec332.kmaplanner.events.EventManager;
 import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.group.GroupManager;
@@ -123,6 +124,10 @@ public class Planner {
         }
     }
 
+    public void save(Component component) {
+        writeRoster(roster, component);
+    }
+
     public void plan(Component component) {
         if (getRoster() == null) {
             setRoster(new Roster(this, Preconditions.checkNotNull(settings.sortingType.createEventAssigner())));
@@ -133,7 +138,13 @@ public class Planner {
             return;
         }
         long time = System.currentTimeMillis();
-        plan_(component, getRoster(), new Solver1(), new Solver2A(), new Solver2B(), new Solver2C(), new Solver3());
+        plan_(component, getRoster(), new Solver1(),
+                new Solver2A(),
+                new Solver2B(),
+                new Solver2C(),
+                new Solver2D(),
+                new Solver3(),
+                new Solver3());
         System.out.println("TIME: " + ((System.currentTimeMillis() - time) / 1000f) / 60f);
     }
 
@@ -161,6 +172,31 @@ public class Planner {
     private void plan_(Component component, Roster roster, ISolverConfiguration... solvers) {
         if (solvers == null || solvers.length < 1) {
             throw new IllegalArgumentException();
+        }
+        System.out.println(roster.getPersons().size());
+        System.out.println(" ==== ");
+        for (Event evt : roster.getPlanner().getEventManager().getObjects()) {
+            int i = 0;
+            for (Person p : roster.getPersons()) {
+                if (p == PersonManager.NULL_PERSON) {
+                    continue;
+                }
+                if (evt.canPersonParticipate(p) && p.canParticipateIn(evt)) {
+                    i++;
+                }
+            }
+            System.out.println(i);
+            System.out.println(evt);
+            System.out.println(" ====== --- ===== ");
+        }
+        for (Group g : getGroupManager()) {
+            System.out.println(" -_----___-");
+            System.out.println(g);
+            for (Iterator<Person> it = g.getPersonIterator(); it.hasNext(); ) {
+                Person p = it.next();
+
+                System.out.println(p);
+            }
         }
         ObjectReference<Roster> ref = new ObjectReference<>();
         ObjectReference<Solver<Roster>> solver = new ObjectReference<>();
@@ -221,13 +257,13 @@ public class Planner {
             exitThread.set(true);
             solver.get().terminateEarly();
             setRoster(solver.get().getBestSolution());
-            writeRoster(solver.get().getBestSolution());
+            writeRoster(solver.get().getBestSolution(), component);
             return;
         }
 
         Roster rosterP = ref.get();
         setRoster(rosterP);
-        writeRoster(rosterP);
+        writeRoster(rosterP, component);
         Main.stopKeepAlive();
         RosterPrinter.printRoster(rosterP, SwingUtilities.getWindowAncestor(component), RosterPrinter::printAll);
 
@@ -268,14 +304,18 @@ public class Planner {
     }
 
 
-    private void writeRoster(Roster roster) {
+    @SuppressWarnings("UnusedReturnValue")
+    private File writeRoster(Roster roster, Component component) {
         File file = new File(FileHelper.getExecFolder(), new Date().getTime() + ".kpa");
         try {
             RosterIO.writeRoster(roster, file);
+            DialogHelper.showDialog(component, "Saved roster data location: " + file.getAbsolutePath(), "Roster saved");
         } catch (IOException e) {
             e.printStackTrace();
             DialogHelper.showErrorMessageDialog("Failed to save assignment data.", "Export failed!");
+            return null;
         }
+        return file;
     }
 
     private static class PlannerUI extends JPanel implements SolverEventListener<Roster>, IAbstractPhaseLifecycleListener<Roster> {
@@ -294,7 +334,7 @@ public class Planner {
 
             JPanel sc = new JPanel();
             sc.add(new JLabel("Score: "));
-            sc.add(scoreLabel = new JLabel("?????????????????????????????")); //Shhh
+            sc.add(scoreLabel = new JLabel("???????????????????????????????????????")); //Shhh
 
             add(ph);
             add(new JPanel());

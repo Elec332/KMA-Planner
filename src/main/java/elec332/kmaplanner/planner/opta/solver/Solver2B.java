@@ -12,7 +12,7 @@ public class Solver2B extends Solver2A {
     public void preSolve(Roster roster, PlannerSettings settings) {
         super.preSolve(roster, settings);
         roster.getAssignments().forEach(assignment -> {
-            if (!assignment.event.everyone && assignment.event.requiredPersons > settings.mainGroupFactor * 2.5f) {
+            if (!assignment.event.everyone && assignment.event.requiredPersons > settings.mainGroupFactor * 4.5f) {
                 assignment.groupFilter = assignment.event::canGroupParticipate;
             }
         });
