@@ -24,6 +24,7 @@ public class Solver1 implements ISolverConfiguration {
     public void configureSolver(SolverFactory<Roster> factory, Roster roster, PlannerSettings settings) {
         HardMediumSoftScore score = RosterScoreCalculator.calculateScore(roster, false);
         float hs = score.getHardScore();
+        roster.groupOffset = -settings.mainGroupFactor;
         SolverConfigurator.configureSolver(factory, settings,
                 new Phase1Configuration((int) (hs * 0.5f)),
                 new Phase1AConfiguration(),

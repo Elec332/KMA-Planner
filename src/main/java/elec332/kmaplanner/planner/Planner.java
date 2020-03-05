@@ -142,7 +142,9 @@ public class Planner {
                 new Solver2A(),
                 new Solver2B(),
                 new Solver2C(),
-                new Solver2D(),
+                new Solver3Pre(),
+                new Solver2D(false),
+                new Solver2D(true),
                 new Solver3(),
                 new Solver3());
         System.out.println("TIME: " + ((System.currentTimeMillis() - time) / 1000f) / 60f);

@@ -23,7 +23,7 @@ public class Solver2A implements ISolverConfiguration {
         this.last = last;
     }
 
-    private final boolean last;
+    protected final boolean last;
 
     @Override
     public void preSolve(Roster roster, PlannerSettings settings) {
@@ -31,7 +31,7 @@ public class Solver2A implements ISolverConfiguration {
         roster.noSoft = true;
         HardMediumSoftScore score = RosterScoreCalculator.calculateScore(roster, false);
         if (score.getMediumScore() > 0) {
-            roster.groupOffset = 0;
+            roster.groupOffset /= 2;
         }
     }
 

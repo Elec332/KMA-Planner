@@ -13,7 +13,7 @@ import java.util.Random;
 public final class PlannerSettings implements IDataSerializable {
 
     public long seed = new Random().nextLong();
-    public PersonSortingType sortingType = PersonSortingType.RANDOM;
+    public PersonSortingType sortingType = PersonSortingType.GROUP;
     public int unimprovedSteps = 500;
     public int timeDiffThreshold = 45;
     public int mainGroupFactor = 5;

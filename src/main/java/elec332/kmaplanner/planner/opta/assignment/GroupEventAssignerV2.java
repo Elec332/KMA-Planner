@@ -41,6 +41,10 @@ public class GroupEventAssignerV2<T> extends AbstractGroupEventAssigner<T> {
                 Person person = null;
                 while (person == null) {
                     person = group.getRandomPerson(rand);
+                    if (event.isDuring(person.getPrintableEvents()) && rand.nextDouble() > 0.01) {
+                        person = null;
+                        continue;
+                    }
                     if ((!event.canPersonParticipate(person) || !person.canParticipateIn(event)) && rand.nextDouble() > 0.05) {
                         person = null;
                         continue;
@@ -55,8 +59,8 @@ public class GroupEventAssignerV2<T> extends AbstractGroupEventAssigner<T> {
                 }
                 Assignment assignment = it.next();
                 assignment.person = person;
+                assignment.person.getPrintableEvents().add(event);
                 assignment.groupFilter = groupFilter::contains; //groupFilter.size() <= 2 ? groupFilter::contains : null;
-                person.getPrintableEvents().add(event);
                 if (!last) {
                     toDo--;
                 }

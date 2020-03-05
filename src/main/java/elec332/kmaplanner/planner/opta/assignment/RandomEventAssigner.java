@@ -19,7 +19,11 @@ public class RandomEventAssigner implements IInitialEventAssigner<Random> {
     @Override
     public Random assignPersonsTo(List<Assignment> assignments, Event event, List<Person> persons, Random data, Planner planner) {
         for (Assignment assignment : assignments) {
-            assignment.person = persons.get(data.nextInt(persons.size()));
+            Person p = null;
+            while (p == null || !p.canParticipateIn(event)) {
+                p = persons.get(data.nextInt(persons.size()));
+            }
+            assignment.person = p;
         }
         return data;
     }

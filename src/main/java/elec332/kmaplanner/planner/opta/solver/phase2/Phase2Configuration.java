@@ -6,6 +6,7 @@ import org.optaplanner.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore
 import org.optaplanner.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import org.optaplanner.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
 import org.optaplanner.core.config.localsearch.LocalSearchPhaseConfig;
+import org.optaplanner.core.config.solver.termination.TerminationConfig;
 
 /**
  * Created by Elec332 on 31-8-2019
@@ -28,6 +29,7 @@ public class Phase2Configuration extends AbstractPhaseConfiguration {
         swapMoveSelectorConfig.getFilterClassList().add(OptimizeGroupSwapMoveFilter.class);
         changeMoveSelectorConfig.getFilterClassList().add(OptimizeGroupChangeMoveFilter.class);
 
+        phase.setTerminationConfig(new TerminationConfig());
         phase.getTerminationConfig().setBestScoreLimit(HardMediumSoftScore.of(0, 0, Integer.MIN_VALUE).toString());
         if (usm) {
             phase.getTerminationConfig().setUnimprovedSecondsSpentLimit(60L);
@@ -39,6 +41,7 @@ public class Phase2Configuration extends AbstractPhaseConfiguration {
             }
             phase.getTerminationConfig().setUnimprovedStepCountLimit(settings.unimprovedSteps * mul);
         }
+        phase.getTerminationConfig().setUnimprovedMinutesSpentLimit(5L);
     }
 
 }

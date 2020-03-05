@@ -1,5 +1,6 @@
 package elec332.kmaplanner.planner.opta.assignment;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import elec332.kmaplanner.events.Event;
 import elec332.kmaplanner.group.Group;
@@ -7,9 +8,7 @@ import elec332.kmaplanner.persons.Person;
 import elec332.kmaplanner.planner.Planner;
 import elec332.kmaplanner.planner.opta.Assignment;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -39,12 +38,28 @@ public abstract class AbstractGroupEventAssigner<T> implements IInitialEventAssi
         if (event.requiredPersons != assignments.size()) {
             throw new IllegalArgumentException();
         }
+        if (data.time == null) {
+            data.time = Maps.newHashMap();
+            planner.getGroupManager().getMainGroups().forEach(group -> data.time.put(group, 0d));
+        }
         int groupsInit = Math.max((int) Math.floor(event.requiredPersons / (planner.getSettings().mainGroupFactor * 2.5f)), 1) - 1;
         boolean retry = false;
         int groups = groupsInit;
         Set<Group> mainGroups = planner.getGroupManager().getMainGroups().stream()
                 .filter(event::canGroupParticipate)
                 .filter(g -> g.canParticipateIn(event))
+                .filter(g -> {
+                    int s = g.getGroupSize();
+                    int al = 0;
+                    for (Iterator<Person> it = g.getPersonIterator(); it.hasNext();) {
+                        Person p = it.next();
+                        if (p.canParticipateIn(event)) {
+                            al++;
+                        }
+                    }
+                    return al > (s / 2);
+                })
+
                 .collect(Collectors.toSet());
         Set<Group> allowed = Sets.newHashSet();
         while (groups > allowed.size() || groups <= 0) {
@@ -65,8 +80,12 @@ public abstract class AbstractGroupEventAssigner<T> implements IInitialEventAssi
                 }
             }
         }
-        List<Group> used = allowed.stream().sorted(Comparator.comparingInt(Group::getGroupSize)).collect(Collectors.toList());
-        used = used.subList(0, groups);
+        List<Group> used = allowed.stream()
+                //.sorted(Comparator.comparingInt(Group::getGroupSize))
+                .sorted(Comparator.comparingDouble(group -> data.time.get(group)))
+                .collect(Collectors.toList())
+                .subList(0, groups);
+        used.forEach(group -> data.time.put(group, data.time.get(group) + ((float) event.requiredPersons / used.size()) * event.getDuration()));
         data.groups.addAll(used);
         assignPersons(assignments, event, persons, data, planner, used);
     }
@@ -87,6 +106,7 @@ public abstract class AbstractGroupEventAssigner<T> implements IInitialEventAssi
 
         private T t;
         private Set<Group> groups;
+        private Map<Group, Double> time;
 
     }
 

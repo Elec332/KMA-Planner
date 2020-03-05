@@ -55,18 +55,21 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
 
             if (assignment.person.getPlannerData().getCheckEvents().contains(assignment.event)) {
                 hardScore -= 50;
+                if (debug) {
+                    System.out.println("P double assigned in e: " + assignment.person + ":" + assignment.person.getMainGroup() + "  " + assignment.event);
+                }
             }
 
             if (!assignment.person.canParticipateIn(assignment.event)) {
                 if (debug) {
-                    System.out.println("P cannot in e: " + assignment.person + "  " + assignment.event);
+                    System.out.println("P cannot in e: " + assignment.person + ":" + assignment.person.getMainGroup() + "  " + assignment.event);
                 }
                 hardScore--;
             }
 
             if (!assignment.event.canPersonParticipate(assignment.person)) {
                 if (debug) {
-                    System.out.println("e cannot p: " + assignment.person + "  " + assignment.event);
+                    System.out.println("e cannot p: " + assignment.person + ":" + assignment.person.getMainGroup() + "  " + assignment.event);
                 }
                 hardScore--;
             }
@@ -120,8 +123,11 @@ public class RosterScoreCalculator implements EasyScoreCalculator<Roster> {
                 System.out.println("gaVG: " + gAvg);
             }
             if (gAvg > avg + settings.timeDiffThreshold / 1.5f || gAvg < avg - settings.timeDiffThreshold / 1.5f) {
-                long diff = Math.abs(gAvg - avg);
-                mediumScore -= Math.floorDiv(diff, 3);
+                long diff = Math.abs(gAvg - avg) * 3;
+                if (roster.forceGrouping) {
+                    diff *= 5;
+                }
+                mediumScore -= diff;//Math.floorDiv(diff, 3);
             }
         }
         if (debug) {

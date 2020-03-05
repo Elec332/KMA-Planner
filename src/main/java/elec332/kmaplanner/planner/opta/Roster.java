@@ -38,6 +38,7 @@ public class Roster {
                     for (int i = 0; i < event.requiredPersons; i++) {
                         eventAssignments.add(new Assignment(event));
                     }
+                    System.out.println(" Assigning: " + event);
                     data.use(d -> assigner.assignPersonsTo(Collections.unmodifiableList(eventAssignments), event, persons_, d, planner));
                     assignments.addAll(eventAssignments);
                 });
@@ -78,6 +79,7 @@ public class Roster {
 
     public int groupOffset = 0;
     public boolean noSoft = false;
+    public boolean forceGrouping = false;
 
     public Planner getPlanner() {
         return planner;

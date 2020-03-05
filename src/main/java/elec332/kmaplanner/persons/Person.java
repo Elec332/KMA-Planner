@@ -66,7 +66,7 @@ public class Person implements Comparable, IEventFilter, IFilterable, IDataSeria
         return getDuration(events, publicE);
     }
 
-    long getDuration(Set<Event> events, final boolean publicE) {
+    public long getDuration(Set<Event> events, final boolean publicE) {
         return events.stream()
                 .filter(e -> publicE || !e.everyone)
                 .mapToLong(Event::getDuration)

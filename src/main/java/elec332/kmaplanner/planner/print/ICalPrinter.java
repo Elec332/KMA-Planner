@@ -28,6 +28,9 @@ public class ICalPrinter implements IObjectPrinter<Person> {
 
     @Override
     public void printObject(File file, Person person) throws IOException {
+        if (person.getPrintableEvents().isEmpty()) {
+            return;
+        }
         CalendarOutputter co = new CalendarOutputter();
         FileOutputStream fos = new FileOutputStream(Preconditions.checkNotNull(file));
         net.fortuna.ical4j.model.Calendar cal = new net.fortuna.ical4j.model.Calendar();
@@ -42,6 +45,7 @@ public class ICalPrinter implements IObjectPrinter<Person> {
     }
 
     private void fillCalender(net.fortuna.ical4j.model.Calendar calendar, Person person) {
+        System.out.println("Filling calender for: " + person + ", group: " + person.getMainGroup());
         person.getPrintableEvents().forEach(event -> calendar.getComponents().add(createEvent(event.start, event.end, event.name)));
         calendar.getProperties().add(new ProdId("-//KMA Event Calendar//EN"));
         calendar.getProperties().add(Version.VERSION_2_0);

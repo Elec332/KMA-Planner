@@ -17,8 +17,8 @@ public class Phase1AConfiguration implements IPhaseConfiguration<LocalSearchPhas
         LocalSearchPhaseConfig phase = new LocalSearchPhaseConfig();
 
         phase.setTerminationConfig(new TerminationConfig());
-        phase.getTerminationConfig().setUnimprovedSecondsSpentLimit(30L);
-        phase.getTerminationConfig().setUnimprovedStepCountLimit(settings.unimprovedSteps / 3);
+        phase.getTerminationConfig().setUnimprovedSecondsSpentLimit(2 * 60L);
+        phase.getTerminationConfig().setUnimprovedStepCountLimit(settings.unimprovedSteps / 2);
         phase.getTerminationConfig().setBestScoreLimit(HardMediumSoftScore.of(0, Integer.MIN_VALUE, Integer.MIN_VALUE).toString());
 
         MoveListFactoryConfig moveListFactoryConfig = new MoveListFactoryConfig();
