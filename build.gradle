@@ -1,5 +1,5 @@
 group 'kmaplanner'
-version '1.4'
+version '1.4.1'
 
 buildscript {
     repositories {
@@ -61,6 +61,7 @@ launch4j {
     icon = "${projectDir}/icons/icon.ico"
     copyConfigurable = project.tasks.shadowJar.outputs.files
     jar = "lib/${project.tasks.shadowJar.archiveName}"
+    outfile = project.name + '-' + project.version + '.exe'
 }
 
 tasks.launch4j.dependsOn("shadowJar")

@@ -2,6 +2,7 @@ package elec332.kmaplanner.persons;
 
 import com.google.common.collect.Sets;
 import elec332.kmaplanner.events.Event;
+import elec332.kmaplanner.group.Group;
 import elec332.kmaplanner.group.GroupManager;
 import elec332.kmaplanner.project.ProjectManager;
 import elec332.kmaplanner.util.DefaultObjectManager;
@@ -19,11 +20,18 @@ public final class PersonManager extends DefaultObjectManager<Person, ProjectMan
         this.groupManager = groupManager;
     }
 
+    private static final Group NULL_GROUP = new Group("NULL_GROUP");
+
     public static final Person NULL_PERSON = new Person("No", "Person") {
 
         @Override
         public boolean canParticipateIn(Event event) {
             return true;
+        }
+
+        @Override
+        public Group getMainGroup() {
+            return NULL_GROUP;
         }
 
     };

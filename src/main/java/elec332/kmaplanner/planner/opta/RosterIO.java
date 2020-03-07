@@ -85,7 +85,11 @@ public class RosterIO {
             return null;
         }
         Map<UUID, Event> eventMap = planner.getEventManager().stream().collect(Collectors.toMap(Event::getUuid, Function.identity()));
-        List<Assignment> assignments = dis.readObjects(stream -> readAssignment(stream, names, eventMap));
+        ObjectReference<Boolean> noPers = new ObjectReference<>(false);
+        List<Assignment> assignments = dis.readObjects(stream -> readAssignment(stream, names, eventMap, noPers));
+        if (noPers.get()) {
+            DialogHelper.showErrorMessageDialog("It seems that some persons have been removed. \nIt is advisable to disregard this save and plan a new roster, as that will probably be quicker.", "Missing persons");
+        }
         int po = 0;
         if (dis.availableBytes() > 0) {
             po = dis.readInt();
@@ -98,11 +102,12 @@ public class RosterIO {
         stream.writeUUID(assignment.event.getUuid());
     }
 
-    private static Assignment readAssignment(IByteArrayDataInputStream stream, Map<String, Person> names, Map<UUID, Event> eventMap) {
+    private static Assignment readAssignment(IByteArrayDataInputStream stream, Map<String, Person> names, Map<UUID, Event> eventMap, ObjectReference<Boolean> noPers) {
         String name = stream.readUTF();
         Person p = names.get(name);
         if (p == null) {
             p = PersonManager.NULL_PERSON;
+            noPers.set(true);
         }
         Assignment ret = new Assignment(Preconditions.checkNotNull(eventMap.get(stream.readUUID())));
         ret.person = p;
