@@ -7,6 +7,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import elec332.kmaplanner.events.Event;
 import elec332.kmaplanner.persons.Person;
+import elec332.kmaplanner.persons.PersonManager;
 import elec332.kmaplanner.planner.Planner;
 import elec332.kmaplanner.planner.opta.assignment.IInitialEventAssigner;
 import elec332.kmaplanner.util.FileValidator;
@@ -98,7 +99,11 @@ public class RosterIO {
     }
 
     private static Assignment readAssignment(IByteArrayDataInputStream stream, Map<String, Person> names, Map<UUID, Event> eventMap) {
-        Person p = names.get(stream.readUTF());
+        String name = stream.readUTF();
+        Person p = names.get(name);
+        if (p == null) {
+            p = PersonManager.NULL_PERSON;
+        }
         Assignment ret = new Assignment(Preconditions.checkNotNull(eventMap.get(stream.readUUID())));
         ret.person = p;
         return ret;
@@ -173,7 +178,14 @@ public class RosterIO {
             events.forEach(event -> {
                 int required = event.requiredPersons;
                 Collection<Assignment> al1 = map.get(event);
-                if (required >= al1.size()) {
+                if (al1 == null) {
+                    List<Assignment> eventAssignments = Lists.newArrayList();
+                    for (int i = 0; i < required; i++) {
+                        eventAssignments.add(new Assignment(event));
+                    }
+                    data.use(d -> assigner.assignPersonsTo(Collections.unmodifiableList(eventAssignments), event, persons_, d, planner));
+                    assignments.addAll(eventAssignments);
+                } else if (required >= al1.size()) {
                     assignments.addAll(al1);
                     if (required > al1.size()) {
                         List<Assignment> eventAssignments = Lists.newArrayList();
