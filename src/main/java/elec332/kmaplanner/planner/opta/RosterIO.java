@@ -53,10 +53,14 @@ public class RosterIO {
         return new Roster(ld, planner);
     }
 
-    public static void writeRoster(Roster roster, File file) throws IOException {
+    public static boolean writeRoster(Roster roster, File file) throws IOException {
+        if (roster == null) {
+            DialogHelper.showErrorMessageDialog("This button is for saving a roster. No roster has been created yet!", "Null roster");
+            return false;
+        }
         file = FileValidator.checkFileSave(file, ".kpa", true);
         if (file == null) {
-            return;
+            return false;
         }
 
         FileOutputStream fos = new FileOutputStream(file);
@@ -65,6 +69,7 @@ public class RosterIO {
         dos.writeObject(RosterIO::write, new RosterData(Preconditions.checkNotNull(roster)));
 
         dos.close();
+        return true;
     }
 
     private static VersionedReader<RosterData> createReader(Planner planner) {

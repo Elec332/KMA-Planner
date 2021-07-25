@@ -1,6 +1,6 @@
 package elec332.kmaplanner.util.swing;
 
-import javafx.util.Pair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.swing.*;
 import java.awt.*;
@@ -99,7 +99,7 @@ public class DateChooserPanel extends JPanel {
             sel = false;
         }
 
-        return new Pair<>(d, sel);
+        return Pair.of(d, sel);
     }
 
 }

@@ -305,13 +305,13 @@ public class Planner {
         solver.addPhaseLifecycleListener(ui);
     }
 
-
     @SuppressWarnings("UnusedReturnValue")
     private File writeRoster(Roster roster, Component component) {
         File file = new File(FileHelper.getExecFolder(), new Date().getTime() + ".kpa");
         try {
-            RosterIO.writeRoster(roster, file);
-            DialogHelper.showDialog(component, "Saved roster data location: " + file.getAbsolutePath(), "Roster saved");
+            if (RosterIO.writeRoster(roster, file)) {
+                DialogHelper.showDialog(component, "Saved roster data location: " + file.getAbsolutePath(), "Roster saved");
+            }
         } catch (IOException e) {
             e.printStackTrace();
             DialogHelper.showErrorMessageDialog("Failed to save assignment data.", "Export failed!");
